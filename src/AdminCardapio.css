@@ -1,0 +1,73 @@
+.admin-page {
+  min-height: 100vh;
+  background: #f7f3ec;
+}
+
+.admin-header {
+  background: #6b1f24;
+  color: white;
+  padding: 24px;
+}
+
+.admin-header span {
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+
+.admin-header h1 {
+  margin-top: 6px;
+  font-size: 24px;
+}
+
+.admin-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.admin-card {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.admin-card h2 {
+  color: #2d211b;
+  margin-bottom: 8px;
+}
+
+.admin-subtitulo {
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.campo label {
+  color: #2d211b;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.campo input {
+  padding: 13px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.salvar-cardapio-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 9px;
+  background: #6b1f24;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}

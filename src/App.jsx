@@ -1,6 +1,18 @@
+import { useState } from 'react'
 import './App.css'
+import Marmitas from './Marmitas'
 
 function App() {
+  const [pagina, setPagina] = useState('home')
+
+  if (pagina === 'marmitas') {
+    return (
+      <Marmitas
+        voltar={() => setPagina('home')}
+      />
+    )
+  }
+
   return (
     <div className="page">
 
@@ -22,7 +34,12 @@ function App() {
         <div className="hero-text">
           <h2>Comida caseira todos os dias</h2>
           <p>Marmitas e refeições preparadas com carinho para você!</p>
-          <button className="btn-pedido">🍱 FAZER PEDIDO</button>
+          <button
+            className="btn-pedido"
+            onClick={() => setPagina('marmitas')}
+          >
+            🍱 FAZER PEDIDO
+          </button>
         </div>
         <div className="hero-img">
           {/* Troque a URL abaixo pela foto do prato quando tiver */}
@@ -35,7 +52,10 @@ function App() {
         <h3>— ESCOLHA COMO DESEJA SEU PEDIDO —</h3>
 
         <div className="cards">
-          <div className="card card-marmita">
+          <div
+            className="card card-marmita"
+            onClick={() => setPagina('marmitas')}
+          >
             <div className="icone">🍱</div>
             <h4>MARMITAS</h4>
             <p>Escolha sua refeição e monte seu pedido de forma rápida.</p>
