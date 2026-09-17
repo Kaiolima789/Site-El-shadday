@@ -1,0 +1,173 @@
+.destino-page {
+  min-height: 100vh;
+  background: #f7f3ec;
+  padding-bottom: 90px;
+}
+
+.destino-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #f7f3ec;
+}
+
+.destino-voltar {
+  position: absolute;
+  left: 18px;
+  border: none;
+  background: transparent;
+  color: #6b1f24;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.destino-logo {
+  text-align: center;
+}
+
+.destino-logo h1 {
+  margin: 0;
+  color: #6b1f24;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+}
+
+.destino-logo span {
+  color: #8a6d3b;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.destino-conteudo {
+  width: min(90%, 550px);
+  margin: 35px auto;
+  text-align: center;
+}
+
+.destino-icon {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+.destino-conteudo h2 {
+  color: #2d211b;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.destino-conteudo > p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.destino-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.destino-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  border: none;
+  border-radius: 15px;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.destino-card-foto {
+  width: 55px;
+  height: 55px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.destino-card h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.destino-card.cliente h3 {
+  color: #6b1f24;
+}
+
+.destino-card.vivendas h3 {
+  color: #8a6d3b;
+}
+
+.destino-card p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.destino-seta {
+  margin-left: auto;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+/* ===== NAVEGAÇÃO INFERIOR ===== */
+
+.nav-inferior {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  background: #fffdf9;
+  border-top: 1px solid #eadfd2;
+
+  display: flex;
+  justify-content: space-around;
+
+  padding: 10px 0 14px;
+
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  border: none;
+  background: transparent;
+
+  color: #a89684;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.nav-item span {
+  font-size: 20px;
+}
+
+.nav-item-ativo {
+  color: #6b1f24;
+  position: relative;
+}
+
+.nav-item-ativo::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  background: #6b1f24;
+}

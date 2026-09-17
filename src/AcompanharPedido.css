@@ -1,0 +1,155 @@
+.acompanhar-page {
+  min-height: 100vh;
+  background: #f7f3ec;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.acompanhar-header {
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.acompanhar-header h1 {
+  margin: 0;
+  color: #6b1f24;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+}
+
+.acompanhar-header span {
+  color: #8a6d3b;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.acompanhar-conteudo {
+  width: min(92%, 480px);
+  margin: 20px auto 40px;
+  padding: 30px 24px;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 4px 18px rgba(45, 33, 27, 0.08);
+  text-align: center;
+}
+
+.acompanhar-icon-grande {
+  font-size: 46px;
+  margin-bottom: 8px;
+}
+
+.acompanhar-conteudo h2 {
+  margin: 4px 0 4px;
+  color: #2d211b;
+}
+
+.acompanhar-numero {
+  color: #8a7a6a;
+  margin-bottom: 26px;
+  font-size: 14px;
+}
+
+.acompanhar-aviso {
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: #fdf1d9;
+  color: #8a5a0d;
+  font-size: 13px;
+}
+
+/* Linha do tempo */
+
+.acompanhar-linha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0;
+  margin: 0 auto;
+  max-width: 280px;
+}
+
+.acompanhar-etapa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 26px;
+}
+
+.acompanhar-etapa:last-child {
+  padding-bottom: 0;
+}
+
+.acompanhar-bolinha {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ece5d8;
+  color: #a89684;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  z-index: 1;
+}
+
+.acompanhar-bolinha-ativa {
+  background: #6b1f24;
+  color: white;
+}
+
+.acompanhar-etapa span {
+  font-size: 14px;
+  color: #a89684;
+}
+
+.acompanhar-label-ativa {
+  color: #2d211b;
+  font-weight: 600;
+}
+
+.acompanhar-conector {
+  position: absolute;
+  left: 17px;
+  top: 34px;
+  width: 2px;
+  height: 26px;
+  background: #ece5d8;
+}
+
+.acompanhar-conector-ativo {
+  background: #6b1f24;
+}
+
+.acompanhar-pronto-msg {
+  margin-top: 24px;
+  font-weight: 700;
+  color: #1f6b3a;
+}
+
+/* Caso recusado */
+
+.acompanhar-recusado .acompanhar-icon-grande {
+  color: #8b2525;
+}
+
+.acompanhar-recusado p {
+  color: #8a7a6a;
+  font-size: 14px;
+}
+
+.acompanhar-voltar-btn {
+  margin-top: 28px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #6b1f24;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}

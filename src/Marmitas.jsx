@@ -1,35 +1,81 @@
 import { useEffect, useState } from 'react'
 import './Marmitas.css'
 
-function Marmitas({ voltar }) {
-  const [arroz, setArroz] = useState('')
-  const [feijao, setFeijao] = useState('')
-  const [proteina, setProteina] = useState('')
-  const [guarnicao, setGuarnicao] = useState('')
+// Fotos ilustrativas de cada categoria (Unsplash, uso livre)
+const FOTOS = {
+  carne: 'https://images.unsplash.com/photo-1762631934518-f75e233413ca?auto=format&fit=crop&w=300&q=70',
+  guarnicao: 'https://images.unsplash.com/photo-1594470603337-2e8778fda2be?auto=format&fit=crop&w=300&q=70'
+}
+
+const MAX_CARNES = 2
+
+function Marmitas({ voltar, continuar }) {
+  const [carne, setCarne] = useState([])
+  const [guarnicao, setGuarnicao] = useState([])
 
   const [cardapio, setCardapio] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
+  const itensEscolhidos = carne.length + guarnicao.length
+
   useEffect(() => {
-    fetch('http://localhost:3000/cardapios/2026-08-15')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Cardápio não encontrado')
+    async function carregarCardapio() {
+      try {
+        setCarregando(true)
+        setErro('')
+
+        const hoje = new Date()
+
+        const ano = hoje.getFullYear()
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+        const dia = String(hoje.getDate()).padStart(2, '0')
+
+        const dataHoje = `${ano}-${mes}-${dia}`
+
+        const resposta = await fetch(
+          `http://localhost:3000/cardapios/${dataHoje}`
+        )
+
+        if (!resposta.ok) {
+          throw new Error('Nenhum cardápio disponível para hoje.')
         }
 
-        return res.json()
-      })
-      .then((dados) => {
+        const dados = await resposta.json()
+
         setCardapio(dados)
-        setCarregando(false)
-      })
-      .catch((erro) => {
+
+      } catch (erro) {
         console.error(erro)
-        setErro('Não foi possível carregar o cardápio.')
+        setErro(erro.message)
+      } finally {
         setCarregando(false)
-      })
+      }
+    }
+
+    carregarCardapio()
   }, [])
+
+  if (carregando) {
+    return (
+      <div className="marmitas-page">
+        <h2>Carregando cardápio...</h2>
+      </div>
+    )
+  }
+
+  if (erro) {
+    return (
+      <div className="marmitas-page">
+        <h2>Cardápio indisponível</h2>
+        <p>{erro}</p>
+
+        <button onClick={voltar}>
+          ← Voltar
+        </button>
+      </div>
+    )
+  }
 
   function opcoesPorCategoria(categoria) {
     if (!cardapio) return []
@@ -40,10 +86,32 @@ function Marmitas({ voltar }) {
   }
 
   function limparEscolhas() {
-    setArroz('')
-    setFeijao('')
-    setProteina('')
-    setGuarnicao('')
+    setCarne([])
+    setGuarnicao([])
+  }
+
+  function alternarCarne(nome) {
+    setCarne((atual) => {
+      const jaSelecionada = atual.includes(nome)
+
+      if (jaSelecionada) {
+        return atual.filter((item) => item !== nome)
+      }
+
+      if (atual.length >= MAX_CARNES) {
+        return atual
+      }
+
+      return [...atual, nome]
+    })
+  }
+
+  function alternarGuarnicao(nome) {
+    setGuarnicao((atual) =>
+      atual.includes(nome)
+        ? atual.filter((item) => item !== nome)
+        : [...atual, nome]
+    )
   }
 
   return (
@@ -66,6 +134,9 @@ function Marmitas({ voltar }) {
 
         <button className="carrinho-btn">
           🛒
+          {itensEscolhidos > 0 && (
+            <span className="carrinho-badge">{itensEscolhidos}</span>
+          )}
         </button>
 
       </header>
@@ -83,67 +154,7 @@ function Marmitas({ voltar }) {
       </section>
 
 
-      {/* ARROZ */}
-      <section className="escolha">
-
-        <div className="escolha-icon">
-          🍚
-        </div>
-
-        <div className="escolha-conteudo">
-
-          <h3>1. ESCOLHA O ARROZ</h3>
-
-          {opcoesPorCategoria('arroz').map((opcao) => (
-            <label key={opcao.id}>
-              <input
-                type="radio"
-                name="arroz"
-                value={opcao.nome}
-                checked={arroz === opcao.nome}
-                onChange={(e) => setArroz(e.target.value)}
-              />
-
-              {opcao.nome}
-            </label>
-          ))}
-
-        </div>
-
-      </section>
-
-
-      {/* FEIJÃO */}
-      <section className="escolha">
-
-        <div className="escolha-icon">
-          🫘
-        </div>
-
-        <div className="escolha-conteudo">
-
-          <h3>2. ESCOLHA O FEIJÃO</h3>
-
-          {opcoesPorCategoria('feijao').map((opcao) => (
-            <label key={opcao.id}>
-              <input
-                type="radio"
-                name="feijao"
-                value={opcao.nome}
-                checked={feijao === opcao.nome}
-                onChange={(e) => setFeijao(e.target.value)}
-              />
-
-              {opcao.nome}
-            </label>
-          ))}
-
-        </div>
-
-      </section>
-
-
-      {/* PROTEÍNA */}
+      {/* CARNE */}
       <section className="escolha">
 
         <div className="escolha-icon">
@@ -152,23 +163,32 @@ function Marmitas({ voltar }) {
 
         <div className="escolha-conteudo">
 
-          <h3>3. ESCOLHA A PROTEÍNA</h3>
+          <h3>1. ESCOLHA A CARNE ({carne.length}/{MAX_CARNES})</h3>
 
-          {opcoesPorCategoria('proteina').map((opcao) => (
-            <label key={opcao.id}>
-              <input
-                type="radio"
-                name="proteina"
-                value={opcao.nome}
-                checked={proteina === opcao.nome}
-                onChange={(e) => setProteina(e.target.value)}
-              />
+          {opcoesPorCategoria('carne').map((opcao) => {
+            const selecionada = carne.includes(opcao.nome)
+            const desabilitada = !selecionada && carne.length >= MAX_CARNES
 
-              {opcao.nome}
-            </label>
-          ))}
+            return (
+              <label
+                key={opcao.id}
+                className={desabilitada ? 'opcao-desabilitada' : ''}
+              >
+                <input
+                  type="checkbox"
+                  checked={selecionada}
+                  disabled={desabilitada}
+                  onChange={() => alternarCarne(opcao.nome)}
+                />
+
+                {opcao.nome}
+              </label>
+            )
+          })}
 
         </div>
+
+        <img className="escolha-foto" src={FOTOS.carne} alt="Carne" />
 
       </section>
 
@@ -182,16 +202,14 @@ function Marmitas({ voltar }) {
 
         <div className="escolha-conteudo">
 
-          <h3>4. ESCOLHA A GUARNIÇÃO</h3>
+          <h3>2. ESCOLHA AS GUARNIÇÕES</h3>
 
           {opcoesPorCategoria('guarnicao').map((opcao) => (
             <label key={opcao.id}>
               <input
-                type="radio"
-                name="guarnicao"
-                value={opcao.nome}
-                checked={guarnicao === opcao.nome}
-                onChange={(e) => setGuarnicao(e.target.value)}
+                type="checkbox"
+                checked={guarnicao.includes(opcao.nome)}
+                onChange={() => alternarGuarnicao(opcao.nome)}
               />
 
               {opcao.nome}
@@ -199,6 +217,8 @@ function Marmitas({ voltar }) {
           ))}
 
         </div>
+
+        <img className="escolha-foto" src={FOTOS.guarnicao} alt="Guarnição" />
 
       </section>
 
@@ -211,28 +231,28 @@ function Marmitas({ voltar }) {
         <div className="resumo-itens">
 
           <span>
-            🍚 {arroz || 'Arroz não escolhido'}
+            🍗 {carne.length > 0 ? carne.join(', ') : 'Carne não escolhida'}
           </span>
 
           <span>
-            🫘 {feijao || 'Feijão não escolhido'}
-          </span>
-
-          <span>
-            🍗 {proteina || 'Proteína não escolhida'}
-          </span>
-
-          <span>
-            🥗 {guarnicao || 'Guarnição não escolhida'}
+            🥗 {guarnicao.length > 0 ? guarnicao.join(', ') : 'Guarnição não escolhida'}
           </span>
 
         </div>
 
 
-        <button className="continuar-btn">
+        <button
+          className="continuar-btn"
+          onClick={() =>
+            continuar({
+              carne: carne.join(', '),
+              guarnicao: guarnicao.join(', '),
+              preco: cardapio.preco
+            })
+          }
+        >
           CONTINUAR →
         </button>
-
 
         <button
           className="limpar-btn"
@@ -242,6 +262,45 @@ function Marmitas({ voltar }) {
         </button>
 
       </section>
+
+      {/* NAVEGAÇÃO INFERIOR */}
+      <nav className="nav-inferior">
+
+        <button onClick={voltar} className="nav-item">
+          <span>🏠</span>
+          Início
+        </button>
+
+        <button className="nav-item nav-item-ativo">
+          <span>🍱</span>
+          Marmitas
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => alert('Em breve: pedidos para consumir no local.')}
+        >
+          <span>🏪</span>
+          No Local
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => alert('Em breve: acompanhamento de pedidos por aqui.')}
+        >
+          <span>📋</span>
+          Pedidos
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => alert('Em breve: seu perfil.')}
+        >
+          <span>👤</span>
+          Perfil
+        </button>
+
+      </nav>
 
     </div>
   )

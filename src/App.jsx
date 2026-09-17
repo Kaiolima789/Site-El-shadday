@@ -1,14 +1,77 @@
 import { useState } from 'react'
 import './App.css'
 import Marmitas from './Marmitas'
+import AdminCardapio from './AdminCardapio'
+import DestinoPedido from './DestinoPedido'
+import Vivendas from './Vivendas'
+import PedidosVivendas from './PedidosVivendas'
+import AcompanharPedido from './AcompanharPedido'
+import marmitaHero from './assets/marmita-hero.png'
 
 function App() {
   const [pagina, setPagina] = useState('home')
+  const [pedido, setPedido] = useState(null)
+
+  if (pagina === 'admin') {
+  return (
+    <AdminCardapio
+      voltar={() => setPagina('home')}
+      pedidos={() => setPagina('pedidos-vivendas')}
+    />
+  )
+}
+
+  if (pagina === 'destino') {
+    return (
+      <DestinoPedido
+        pedido={pedido}
+        voltar={() => setPagina('marmitas')}
+        clienteComum={() => setPagina('resumo')}
+        vivendas={() => setPagina('vivendas')}
+      />
+    )
+  }
+
+  if (pagina === 'aguardando') {
+    return (
+      <AcompanharPedido
+        pedidoId={pedido?.id}
+        voltar={() => {
+          setPedido(null)
+          setPagina('home')
+        }}
+      />
+    )
+  }
+if (pagina === 'pedidos-vivendas') {
+  return (
+    <PedidosVivendas
+      voltar={() => setPagina('admin')}
+    />
+  )
+}
+
+  if (pagina === 'vivendas') {
+  return (
+    <Vivendas
+      pedido={pedido}
+      voltar={() => setPagina('destino')}
+      enviarPedido={(pedidoVivendas) => {
+        setPedido(pedidoVivendas)
+        setPagina('aguardando')
+      }}
+    />
+  )
+}
 
   if (pagina === 'marmitas') {
     return (
       <Marmitas
         voltar={() => setPagina('home')}
+        continuar={(pedidoSelecionado) => {
+          setPedido(pedidoSelecionado)
+          setPagina('destino')
+        }}
       />
     )
   }
@@ -27,23 +90,38 @@ function App() {
           <h1>EL SHADDAY</h1>
           <span className="sub">— RESTAURANTE —</span>
         </div>
+
+        <button
+         onClick={() => setPagina('admin')}
+          style={{
+            position: 'absolute',
+            right: '16px',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            border: 'none',
+            background: '#6b1f24',
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          ADMIN
+        </button>
       </header>
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-text">
-          <h2>Comida caseira todos os dias</h2>
-          <p>Marmitas e refeições preparadas com carinho para você!</p>
-          <button
-            className="btn-pedido"
-            onClick={() => setPagina('marmitas')}
-          >
-            🍱 FAZER PEDIDO
-          </button>
-        </div>
         <div className="hero-img">
-          {/* Troque a URL abaixo pela foto do prato quando tiver */}
-          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600" alt="Prato de comida" />
+          <img src={marmitaHero} alt="Marmita com arroz, feijão, bife, farofa, salada e batata frita" />
+          <div className="hero-overlay">
+            <h2>Comida feita com carinho, pronta pra você</h2>
+            <p>Monte sua marmita do seu jeito, na hora que quiser</p>
+            <button
+              className="btn-pedido"
+              onClick={() => setPagina('marmitas')}
+            >
+              🍱 FAZER PEDIDO
+            </button>
+          </div>
         </div>
       </section>
 

@@ -4,7 +4,7 @@
   min-height: 100vh;
   background: #f7f3ec;
   color: #2d211b;
-  padding-bottom: 40px;
+  padding-bottom: 100px;
 }
 
 
@@ -36,6 +36,27 @@
 
 .carrinho-btn {
   font-size: 25px;
+  position: relative;
+}
+
+.carrinho-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+
+  background: #8a6d3b;
+  color: white;
+
+  font-size: 11px;
+  font-weight: bold;
+
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .marmitas-logo {
@@ -98,10 +119,24 @@
 
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
 
   gap: 20px;
 
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.escolha-foto {
+  width: 90px;
+  height: 90px;
+
+  object-fit: cover;
+
+  border-radius: 14px;
+
+  flex-shrink: 0;
+
+  margin-left: auto;
 }
 
 .escolha-icon {
@@ -143,7 +178,7 @@
   cursor: pointer;
 }
 
-.escolha-conteudo input {
+.escolha-conteudo input[type='checkbox'] {
   appearance: none;
 
   width: 20px;
@@ -151,33 +186,38 @@
 
   border: 2px solid #b99b7b;
 
-  border-radius: 50%;
+  border-radius: 5px;
 
   margin-right: 10px;
 
   vertical-align: middle;
 
   position: relative;
+  cursor: pointer;
 }
 
-.escolha-conteudo input:checked {
+.escolha-conteudo input[type='checkbox']:checked {
   border-color: #6b1f24;
+  background: #6b1f24;
 }
 
-.escolha-conteudo input:checked::after {
-  content: '';
-
+.escolha-conteudo input[type='checkbox']:checked::after {
+  content: '✓';
   position: absolute;
-
-  width: 10px;
-  height: 10px;
-
-  background: #6b1f24;
-
-  border-radius: 50%;
-
-  top: 3px;
+  top: -2px;
   left: 3px;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.opcao-desabilitada {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.opcao-desabilitada input[type='checkbox'] {
+  cursor: not-allowed;
 }
 
 
@@ -277,6 +317,61 @@
 }
 
 
+/* ===== NAVEGAÇÃO INFERIOR ===== */
+
+.nav-inferior {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  background: #fffdf9;
+  border-top: 1px solid #eadfd2;
+
+  display: flex;
+  justify-content: space-around;
+
+  padding: 10px 0 14px;
+
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  border: none;
+  background: transparent;
+
+  color: #a89684;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.nav-item span {
+  font-size: 20px;
+}
+
+.nav-item-ativo {
+  color: #6b1f24;
+  position: relative;
+}
+
+.nav-item-ativo::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  background: #6b1f24;
+}
+
+
 /* ===== CELULAR ===== */
 
 @media (max-width: 600px) {
@@ -314,6 +409,11 @@
     height: 48px;
 
     font-size: 22px;
+  }
+
+  .escolha-foto {
+    width: 64px;
+    height: 64px;
   }
 
   .escolha-conteudo h3 {

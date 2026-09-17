@@ -25,6 +25,21 @@ db.exec(`
   )
 `)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pedidos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    loja TEXT NOT NULL,
+    codigo_vivendas TEXT NOT NULL,
+    carne TEXT,
+    guarnicao TEXT,
+    observacao TEXT,
+    preco REAL NOT NULL,
+    status TEXT DEFAULT 'aguardando',
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`)
+
 console.log('Banco de dados conectado!')
 
 module.exports = db

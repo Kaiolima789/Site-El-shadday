@@ -1,0 +1,319 @@
+.pedidos-vivendas-page {
+  min-height: 100vh;
+  background: #f7f3ec;
+}
+
+.pedidos-vivendas-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.pedidos-voltar {
+  position: absolute;
+  left: 18px;
+  border: none;
+  background: transparent;
+  color: #6b1f24;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.pedidos-vivendas-header h1 {
+  margin: 0;
+  color: #6b1f24;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+}
+
+.pedidos-vivendas-header span {
+  color: #8a6d3b;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+.pedidos-vivendas-conteudo {
+  width: min(92%, 700px);
+  margin: 30px auto;
+}
+
+.pedidos-vivendas-conteudo h2 {
+  margin-bottom: 5px;
+  color: #6b1f24;
+  text-align: center;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.pedidos-topo-lista {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pedidos-subtitulo {
+  margin: 0;
+  color: #8a7a6a;
+}
+
+.atualizar-btn {
+  padding: 7px 16px;
+  border: 1px solid #6b1f24;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b1f24;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.atualizar-btn:hover {
+  background: #6b1f24;
+  color: white;
+}
+
+/* Navegação por dia */
+
+.pedidos-dia-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.pedidos-dia-nav span {
+  min-width: 70px;
+  text-align: center;
+  font-weight: 700;
+  color: #2d211b;
+}
+
+.pedidos-dia-nav button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #6b1f24;
+  background: white;
+  color: #6b1f24;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pedidos-dia-nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pedidos-dia-input {
+  border: 1px solid #6b1f24;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 13px;
+  color: #6b1f24;
+  background: white;
+  cursor: pointer;
+}
+
+/* Abas de status */
+
+.pedidos-abas {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+  padding: 4px;
+  background: #ece5d8;
+  border-radius: 10px;
+}
+
+.aba-btn {
+  flex: 1;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #6b1f24;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.aba-ativa {
+  background: #6b1f24;
+  color: white;
+}
+
+/* Lista de pedidos */
+
+.pedido-pendente {
+  padding: 22px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border-left: 4px solid #c9a45c;
+  background: white;
+  box-shadow: 0 2px 10px rgba(45, 33, 27, 0.06);
+}
+
+.pedido-aguardando {
+  border-left-color: #c9922a;
+}
+
+.pedido-aprovado {
+  border-left-color: #287a45;
+}
+
+.pedido-em_preparo {
+  border-left-color: #8a6d3b;
+}
+
+.pedido-pronto {
+  border-left-color: #1f6b3a;
+}
+
+.pedido-recusado {
+  border-left-color: #8b2525;
+}
+
+.pedido-status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.pedido-status-aguardando {
+  background: #fdf1d9;
+  color: #8a5a0d;
+}
+
+.pedido-status-aprovado {
+  background: #e2f2e6;
+  color: #1f6b3a;
+}
+
+.pedido-status-em_preparo {
+  background: #f3ead9;
+  color: #6b551f;
+}
+
+.pedido-status-pronto {
+  background: #d9efe0;
+  color: #144d29;
+}
+
+.pedido-status-recusado {
+  background: #fbe6e6;
+  color: #8b2525;
+}
+
+.pedido-topo h3 {
+  margin: 10px 0 18px;
+  color: #2d211b;
+  font-size: 17px;
+}
+
+.pedido-hora {
+  color: #a89684;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.pedido-dados {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #f7f3ec;
+}
+
+.pedido-dados + .pedido-dados {
+  margin-top: 10px;
+}
+
+.pedido-dados p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.pedido-marmita {
+  margin-top: 16px;
+}
+
+.pedido-marmita h4 {
+  margin-bottom: 8px;
+  color: #6b1f24;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+
+.pedido-marmita p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.pedido-acoes {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.aprovar-btn,
+.recusar-btn,
+.imprimir-btn,
+.preparo-btn,
+.pronto-btn {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.aprovar-btn {
+  background: #287a45;
+}
+
+.recusar-btn {
+  background: #8b2525;
+}
+
+.imprimir-btn {
+  background: #2d4a35;
+}
+
+.preparo-btn {
+  background: #8a6d3b;
+}
+
+.pronto-btn {
+  background: #1f6b3a;
+}
+
+.aprovar-btn:hover,
+.recusar-btn:hover,
+.imprimir-btn:hover,
+.preparo-btn:hover,
+.pronto-btn:hover {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 600px) {
+  .pedido-acoes {
+    flex-direction: column;
+  }
+
+  .aba-btn {
+    padding: 9px 4px;
+    font-size: 12px;
+  }
+}

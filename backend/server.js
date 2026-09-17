@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 app.post('/cardapios', (req, res) => {
   const { data, preco, opcoes } = req.body
 
-  if (!data || !preco || !opcoes) {
+  if (!data || !preco || !Array.isArray(opcoes)) {
     return res.status(400).json({
       erro: 'Data, preço e opções são obrigatórios.'
     })
@@ -96,6 +96,289 @@ app.get('/cardapios/:data', (req, res) => {
   })
 })
 
-app.listen(PORT, () => {
+app.put('/cardapios/:data', (req, res) => {
+  const { data } = req.params
+  const { preco, opcoes } = req.body
+
+  if (!preco || !Array.isArray(opcoes)) {
+    return res.status(400).json({
+      erro: 'Preço e opções são obrigatórios.'
+    })
+  }
+
+  try {
+    const cardapio = db.prepare(`
+      SELECT id
+      FROM cardapios
+      WHERE data = ?
+    `).get(data)
+
+    if (!cardapio) {
+      return res.status(404).json({
+        erro: 'Cardápio não encontrado para essa data.'
+      })
+    }
+
+    const atualizarPreco = db.prepare(`
+      UPDATE cardapios
+      SET preco = ?
+      WHERE id = ?
+    `)
+
+    atualizarPreco.run(preco, cardapio.id)
+
+    db.prepare(`
+      DELETE FROM opcoes_cardapio
+      WHERE cardapio_id = ?
+    `).run(cardapio.id)
+
+    const adicionarOpcao = db.prepare(`
+      INSERT INTO opcoes_cardapio
+      (cardapio_id, categoria, nome)
+      VALUES (?, ?, ?)
+    `)
+
+    for (const opcao of opcoes) {
+      adicionarOpcao.run(
+        cardapio.id,
+        opcao.categoria,
+        opcao.nome
+      )
+    }
+
+    res.json({
+      mensagem: 'Cardápio atualizado com sucesso!'
+    })
+
+  } catch (erro) {
+    console.error(erro)
+    res.status(500).json({
+      erro: 'Erro ao atualizar cardápio.'
+    })
+  }
+})
+
+app.post('/pedidos', (req, res) => {
+  const {
+    nome,
+    loja,
+    codigo,
+    carne,
+    guarnicao,
+    observacao,
+    preco
+  } = req.body
+
+  if (!nome || !loja || !codigo || !preco) {
+    return res.status(400).json({
+      erro: 'Nome, loja, código e preço são obrigatórios.'
+    })
+  }
+
+  try {
+    const criarPedido = db.prepare(`
+      INSERT INTO pedidos (
+        nome,
+        loja,
+        codigo_vivendas,
+        carne,
+        guarnicao,
+        observacao,
+        preco,
+        status
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    const resultado = criarPedido.run(
+      nome,
+      loja,
+      codigo,
+      carne,
+      guarnicao,
+      observacao || '',
+      preco,
+      'aguardando'
+    )
+
+    res.status(201).json({
+      mensagem: 'Pedido enviado para aprovação!',
+      id: resultado.lastInsertRowid
+    })
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao salvar pedido.'
+    })
+  }
+})
+
+app.get('/pedidos', (req, res) => {
+  try {
+    const pedidos = db.prepare(`
+      SELECT *
+      FROM pedidos
+      ORDER BY criado_em DESC
+    `).all()
+
+    res.json(pedidos)
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao buscar pedidos.'
+    })
+  }
+})
+
+app.get('/pedidos/:id', (req, res) => {
+  try {
+    const pedido = db.prepare(`
+      SELECT *
+      FROM pedidos
+      WHERE id = ?
+    `).get(req.params.id)
+
+    if (!pedido) {
+      return res.status(404).json({
+        erro: 'Pedido não encontrado.'
+      })
+    }
+
+    res.json(pedido)
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao buscar pedido.'
+    })
+  }
+})
+
+app.put('/pedidos/:id/aprovar', (req, res) => {
+  try {
+    const resultado = db.prepare(`
+      UPDATE pedidos
+      SET status = 'aprovado'
+      WHERE id = ?
+    `).run(req.params.id)
+
+    if (resultado.changes === 0) {
+      return res.status(404).json({
+        erro: 'Pedido não encontrado.'
+      })
+    }
+
+    res.json({
+      mensagem: 'Pedido aprovado com sucesso!'
+    })
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao aprovar pedido.'
+    })
+  }
+})
+
+app.put('/pedidos/:id/recusar', (req, res) => {
+  try {
+    const resultado = db.prepare(`
+      UPDATE pedidos
+      SET status = 'recusado'
+      WHERE id = ?
+    `).run(req.params.id)
+
+    if (resultado.changes === 0) {
+      return res.status(404).json({
+        erro: 'Pedido não encontrado.'
+      })
+    }
+
+    res.json({
+      mensagem: 'Pedido recusado com sucesso!'
+    })
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao recusar pedido.'
+    })
+  }
+})
+
+app.put('/pedidos/:id/preparo', (req, res) => {
+  try {
+    const resultado = db.prepare(`
+      UPDATE pedidos
+      SET status = 'em_preparo'
+      WHERE id = ? AND status = 'aprovado'
+    `).run(req.params.id)
+
+    if (resultado.changes === 0) {
+      return res.status(404).json({
+        erro: 'Pedido não encontrado ou não está aprovado.'
+      })
+    }
+
+    res.json({
+      mensagem: 'Pedido marcado como em preparo!'
+    })
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao atualizar pedido.'
+    })
+  }
+})
+
+app.put('/pedidos/:id/pronto', (req, res) => {
+  try {
+    const resultado = db.prepare(`
+      UPDATE pedidos
+      SET status = 'pronto'
+      WHERE id = ? AND status = 'em_preparo'
+    `).run(req.params.id)
+
+    if (resultado.changes === 0) {
+      return res.status(404).json({
+        erro: 'Pedido não encontrado ou não está em preparo.'
+      })
+    }
+
+    res.json({
+      mensagem: 'Pedido marcado como pronto!'
+    })
+
+  } catch (erro) {
+    console.error(erro)
+
+    res.status(500).json({
+      erro: 'Erro ao atualizar pedido.'
+    })
+  }
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('Erro não capturado:', err)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Rejeição não tratada em:', promise, 'razão:', reason)
+})
+
+const server = app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`)
+})
+
+server.on('close', () => {
+  console.log('Servidor foi fechado!')
 })

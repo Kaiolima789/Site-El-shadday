@@ -71,3 +71,165 @@
   font-weight: bold;
   cursor: pointer;
 }
+
+.categorias-admin {
+  margin-top: 30px;
+}
+
+.categoria-admin {
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+}
+
+.categoria-admin h3 {
+  color: #6b1f24;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.categoria-info {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.adicionar-opcao {
+  display: flex;
+  gap: 8px;
+}
+
+.adicionar-opcao input {
+  flex: 1;
+}
+
+.adicionar-opcao button {
+  width: 48px;
+  border: none;
+  border-radius: 8px;
+  background: #6b1f24;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.adicionar-opcao-guarnicao {
+  margin-bottom: 10px;
+}
+
+.lista-opcoes {
+  margin-top: 12px;
+}
+
+.opcao-admin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: #f7f3ec;
+  border-radius: 8px;
+}
+
+.opcao-admin span {
+  color: #2d211b;
+}
+
+.opcao-admin button {
+  border: none;
+  background: transparent;
+  color: #6b1f24;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.guarnicao-fixa-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.guarnicao-chip {
+  padding: 9px 14px;
+  border-radius: 30px;
+  border: 1px solid #cdb89e;
+  background: #fff;
+  color: #2d211b;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.guarnicao-chip:hover {
+  background: #f7f3ec;
+}
+
+.guarnicao-chip-ativa {
+  background: #6b1f24;
+  border-color: #6b1f24;
+  color: white;
+  font-weight: bold;
+}
+
+.mensagem-admin {
+  margin-top: 10px;
+  color: #6b1f24;
+  font-weight: bold;
+}
+
+.admin-voltar {
+  margin: 15px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #6b1f24;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.admin-menu {
+  width: min(92%, 700px);
+  margin: 20px auto;
+  display: flex;
+  gap: 15px;
+}
+
+.admin-menu-btn {
+  flex: 1;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #6b1f24;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-menu-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.admin-menu button {
+  flex: 1;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #6b1f24;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.admin-menu button:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .admin-menu {
+    flex-direction: column;
+  }
+}

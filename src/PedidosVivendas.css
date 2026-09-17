@@ -1,0 +1,208 @@
+.vivendas-page {
+  min-height: 100vh;
+  background: #f7f3ec;
+  padding-bottom: 100px;
+}
+
+/* CABEÇALHO */
+
+.vivendas-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  background: #fffdf9;
+  border-bottom: 1px solid #eadfd2;
+}
+
+.vivendas-voltar {
+  position: absolute;
+  left: 18px;
+  border: none;
+  background: transparent;
+  color: #6b1f24;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.vivendas-header h1 {
+  margin: 0;
+  color: #6b1f24;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+.vivendas-header span {
+  display: block;
+  color: #8a6d3b;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+/* CONTEÚDO */
+
+.vivendas-conteudo {
+  width: min(92%, 550px);
+  margin: 35px auto 0;
+  text-align: center;
+}
+
+.vivendas-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #6b1f24;
+  color: white;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vivendas-conteudo h2 {
+  color: #6b1f24;
+  font-size: 24px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.vivendas-conteudo > p {
+  color: #665b54;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+/* CARD DO FORMULÁRIO */
+
+.vivendas-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: left;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.vivendas-card label {
+  display: block;
+  color: #2d211b;
+  font-weight: bold;
+  font-size: 14px;
+  margin: 16px 0 6px;
+}
+
+.vivendas-card label:first-child {
+  margin-top: 0;
+}
+
+.vivendas-card input,
+.vivendas-card textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #e1d3c3;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #2d211b;
+  background: #fdf9f3;
+}
+
+.vivendas-card input:focus,
+.vivendas-card textarea:focus {
+  outline: none;
+  border-color: #6b1f24;
+  background: white;
+}
+
+.vivendas-card textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* BOTÃO */
+
+.vivendas-continuar {
+  width: 100%;
+  margin-top: 22px;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  background: #6b1f24;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.vivendas-continuar:hover {
+  background: #53171b;
+}
+
+/* NAVEGAÇÃO INFERIOR (mesma do resto do site) */
+
+.nav-inferior {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fffdf9;
+  border-top: 1px solid #eadfd2;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 14px;
+  z-index: 10;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: transparent;
+  color: #a89684;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-item span {
+  font-size: 20px;
+}
+
+.nav-item-ativo {
+  color: #6b1f24;
+  position: relative;
+}
+
+.nav-item-ativo::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  background: #6b1f24;
+}
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+  .vivendas-conteudo {
+    margin-top: 25px;
+  }
+
+  .vivendas-conteudo h2 {
+    font-size: 20px;
+  }
+
+  .vivendas-card {
+    padding: 22px 18px;
+  }
+}
