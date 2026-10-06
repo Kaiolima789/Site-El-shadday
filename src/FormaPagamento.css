@@ -1,0 +1,58 @@
+/* ===== FORMA DE PAGAMENTO ===== */
+
+.fp-bloco {
+  margin-top: 4px;
+}
+
+.fp-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.fp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border: 1px solid #d9c9a8;
+  border-radius: 10px;
+  background: #fffdf9;
+  color: #2d211b;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.fp-btn:hover {
+  border-color: #b99b7b;
+}
+
+.fp-btn-ativo {
+  background: #6b1f24;
+  border-color: #6b1f24;
+  color: #fff;
+}
+
+.fp-aviso {
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  background: #fdf3e7;
+  border: 1px solid #ecd9bd;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #6b5a44;
+  text-align: left;
+}
+
+/* ===== TROCO (aparece só quando a forma é dinheiro) ===== */
+
+.fp-troco {
+  margin-top: 12px;
+}
+
+.fp-troco label {
+  margin-top: 0;
+}

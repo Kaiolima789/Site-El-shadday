@@ -8,6 +8,35 @@ const PORT = 3000
 app.use(cors())
 app.use(express.json())
 
+// ===== MIGRAÇÃO: colunas do cliente comum (roda sozinha, só adiciona se faltar) =====
+const colunasPedidos = db
+  .prepare('PRAGMA table_info(pedidos)')
+  .all()
+  .map((coluna) => coluna.name)
+
+const novasColunas = [
+  ['telefone', "TEXT DEFAULT ''"],
+  ['tipo_entrega', "TEXT DEFAULT ''"],
+  ['endereco', "TEXT DEFAULT ''"],
+  ['origem', "TEXT DEFAULT 'vivendas'"],
+  ['refrigerante_sabor', "TEXT DEFAULT ''"],
+  ['refrigerante_tamanho', "TEXT DEFAULT ''"],
+  ['agua_tipo', "TEXT DEFAULT ''"],
+  ['bebida_quantidade', 'INTEGER DEFAULT 0'],
+  ['preco_marmita', 'REAL'],
+  ['preco_bebida', 'REAL'],
+  ['valor_cobrar', 'REAL'],
+  ['forma_pagamento', "TEXT DEFAULT ''"],
+  ['troco_para', 'REAL']
+]
+
+for (const [nomeColuna, definicao] of novasColunas) {
+  if (!colunasPedidos.includes(nomeColuna)) {
+    db.prepare(`ALTER TABLE pedidos ADD COLUMN ${nomeColuna} ${definicao}`).run()
+    console.log(`Coluna "${nomeColuna}" adicionada na tabela pedidos.`)
+  }
+}
+
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
@@ -163,16 +192,91 @@ app.post('/pedidos', (req, res) => {
     nome,
     loja,
     codigo,
+    telefone,
+    tipo_entrega,
+    endereco,
+    origem,
     carne,
     guarnicao,
+    refrigerante_sabor,
+    refrigerante_tamanho,
+    agua_tipo,
+    bebida_quantidade,
+    preco_marmita,
+    preco_bebida,
+    forma_pagamento,
+    troco_para,
     observacao,
     preco
   } = req.body
 
-  if (!nome || !loja || !codigo || !preco) {
+  const ehClienteComum = origem === 'cliente_comum'
+
+  // Regra de pagamento:
+  // - Vivendas: marmita é paga pelo código; cliente paga só a bebida.
+  // - Cliente comum: paga marmita + bebida.
+  // Se o frontend não mandar os valores separados, assume tudo como marmita.
+  let valorMarmita = Number(preco_marmita)
+  let valorBebida = Number(preco_bebida)
+
+  if (Number.isNaN(valorMarmita) && Number.isNaN(valorBebida)) {
+    valorMarmita = Number(preco) || 0
+    valorBebida = 0
+  } else {
+    valorMarmita = Number.isNaN(valorMarmita) ? 0 : valorMarmita
+    valorBebida = Number.isNaN(valorBebida) ? 0 : valorBebida
+  }
+
+  const valorCobrar = ehClienteComum
+    ? valorMarmita + valorBebida
+    : valorBebida
+
+  if (ehClienteComum) {
+    if (!nome || !telefone || !preco) {
+      return res.status(400).json({
+        erro: 'Nome, telefone e preço são obrigatórios.'
+      })
+    }
+
+    if (tipo_entrega === 'entrega' && !endereco) {
+      return res.status(400).json({
+        erro: 'Endereço é obrigatório para entrega.'
+      })
+    }
+  } else {
+    if (!nome || !loja || !codigo || !preco) {
+      return res.status(400).json({
+        erro: 'Nome, loja, código e preço são obrigatórios.'
+      })
+    }
+  }
+
+  // Pagamento é sempre na entrega/retirada. Só exige a forma se houver algo a cobrar.
+  const FORMAS_VALIDAS = ['pix', 'debito', 'credito', 'dinheiro']
+  const formaValida = FORMAS_VALIDAS.includes(forma_pagamento)
+
+  if (valorCobrar > 0 && !formaValida) {
     return res.status(400).json({
-      erro: 'Nome, loja, código e preço são obrigatórios.'
+      erro: 'Escolha a forma de pagamento.'
     })
+  }
+
+  // Troco (opcional, só para dinheiro): valor com que o cliente vai pagar
+  let trocoPara = null
+
+  if (
+    forma_pagamento === 'dinheiro' &&
+    troco_para !== null &&
+    troco_para !== undefined &&
+    String(troco_para).trim() !== ''
+  ) {
+    trocoPara = Number(String(troco_para).replace(',', '.'))
+
+    if (Number.isNaN(trocoPara) || trocoPara < valorCobrar) {
+      return res.status(400).json({
+        erro: 'O valor do troco deve ser maior ou igual ao valor a pagar.'
+      })
+    }
   }
 
   try {
@@ -181,21 +285,47 @@ app.post('/pedidos', (req, res) => {
         nome,
         loja,
         codigo_vivendas,
+        telefone,
+        tipo_entrega,
+        endereco,
+        origem,
         carne,
         guarnicao,
+        refrigerante_sabor,
+        refrigerante_tamanho,
+        agua_tipo,
+        bebida_quantidade,
+        preco_marmita,
+        preco_bebida,
+        valor_cobrar,
+        forma_pagamento,
+        troco_para,
         observacao,
         preco,
         status
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     const resultado = criarPedido.run(
       nome,
-      loja,
-      codigo,
+      ehClienteComum ? '' : loja,
+      ehClienteComum ? '' : codigo,
+      ehClienteComum ? telefone : '',
+      ehClienteComum ? (tipo_entrega || 'retirada') : '',
+      ehClienteComum && tipo_entrega === 'entrega' ? endereco : '',
+      ehClienteComum ? 'cliente_comum' : 'vivendas',
       carne,
       guarnicao,
+      refrigerante_sabor || '',
+      refrigerante_tamanho || '',
+      agua_tipo || '',
+      Number(bebida_quantidade) || 0,
+      valorMarmita,
+      valorBebida,
+      valorCobrar,
+      formaValida ? forma_pagamento : '',
+      trocoPara,
       observacao || '',
       preco,
       'aguardando'

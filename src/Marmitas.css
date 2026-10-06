@@ -149,6 +149,8 @@
 
   background: #6b1f24;
 
+  color: #fff;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -221,6 +223,357 @@
 }
 
 
+/* ===== BEBIDA — botões de tipo ===== */
+
+.escolha-bebida {
+  width: min(900px, 96%);
+}
+
+.bebida-legenda {
+  color: #665b54;
+
+  font-size: 14px;
+
+  margin: -8px 0 14px;
+}
+
+.bebida-tipo-botoes {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-bottom: 5px;
+}
+
+.bebida-tipo-botoes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid #b99b7b;
+
+  background: #fff;
+
+  color: #6b1f24;
+
+  border-radius: 30px;
+
+  padding: 10px 18px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: background 0.15s, color 0.15s;
+}
+
+.bebida-tipo-botoes button:hover {
+  background: #f1e7da;
+}
+
+.bebida-tipo-ativo {
+  background: #6b1f24 !important;
+  color: white !important;
+  border-color: #6b1f24 !important;
+}
+
+.bebida-tipo-icone {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.bebida-detalhe {
+  margin-top: 18px;
+
+  padding-top: 16px;
+
+  border-top: 1px dashed #eadfd2;
+}
+
+.bebida-subtitulo {
+  color: #2d211b;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  margin: 14px 0 10px;
+}
+
+
+/* ===== BEBIDA — cards de tamanho / água ===== */
+
+.bebida-cartoes {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+.bebida-cartao {
+  position: relative;
+
+  flex: 1 1 130px;
+  min-width: 110px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 6px;
+
+  background: #fff;
+
+  border: 1.5px solid #e1d3c3;
+
+  border-radius: 14px;
+
+  padding: 16px 10px;
+
+  cursor: pointer;
+
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.bebida-cartao:hover {
+  border-color: #b99b7b;
+}
+
+.bebida-cartao-ativo {
+  background: #6b1f24;
+  border-color: #6b1f24;
+}
+
+.bebida-cartao-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #6b1f24;
+
+  line-height: 0;
+}
+
+.bebida-cartao-ativo .bebida-cartao-icone {
+  color: #fff;
+}
+
+.bebida-cartao-nome {
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #2d211b;
+}
+
+.bebida-cartao-preco {
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #8a6d3b;
+}
+
+.bebida-cartao-ativo .bebida-cartao-nome,
+.bebida-cartao-ativo .bebida-cartao-preco {
+  color: #fff;
+}
+
+.bebida-check {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+
+  width: 22px;
+  height: 22px;
+
+  background: #fff;
+  color: #6b1f24;
+
+  border: 2px solid #6b1f24;
+  border-radius: 50%;
+
+  font-size: 12px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ===== BEBIDA — aviso informativo ===== */
+
+.bebida-info {
+  background: #fdf3e7;
+
+  border: 1px solid #ecd9bd;
+
+  border-radius: 10px;
+
+  padding: 10px 14px;
+
+  font-size: 12.5px;
+
+  color: #6b5a44;
+
+  margin: 14px 0 4px;
+}
+
+
+/* ===== BEBIDA — sabores ===== */
+
+.bebida-sabores {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.bebida-sabor-cartao {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex: 1 1 150px;
+
+  background: #fff;
+
+  border: 1.5px solid #e1d3c3;
+
+  border-radius: 12px;
+
+  padding: 12px 14px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #2d211b;
+
+  cursor: pointer;
+
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.bebida-sabor-cartao:hover {
+  border-color: #b99b7b;
+}
+
+.bebida-sabor-ativo {
+  background: #6b1f24;
+  border-color: #6b1f24;
+  color: #fff;
+}
+
+.bebida-sabor-icone {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.bebida-sabor-input {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 12px 14px;
+
+  border: 1.5px solid #b99b7b;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-family: inherit;
+
+  color: #2d211b;
+
+  background: #fff;
+}
+
+.bebida-sabor-input:focus {
+  outline: none;
+  border-color: #6b1f24;
+}
+
+
+/* ===== BEBIDA — quantidade ===== */
+
+.bebida-quantidade {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 14px;
+
+  margin-top: 16px;
+
+  padding-top: 14px;
+
+  border-top: 1px dashed #eadfd2;
+}
+
+.bebida-quantidade-titulo {
+  margin: 0;
+}
+
+.quantidade-stepper {
+  display: flex;
+  align-items: center;
+
+  border: 1.5px solid #b99b7b;
+
+  border-radius: 30px;
+
+  overflow: hidden;
+}
+
+.quantidade-stepper button {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+
+  background: #fff;
+
+  color: #6b1f24;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.quantidade-stepper button:hover:not(:disabled) {
+  background: #f1e7da;
+}
+
+.quantidade-stepper button:disabled {
+  color: #cdb89e;
+  cursor: not-allowed;
+}
+
+.quantidade-valor {
+  min-width: 28px;
+
+  text-align: center;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #2d211b;
+}
+
+.bebida-quantidade-subtotal {
+  margin-left: auto;
+
+  font-size: 13.5px;
+  font-weight: 700;
+
+  color: #8a6d3b;
+}
+
+
 /* ===== RESUMO ===== */
 
 .resumo {
@@ -268,6 +621,25 @@
   font-size: 13px;
 }
 
+.resumo-item-bebida {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #6b1f24;
+}
+
+.resumo-total {
+  text-align: center;
+
+  color: #6b1f24;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  margin-top: 18px;
+}
+
 
 /* ===== BOTÕES ===== */
 
@@ -300,6 +672,11 @@
 
 .continuar-btn:hover {
   background: #53171b;
+}
+
+.continuar-btn:disabled {
+  background: #cdb89e;
+  cursor: not-allowed;
 }
 
 .limpar-btn {
@@ -426,6 +803,33 @@
 
   .resumo {
     padding: 20px;
+  }
+
+  .bebida-tipo-botoes button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .bebida-cartao {
+    flex: 1 1 30%;
+
+    padding: 12px 6px;
+  }
+
+  .bebida-cartao-nome {
+    font-size: 12.5px;
+  }
+
+  .bebida-cartao-preco {
+    font-size: 12px;
+  }
+
+  .bebida-sabor-cartao {
+    flex: 1 1 45%;
+
+    font-size: 13px;
+
+    padding: 10px 10px;
   }
 
 }

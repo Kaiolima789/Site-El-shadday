@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import './PedidosVivendas.css'
+import './PedidosOrigem.css'
+import { rotuloPagamento, textoTroco } from './formasPagamento'
 
 // O SQLite salva criado_em em UTC (CURRENT_TIMESTAMP).
 // Aqui convertemos pro horário local do navegador antes de exibir.
@@ -81,6 +83,70 @@ function rotuloStatus(status) {
   }
 
   return rotulos[status] || status.toUpperCase()
+}
+
+// Monta a linha de bebida do pedido (refrigerante ou água), ou null se não houver
+function textoBebida(pedido) {
+  const qtd = Number(pedido.bebida_quantidade) > 1
+    ? `${pedido.bebida_quantidade}x `
+    : ''
+
+  if (pedido.refrigerante_sabor || pedido.refrigerante_tamanho) {
+    const partes = [pedido.refrigerante_sabor, pedido.refrigerante_tamanho].filter(Boolean)
+    return `🥤 ${qtd}${partes.join(' - ')}`
+  }
+
+  if (pedido.agua_tipo) {
+    return `💧 ${qtd}${pedido.agua_tipo}`
+  }
+
+  return null
+}
+
+// Carne: usa o campo novo (carne); cai pro campo antigo (proteina) se o pedido for de antes da mudança
+function textoCarne(pedido) {
+  return pedido.carne || pedido.proteina || ''
+}
+
+// ===== ORIGEM DO PEDIDO =====
+// Pedidos antigos (sem origem) contam como Vivendas.
+function ehClienteComum(pedido) {
+  return pedido.origem === 'cliente_comum'
+}
+
+function rotuloOrigem(pedido) {
+  return ehClienteComum(pedido) ? 'CLIENTE COMUM' : 'VIVENDAS'
+}
+
+function formatarReais(valor) {
+  return `R$ ${Number(valor || 0).toFixed(2)}`
+}
+
+function rotuloEntrega(pedido) {
+  return pedido.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada no local'
+}
+
+// Texto do que deve ser cobrado do cliente
+// - Vivendas: marmita paga pelo código, cobra só a bebida
+// - Cliente comum: cobra marmita + bebida
+function textoCobranca(pedido) {
+  const semValorSeparado =
+    pedido.valor_cobrar === null || pedido.valor_cobrar === undefined
+
+  // Pedido antigo, de antes da regra de pagamento
+  if (semValorSeparado) {
+    return `Valor: ${formatarReais(pedido.preco)}`
+  }
+
+  if (ehClienteComum(pedido)) {
+    return `Cobrar do cliente: ${formatarReais(pedido.valor_cobrar)}`
+  }
+
+  if (Number(pedido.valor_cobrar) > 0) {
+    return `Cobrar do cliente: ${formatarReais(pedido.valor_cobrar)} (só a bebida)`
+  }
+
+  return 'Nada a cobrar — marmita paga pelo código Vivendas'
 }
 
 function PedidosVivendas({ voltar }) {
@@ -223,12 +289,59 @@ function PedidosVivendas({ voltar }) {
   }
 
   function imprimirPedido(pedido) {
-    const janela = window.open('', '_blank', 'width=380,height=600')
+    const janela = window.open('', '_blank', 'width=320,height=600')
 
     if (!janela) {
       alert('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.')
       return
     }
+
+    const bebida = textoBebida(pedido)
+    const carne = textoCarne(pedido)
+    const comum = ehClienteComum(pedido)
+
+    // Bloco de identificação: muda conforme a origem do pedido
+    const blocoCliente = comum
+      ? `
+          <p><strong>Cliente:</strong> ${pedido.nome}</p>
+          <p><strong>Tel:</strong> ${pedido.telefone || ''}</p>
+          <p><strong>${rotuloEntrega(pedido)}</strong></p>
+          ${
+            pedido.tipo_entrega === 'entrega' && pedido.endereco
+              ? `<p><strong>End:</strong> ${pedido.endereco}</p>`
+              : ''
+          }
+        `
+      : `
+          <p><strong>Cliente:</strong> ${pedido.nome}</p>
+          <p><strong>Loja:</strong> ${pedido.loja}</p>
+          <p><strong>Código:</strong> ${pedido.codigo_vivendas}</p>
+        `
+
+    // Bloco de pagamento: Vivendas paga só a bebida; cliente comum paga tudo
+    const semValorSeparado =
+      pedido.valor_cobrar === null || pedido.valor_cobrar === undefined
+
+    let blocoPagamento
+
+    if (semValorSeparado) {
+      blocoPagamento = `<p class="total">TOTAL: ${formatarReais(pedido.preco)}</p>`
+    } else if (comum) {
+      blocoPagamento = `<p class="total">COBRAR: ${formatarReais(pedido.valor_cobrar)}</p>`
+    } else if (Number(pedido.valor_cobrar) > 0) {
+      blocoPagamento = `
+          <p>Marmita: paga pelo código</p>
+          <p class="total">COBRAR (bebida): ${formatarReais(pedido.valor_cobrar)}</p>
+        `
+    } else {
+      blocoPagamento = `<p class="total">PAGO PELO CÓDIGO</p>`
+    }
+
+    const linhaForma = pedido.forma_pagamento
+      ? `<p><strong>Pagto na entrega:</strong> ${rotuloPagamento(pedido.forma_pagamento)}</p>${
+          textoTroco(pedido) ? `<p><strong>${textoTroco(pedido)}</strong></p>` : ''
+        }`
+      : ''
 
     janela.document.write(`
       <!DOCTYPE html>
@@ -237,74 +350,114 @@ function PedidosVivendas({ voltar }) {
           <meta charset="utf-8" />
           <title>Pedido #${pedido.id}</title>
           <style>
-            * { box-sizing: border-box; }
-            body {
-              font-family: Arial, sans-serif;
-              padding: 16px;
-              color: #111;
+            /* Define o tamanho físico do papel da térmica 58mm.
+               "auto" na altura deixa a impressora cortar no tamanho do conteúdo. */
+            @page {
+              size: 58mm auto;
+              margin: 0;
             }
+
+            * {
+              box-sizing: border-box;
+            }
+
+            html, body {
+              width: 58mm;
+              margin: 0;
+              padding: 0;
+            }
+
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              font-size: 12px;
+              line-height: 1.35;
+              color: #000;
+              padding: 2mm 3mm 6mm;
+            }
+
             h1 {
               text-align: center;
-              font-size: 18px;
+              font-size: 15px;
               margin: 0 0 2px;
+              letter-spacing: 0.5px;
             }
+
             .subtitulo {
               text-align: center;
-              font-size: 11px;
-              color: #555;
-              margin-bottom: 14px;
+              font-size: 10px;
+              margin-bottom: 8px;
             }
-            hr {
-              border: none;
-              border-top: 1px dashed #999;
-              margin: 12px 0;
-            }
-            p {
-              font-size: 14px;
+
+            .origem {
+              text-align: center;
+              font-size: 13px;
+              font-weight: bold;
+              border: 1px solid #000;
+              padding: 2px 0;
               margin: 4px 0;
             }
+
+            hr {
+              border: none;
+              border-top: 1px dashed #000;
+              margin: 6px 0;
+            }
+
+            p {
+              margin: 2px 0;
+              word-break: break-word;
+            }
+
             .item {
-              font-size: 14px;
-              margin: 3px 0;
+              margin: 1px 0;
             }
-            .total {
-              font-size: 16px;
+
+            .secao-titulo {
               font-weight: bold;
-              margin-top: 10px;
+              margin-top: 4px;
             }
+
+            .total {
+              font-size: 14px;
+              font-weight: bold;
+              margin-top: 8px;
+              text-align: right;
+            }
+
             .rodape {
               text-align: center;
-              font-size: 11px;
-              color: #777;
-              margin-top: 16px;
+              font-size: 9px;
+              margin-top: 10px;
             }
           </style>
         </head>
         <body>
           <h1>EL SHADDAY RESTAURANTE</h1>
-          <p class="subtitulo">PEDIDO ${rotuloStatus(pedido.status)} — Nº ${pedido.id}</p>
+          <p class="subtitulo">${rotuloStatus(pedido.status)} — Nº ${pedido.id}</p>
+
+          <p class="origem">${rotuloOrigem(pedido)}</p>
 
           <hr />
 
-          <p><strong>Cliente:</strong> ${pedido.nome}</p>
-          <p><strong>Loja:</strong> ${pedido.loja}</p>
-          <p><strong>Código Vivendas:</strong> ${pedido.codigo_vivendas}</p>
+          ${blocoCliente}
           <p><strong>Horário:</strong> ${formatarHora(pedido.criado_em)}</p>
 
           <hr />
 
-          <p><strong>MARMITA</strong></p>
-          <p class="item">🍚 ${pedido.arroz}</p>
-          <p class="item">🫘 ${pedido.feijao}</p>
-          <p class="item">🍗 ${pedido.proteina}</p>
-          <p class="item">🥗 ${pedido.guarnicao}</p>
-          ${pedido.observacao ? `<p><strong>Observação:</strong> ${pedido.observacao}</p>` : ''}
+          <p class="secao-titulo">MARMITA</p>
+          ${carne ? `<p class="item">🍗 ${carne}</p>` : ''}
+          ${pedido.guarnicao ? `<p class="item">🥗 ${pedido.guarnicao}</p>` : ''}
+
+          ${bebida ? `<p class="item">${bebida}</p>` : ''}
+
+          ${pedido.observacao ? `<p><strong>Obs:</strong> ${pedido.observacao}</p>` : ''}
 
           <hr />
 
-          <p class="total">Valor: R$ ${Number(pedido.preco).toFixed(2)}</p>
+          ${linhaForma}
+          ${blocoPagamento}
 
-          <p class="rodape">Impresso em ${new Date().toLocaleString('pt-BR')}</p>
+          <p class="rodape">${new Date().toLocaleString('pt-BR')}</p>
         </body>
       </html>
     `)
@@ -356,7 +509,7 @@ function PedidosVivendas({ voltar }) {
 
       <main className="pedidos-vivendas-conteudo">
 
-        <h2>PEDIDOS VIVENDAS</h2>
+        <h2>PEDIDOS</h2>
 
         <div className="pedidos-topo-lista">
           <p className="pedidos-subtitulo">
@@ -451,7 +604,7 @@ function PedidosVivendas({ voltar }) {
             <h3>Nenhum pedido aqui</h3>
             <p>
               {filtro === 'aguardando' && ehHoje
-                ? 'Quando um cliente enviar um pedido pela Vivendas, ele aparecerá aqui.'
+                ? 'Quando um cliente enviar um pedido, ele aparecerá aqui.'
                 : `Nenhum pedido "${rotuloStatus(filtro).toLowerCase()}" em ${formatarDataSelecionada(dataSelecionada) === 'Hoje' ? 'hoje' : formatarDataSelecionada(dataSelecionada)}.`}
             </p>
           </div>
@@ -468,9 +621,23 @@ function PedidosVivendas({ voltar }) {
 
               <div>
 
-                <span className={`pedido-status pedido-status-${pedido.status}`}>
-                  {rotuloStatus(pedido.status)}
-                </span>
+                <div className="pedido-tags">
+
+                  <span className={`pedido-status pedido-status-${pedido.status}`}>
+                    {rotuloStatus(pedido.status)}
+                  </span>
+
+                  <span
+                    className={`pedido-origem ${
+                      ehClienteComum(pedido)
+                        ? 'pedido-origem-comum'
+                        : 'pedido-origem-vivendas'
+                    }`}
+                  >
+                    {ehClienteComum(pedido) ? '👤' : '🏢'} {rotuloOrigem(pedido)}
+                  </span>
+
+                </div>
 
                 <h3>
                   Pedido #{pedido.id}
@@ -490,13 +657,33 @@ function PedidosVivendas({ voltar }) {
                 <strong>Cliente:</strong> {pedido.nome}
               </p>
 
-              <p>
-                <strong>Loja:</strong> {pedido.loja}
-              </p>
+              {ehClienteComum(pedido) ? (
+                <>
+                  <p>
+                    <strong>Telefone:</strong> {pedido.telefone}
+                  </p>
 
-              <p>
-                <strong>Código Vivendas:</strong> {pedido.codigo_vivendas}
-              </p>
+                  <p>
+                    <strong>Recebimento:</strong> {rotuloEntrega(pedido)}
+                  </p>
+
+                  {pedido.tipo_entrega === 'entrega' && pedido.endereco && (
+                    <p>
+                      <strong>Endereço:</strong> {pedido.endereco}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p>
+                    <strong>Loja:</strong> {pedido.loja}
+                  </p>
+
+                  <p>
+                    <strong>Código Vivendas:</strong> {pedido.codigo_vivendas}
+                  </p>
+                </>
+              )}
 
             </div>
 
@@ -504,10 +691,17 @@ function PedidosVivendas({ voltar }) {
 
               <h4>DETALHES DA MARMITA</h4>
 
-              <p>🍚 {pedido.arroz}</p>
-              <p>🫘 {pedido.feijao}</p>
-              <p>🍗 {pedido.proteina}</p>
-              <p>🥗 {pedido.guarnicao}</p>
+              {textoCarne(pedido) && (
+                <p>🍗 {textoCarne(pedido)}</p>
+              )}
+
+              {pedido.guarnicao && (
+                <p>🥗 {pedido.guarnicao}</p>
+              )}
+
+              {textoBebida(pedido) && (
+                <p>{textoBebida(pedido)}</p>
+              )}
 
               {pedido.observacao && (
                 <p>
@@ -517,12 +711,24 @@ function PedidosVivendas({ voltar }) {
 
             </div>
 
-            <div className="pedido-dados">
+            <div
+              className={`pedido-cobranca ${
+                ehClienteComum(pedido)
+                  ? 'pedido-cobranca-comum'
+                  : 'pedido-cobranca-vivendas'
+              }`}
+            >
+              <p>{textoCobranca(pedido)}</p>
 
-              <p>
-                <strong>Valor:</strong> R$ {Number(pedido.preco).toFixed(2)}
-              </p>
+              {pedido.forma_pagamento && (
+                <p>
+                  Pagamento na entrega: {rotuloPagamento(pedido.forma_pagamento)}
+                </p>
+              )}
 
+              {textoTroco(pedido) && (
+                <p>{textoTroco(pedido)}</p>
+              )}
             </div>
 
             {pedido.status === 'aguardando' && (

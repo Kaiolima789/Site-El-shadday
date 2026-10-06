@@ -1,0 +1,152 @@
+.cc-page {
+  min-height: 100vh;
+  background: #faf5ec;
+  color: #2d211b;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 90px;
+}
+
+.cc-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #6b1f24;
+  color: #fff;
+}
+
+.cc-header h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.cc-header span {
+  font-size: 11px;
+  color: #e6d3a8;
+  letter-spacing: 2px;
+}
+
+.cc-voltar {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.cc-conteudo {
+  flex: 1;
+  padding: 24px 16px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.cc-icon {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+.cc-conteudo h2 {
+  margin: 0 0 8px;
+  color: #6b1f24;
+  font-size: 20px;
+}
+
+.cc-conteudo > p {
+  margin: 0 0 20px;
+  color: #6d5a4e;
+  font-size: 14px;
+}
+
+.cc-card {
+  background: #fff;
+  border: 1px solid #e8dcc6;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(107, 31, 36, 0.06);
+}
+
+.cc-card label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b1f24;
+}
+
+.cc-card label:first-child {
+  margin-top: 0;
+}
+
+.cc-card input,
+.cc-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d9c9a8;
+  border-radius: 10px;
+  background: #fffdf9;
+  font-size: 15px;
+  font-family: inherit;
+  color: #2d211b;
+}
+
+.cc-card input:focus,
+.cc-card textarea:focus {
+  outline: none;
+  border-color: #8a6d3b;
+  box-shadow: 0 0 0 2px rgba(138, 109, 59, 0.2);
+}
+
+.cc-card textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.cc-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.cc-toggle-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 1px solid #d9c9a8;
+  border-radius: 10px;
+  background: #fffdf9;
+  color: #2d211b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cc-toggle-btn.ativo {
+  background: #6b1f24;
+  border-color: #6b1f24;
+  color: #fff;
+}
+
+.cc-continuar {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: #2d4a35;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.cc-continuar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,53 @@
+/* ===== ORIGEM DO PEDIDO (Vivendas x Cliente comum) ===== */
+
+.pedido-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pedido-origem {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.pedido-origem-vivendas {
+  background: #f4e1e3;
+  color: #6b1f24;
+}
+
+.pedido-origem-comum {
+  background: #e0ebf5;
+  color: #1f4a6b;
+}
+
+/* ===== VALOR A COBRAR ===== */
+
+.pedido-cobranca {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pedido-cobranca p {
+  margin: 0;
+}
+
+.pedido-cobranca-vivendas {
+  background: #fbf3f4;
+  border: 1px solid #ecd0d3;
+  color: #6b1f24;
+}
+
+.pedido-cobranca-comum {
+  background: #eef5fb;
+  border: 1px solid #c9dcec;
+  color: #1f4a6b;
+}

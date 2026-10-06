@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './AcompanharPedido.css'
+import { rotuloPagamento } from './formasPagamento'
 
 // Ordem das etapas do fluxo normal (fora o caso de recusa)
 const ETAPAS = [
@@ -8,6 +9,33 @@ const ETAPAS = [
   { chave: 'em_preparo', label: 'Em preparo', icone: '👨‍🍳' },
   { chave: 'pronto', label: 'Pronto', icone: '🍱' }
 ]
+
+function formatarReais(valor) {
+  return `R$ ${Number(valor || 0).toFixed(2)}`
+}
+
+// Texto do pagamento que o cliente verá:
+// - Vivendas: marmita paga pelo código, paga só a bebida
+// - Cliente comum: paga o valor total
+function textoPagamento(pedido) {
+  if (pedido.valor_cobrar === null || pedido.valor_cobrar === undefined) {
+    return null
+  }
+
+  const forma = pedido.forma_pagamento
+    ? ` Pagamento na entrega: ${rotuloPagamento(pedido.forma_pagamento)}.`
+    : ''
+
+  if (pedido.origem === 'cliente_comum') {
+    return `Valor a pagar: ${formatarReais(pedido.valor_cobrar)}.${forma}`
+  }
+
+  if (Number(pedido.valor_cobrar) > 0) {
+    return `Marmita paga pelo código Vivendas. Valor a pagar (bebida): ${formatarReais(pedido.valor_cobrar)}.${forma}`
+  }
+
+  return 'Marmita paga pelo código Vivendas. Nada a pagar.'
+}
 
 function AcompanharPedido({ pedidoId, voltar }) {
   const [pedido, setPedido] = useState(null)
@@ -47,6 +75,8 @@ function AcompanharPedido({ pedidoId, voltar }) {
     : -1
 
   const foiRecusado = pedido?.status === 'recusado'
+
+  const pagamento = pedido ? textoPagamento(pedido) : null
 
   return (
     <div className="acompanhar-page">
@@ -90,6 +120,23 @@ function AcompanharPedido({ pedidoId, voltar }) {
             <p className="acompanhar-numero">
               Pedido #{pedido.id}
             </p>
+
+            {pagamento && (
+              <p
+                style={{
+                  background: '#fdf3e7',
+                  border: '1px solid #ecd9bd',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#6b1f24',
+                  margin: '4px 0 18px'
+                }}
+              >
+                {pagamento}
+              </p>
+            )}
 
             <div className="acompanhar-linha">
 

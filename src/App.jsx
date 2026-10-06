@@ -4,6 +4,7 @@ import Marmitas from './Marmitas'
 import AdminCardapio from './AdminCardapio'
 import DestinoPedido from './DestinoPedido'
 import Vivendas from './Vivendas'
+import ClienteComum from './ClienteComum'
 import PedidosVivendas from './PedidosVivendas'
 import AcompanharPedido from './AcompanharPedido'
 import marmitaHero from './assets/marmita-hero.png'
@@ -26,7 +27,7 @@ function App() {
       <DestinoPedido
         pedido={pedido}
         voltar={() => setPagina('marmitas')}
-        clienteComum={() => setPagina('resumo')}
+        clienteComum={() => setPagina('cliente-comum')}
         vivendas={() => setPagina('vivendas')}
       />
     )
@@ -63,6 +64,19 @@ if (pagina === 'pedidos-vivendas') {
     />
   )
 }
+
+  if (pagina === 'cliente-comum') {
+    return (
+      <ClienteComum
+        pedido={pedido}
+        voltar={() => setPagina('destino')}
+        enviarPedido={(pedidoCliente) => {
+          setPedido(pedidoCliente)
+          setPagina('aguardando')
+        }}
+      />
+    )
+  }
 
   if (pagina === 'marmitas') {
     return (

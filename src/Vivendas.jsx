@@ -1,16 +1,39 @@
 import { useState } from 'react'
 import './Vivendas.css'
+import FormaPagamento from './FormaPagamento'
 
 function Vivendas({ voltar, pedido, enviarPedido }) {
   const [nome, setNome] = useState('')
   const [loja, setLoja] = useState('')
   const [codigo, setCodigo] = useState('')
   const [observacao, setObservacao] = useState('')
+  const [formaPagamento, setFormaPagamento] = useState('')
+  const [trocoPara, setTrocoPara] = useState('')
+
+  // Na Vivendas a marmita é paga pelo código: o cliente só paga a bebida.
+  // Se não pediu bebida, não tem nada a pagar e não precisa escolher forma de pagamento.
+  const valorBebida = Number(pedido?.preco_bebida) || 0
+  const temCobranca = valorBebida > 0
 
 async function enviar() {
   if (!nome || !loja || !codigo) {
     alert('Preencha seu nome, loja e código da Vivendas.')
     return
+  }
+
+  if (temCobranca && !formaPagamento) {
+    alert('Escolha a forma de pagamento da bebida.')
+    return
+  }
+
+  // Troco (opcional): precisa ser maior ou igual ao valor da bebida
+  const trocoNumero = Number(String(trocoPara).replace(',', '.'))
+
+  if (temCobranca && formaPagamento === 'dinheiro' && trocoPara.trim()) {
+    if (Number.isNaN(trocoNumero) || trocoNumero < valorBebida) {
+      alert(`O valor do troco deve ser maior ou igual ao valor da bebida (R$ ${valorBebida.toFixed(2)}).`)
+      return
+    }
   }
 
   try {
@@ -24,7 +47,12 @@ async function enviar() {
         nome,
         loja,
         codigo,
-        observacao
+        observacao,
+        forma_pagamento: temCobranca ? formaPagamento : '',
+        troco_para:
+          temCobranca && formaPagamento === 'dinheiro' && trocoPara.trim()
+            ? trocoNumero
+            : null
       })
     })
 
@@ -121,6 +149,30 @@ async function enviar() {
             value={codigo}
             onChange={(e) => setCodigo(e.target.value)}
           />
+
+
+          {temCobranca ? (
+            <>
+              <label>
+                Valor a pagar (bebida)
+              </label>
+
+              <p style={{ margin: '0 0 12px', fontWeight: 700, color: '#6b1f24' }}>
+                R$ {valorBebida.toFixed(2)} — a marmita é paga pelo código.
+              </p>
+
+              <FormaPagamento
+                valor={formaPagamento}
+                onChange={setFormaPagamento}
+                troco={trocoPara}
+                onTrocoChange={setTrocoPara}
+              />
+            </>
+          ) : (
+            <p style={{ margin: '16px 0 0', fontSize: '13px', color: '#665b54' }}>
+              Marmita paga pelo código Vivendas. Nada a pagar na entrega.
+            </p>
+          )}
 
 
           <label>
