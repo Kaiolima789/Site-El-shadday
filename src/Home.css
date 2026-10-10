@@ -1,0 +1,473 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap');
+
+/* ===== TOKENS ===== */
+
+.home-page {
+  --home-fundo: #faf7f2;
+  --home-fundo-secao: #f5f1ea;
+  --home-card-info: #efeadf;
+  --home-vinho: #6e2636;
+  --home-titulo: #2e1e1e;
+  --home-apoio: #5c4a42;
+  --home-verde: #2d5a43;
+  --home-borda: #ebe4d8;
+
+  --home-fonte-titulo: 'Lora', Georgia, 'Times New Roman', serif;
+  --home-fonte-corpo: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  min-height: 100vh;
+  background: var(--home-fundo);
+  color: var(--home-titulo);
+  font-family: var(--home-fonte-corpo);
+  display: flex;
+  flex-direction: column;
+}
+
+.home-page *,
+.home-page *::before,
+.home-page *::after {
+  box-sizing: border-box;
+}
+
+.home-page main {
+  flex: 1;
+}
+
+.home-container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===== LOGO (header e footer) ===== */
+
+.home-logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.home-logo-nome {
+  font-family: var(--home-fonte-titulo);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  color: var(--home-vinho);
+}
+
+.home-logo-sub {
+  margin-top: 2px;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--home-vinho);
+}
+
+/* ===== HEADER ===== */
+
+.home-header {
+  background: var(--home-fundo);
+  border-bottom: 1px solid var(--home-borda);
+}
+
+.home-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+}
+
+.home-admin-link {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--home-apoio);
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.home-admin-link:hover {
+  color: var(--home-vinho);
+  text-decoration: underline;
+}
+
+/* ===== HERO (mobile primeiro) ===== */
+
+.home-hero {
+  padding: 28px 0 32px;
+}
+
+.home-hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.home-hero-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home-localizacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--home-verde);
+  margin-bottom: 12px;
+}
+
+.home-hero-texto h1 {
+  margin: 0 0 12px;
+  font-family: var(--home-fonte-titulo);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.15;
+  color: var(--home-titulo);
+}
+
+.home-hero-sub {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--home-apoio);
+}
+
+.home-btn-pedido {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 999px;
+  background: var(--home-vinho);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(110, 38, 54, 0.25);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.home-btn-pedido:hover {
+  background: #591e2b;
+  transform: translateY(-1px);
+}
+
+.home-pilula {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f0e6df;
+  color: var(--home-vinho);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* imagem no mobile: cartão arredondado centralizado abaixo do botão.
+   O zoom leve (scale) faz o prato preencher o cartão, como no Figma. */
+.home-hero-imagem {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(46, 30, 30, 0.12);
+}
+
+.home-hero-imagem img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 46%;
+  transform: scale(1.2);
+}
+
+/* ===== SEÇÕES ===== */
+
+.home-secao {
+  padding: 36px 0;
+}
+
+.home-secao-titulo {
+  margin: 0 0 18px;
+  font-family: var(--home-fonte-titulo);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--home-titulo);
+}
+
+.home-secao-contato {
+  background: var(--home-fundo-secao);
+}
+
+/* ===== CARDS "SEU ALMOÇO" ===== */
+
+.home-opcoes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.home-opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--home-vinho);
+  color: #fff;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.home-opcao:hover {
+  background: #591e2b;
+  transform: translateY(-2px);
+}
+
+.home-opcao-icone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.home-opcao-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-opcao-texto strong {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.home-opcao-texto span {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== CARDS "ESTAMOS POR AQUI" (todos com a mesma altura) ===== */
+
+.home-info-grade {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.home-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--home-card-info);
+}
+
+.home-info-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--home-titulo);
+}
+
+.home-info-topo svg {
+  color: var(--home-vinho);
+  flex-shrink: 0;
+}
+
+.home-info-valor {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--home-titulo);
+}
+
+.home-info-link {
+  text-decoration: none;
+}
+
+.home-info-link:hover {
+  color: var(--home-vinho);
+  text-decoration: underline;
+}
+
+/* ===== FOOTER ===== */
+
+.home-footer {
+  background: var(--home-fundo);
+  border-top: 1px solid var(--home-borda);
+  padding: 22px 0 26px;
+}
+
+.home-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.home-footer p {
+  margin: 0;
+  font-size: 9.5px;
+  color: var(--home-apoio);
+}
+
+/* ===== DESKTOP ===== */
+
+@media (min-width: 900px) {
+
+  .home-header-inner {
+    height: 70px;
+  }
+
+  .home-logo-nome {
+    font-size: 20px;
+  }
+
+  /* O hero é a referência de posição da foto (que fica solta, à direita) */
+  .home-hero {
+    position: relative;
+    min-height: 540px;
+    padding: 0;
+    background: var(--home-fundo);
+    overflow: hidden;
+  }
+
+  .home-hero-inner {
+    flex-direction: row;
+    align-items: center;
+    min-height: 540px;
+    gap: 0;
+  }
+
+  .home-hero-texto {
+    max-width: 440px;
+    padding: 56px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .home-hero-texto h1 {
+    font-size: 44px;
+    margin-bottom: 14px;
+  }
+
+  .home-hero-sub {
+    font-size: 13.5px;
+    margin-bottom: 24px;
+  }
+
+  .home-btn-pedido {
+    width: auto;
+    padding: 12px 28px;
+  }
+
+  /* FOTO: quadrada, ancorada à direita (passando um pouco da borda do conteúdo)
+     e com degradê nas 4 bordas. Assim não aparece nenhuma "emenda" retangular. */
+  .home-hero-imagem {
+    position: absolute;
+    top: 50%;
+    right: max(0px, calc((100% - 1080px) / 2 - 40px));
+    transform: translateY(-50%);
+    width: min(520px, 50vw);
+    max-width: none;
+    margin: 0;
+    aspect-ratio: 1 / 1;
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: 1;
+  }
+
+  .home-hero-imagem img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: none;
+
+    /* Efeito "meio transparente": a lateral esquerda da foto vai ficando
+       translúcida aos poucos (0% → 35% → 75% → 100% de opacidade), e as
+       outras bordas também somem suavemente.
+       Quer mais transparente? Aumente os % do degradê horizontal.
+       Quer menos? Diminua. */
+    -webkit-mask-image:
+      linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.35) 22%,
+        rgba(0, 0, 0, 0.75) 42%,
+        #000 62%,
+        #000 82%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.35) 22%,
+        rgba(0, 0, 0, 0.75) 42%,
+        #000 62%,
+        #000 82%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+    mask-composite: intersect;
+  }
+
+  .home-secao {
+    padding: 44px 0;
+  }
+
+  .home-secao-titulo {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .home-opcoes {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .home-info-grade {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .home-footer-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

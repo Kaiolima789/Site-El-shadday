@@ -162,6 +162,17 @@ function iconeTamanho(nome) {
   return <IconeGarrafa size={24} />
 }
 
+// Data de hoje (YYYY-MM-DD) no horário local, pra buscar o cardápio do dia
+function dataHojeLocal() {
+  const hoje = new Date()
+
+  const ano = hoje.getFullYear()
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+  const dia = String(hoje.getDate()).padStart(2, '0')
+
+  return `${ano}-${mes}-${dia}`
+}
+
 function Marmitas({ voltar, continuar }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
@@ -216,6 +227,24 @@ function Marmitas({ voltar, continuar }) {
     }
 
     carregarCardapio()
+
+    // Atualiza só o cardápio (preço da marmita e opções) a cada 15s,
+    // sem mostrar "carregando" e sem perder o que o cliente já escolheu.
+    const intervalo = setInterval(async () => {
+      try {
+        const resposta = await fetch(
+          `http://localhost:3000/cardapios/${dataHojeLocal()}`
+        )
+
+        if (resposta.ok) {
+          setCardapio(await resposta.json())
+        }
+      } catch (e) {
+        // falha em segundo plano: mantém o cardápio que já está na tela
+      }
+    }, 15000)
+
+    return () => clearInterval(intervalo)
   }, [])
 
   if (carregando) {
@@ -319,16 +348,21 @@ function Marmitas({ voltar, continuar }) {
   }
 
   // preço unitário da bebida escolhida (0 se nada selecionado ainda)
-  const precoUnitarioBebida =
+  // Number(...) é importante: o preço pode chegar do servidor como texto
+  // (ex.: "18.00"), e texto + número vira concatenação em vez de soma.
+  const precoUnitarioBebida = Number(
     bebidaTipo === 'refrigerante' && refrigeranteTamanho
       ? refrigeranteTamanho.preco
       : bebidaTipo === 'agua' && aguaTipo
       ? aguaTipo.preco
       : 0
+  ) || 0
 
   const precoBebida = precoUnitarioBebida * quantidadeBebida
 
-  const precoTotal = (cardapio?.preco || 0) + precoBebida
+  const precoMarmita = Number(cardapio?.preco) || 0
+
+  const precoTotal = precoMarmita + precoBebida
 
   // bebida incompleta = escolheu o tipo mas não terminou de escolher sabor/tamanho/tipo
   // (no caso de sabor personalizado, exige que o texto não esteja vazio)
@@ -716,6 +750,25 @@ function Marmitas({ voltar, continuar }) {
 
         </div>
 
+        <div
+          className="resumo-valores"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '2px',
+            marginTop: '16px',
+            fontSize: '14px',
+            color: '#665b54'
+          }}
+        >
+          <span>Marmita: R$ {precoMarmita.toFixed(2)}</span>
+
+          {precoBebida > 0 && (
+            <span>Bebida: R$ {Number(precoBebida).toFixed(2)}</span>
+          )}
+        </div>
+
         <p className="resumo-total">
           Total: R$ {Number(precoTotal).toFixed(2)}
         </p>
@@ -737,7 +790,7 @@ function Marmitas({ voltar, continuar }) {
               bebida_quantidade: bebidaTipo ? quantidadeBebida : 0,
               // Valores separados: o servidor usa pra calcular o que cobrar
               // (Vivendas paga só a bebida; cliente comum paga tudo)
-              preco_marmita: cardapio?.preco || 0,
+              preco_marmita: precoMarmita,
               preco_bebida: precoBebida,
               preco: precoTotal
             })
