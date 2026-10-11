@@ -24,9 +24,8 @@ const AGUA_TIPOS_PADRAO = [
   { id: 'padrao-agua-comgas', nome: 'Água com gás', preco: 3.5 }
 ]
 
-// ===== ÍCONES VETORIAIS (SOLUÇÃO B: GEOMETRIA LIMPA E NÍTIDA) =====
+// ===== ÍCONES VETORIAIS (SVG OUTLINE NÍTIDOS) =====
 
-// Seta voltar
 function IconeVoltar({ size = 18 }) {
   return (
     <svg
@@ -46,7 +45,6 @@ function IconeVoltar({ size = 18 }) {
   )
 }
 
-// 1. Proteína (Garfo e Faca elegantes — símbolo universal da refeição principal)
 function IconeProteina({ size = 18 }) {
   return (
     <svg
@@ -68,7 +66,6 @@ function IconeProteina({ size = 18 }) {
   )
 }
 
-// 2. Guarnições (Folha fresca de manjericão — símbolo clássico de salada e acompanhamentos)
 function IconeGuarnicao({ size = 18 }) {
   return (
     <svg
@@ -88,7 +85,6 @@ function IconeGuarnicao({ size = 18 }) {
   )
 }
 
-// 3. Bebida (Copo geométrico com canudo)
 function IconeBebida({ size = 18 }) {
   return (
     <svg
@@ -102,14 +98,14 @@ function IconeBebida({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M7 8h10l-1.5 13H8.5L7 8Z" />
+      <path d="m6 8 1.75 12.28A2 2 0 0 0 9.73 22h4.54a2 2 0 0 0 1.98-1.72L18 8" />
       <path d="M5 8h14" />
-      <path d="M15 2l-3 6" />
+      <path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0" />
+      <path d="m12 8 1-6h2" />
     </svg>
   )
 }
 
-// 4. Resumo (Recibo / Comanda)
 function IconeRecibo({ size = 18 }) {
   return (
     <svg
@@ -123,10 +119,30 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
+    </svg>
+  )
+}
+
+function IconeLixeira({ size = 15 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
     </svg>
   )
 }
@@ -143,13 +159,16 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
 
-  // ===== BEBIDA =====
-  const [bebidaTipo, setBebidaTipo] = useState(null)
-  const [refrigeranteSabor, setRefrigeranteSabor] = useState('')
-  const [refrigeranteTamanho, setRefrigeranteTamanho] = useState(null)
-  const [aguaTipo, setAguaTipo] = useState(null)
-  const [saborPersonalizadoAtivo, setSaborPersonalizadoAtivo] = useState(false)
-  const [quantidadeBebida, setQuantidadeBebida] = useState(1)
+  // Lista de bebidas adicionadas
+  const [bebidas, setBebidas] = useState([])
+
+  // Formulário de adição de bebidas
+  const [abaBebida, setAbaBebida] = useState('refrigerante') // 'refrigerante' | 'agua'
+  const [refriTamanhoSel, setRefriTamanhoSel] = useState(REFRIGERANTE_TAMANHOS_PADRAO[1]) // Padrão 600 ml
+  const [refriSaborSel, setRefriSaborSel] = useState('Fanta Laranja')
+  const [saborCustomAtivo, setSaborCustomAtivo] = useState(false)
+  const [saborCustomTexto, setSaborCustomTexto] = useState('')
+  const [aguaSel, setAguaSel] = useState(AGUA_TIPOS_PADRAO[0])
 
   const [cardapio, setCardapio] = useState(null)
   const [carregando, setCarregando] = useState(true)
@@ -170,9 +189,9 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
         const dados = await resposta.json()
         setCardapio(dados)
-      } catch (erro) {
-        console.error(erro)
-        setErro(erro.message)
+      } catch (err) {
+        console.error(err)
+        setErro(err.message)
       } finally {
         setCarregando(false)
       }
@@ -187,7 +206,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
           setCardapio(await resposta.json())
         }
       } catch (e) {
-        // falha silenciosa em segundo plano
+        // falha silenciosa em background
       }
     }, 15000)
 
@@ -208,7 +227,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         <h2>Cardápio indisponível</h2>
         <p>{erro}</p>
         <button onClick={voltar} className="voltar-erro-btn">
-          ← Voltar para a tela inicial
+          ← Voltar para a página inicial
         </button>
       </div>
     )
@@ -231,12 +250,9 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
   function limparEscolhas() {
     setCarne([])
     setGuarnicao([])
-    setBebidaTipo(null)
-    setRefrigeranteSabor('')
-    setRefrigeranteTamanho(null)
-    setAguaTipo(null)
-    setSaborPersonalizadoAtivo(false)
-    setQuantidadeBebida(1)
+    setBebidas([])
+    setSaborCustomAtivo(false)
+    setSaborCustomTexto('')
   }
 
   function alternarCarne(nome) {
@@ -260,71 +276,149 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     )
   }
 
-  function selecionarBebidaTipo(tipo) {
-    setBebidaTipo((atual) => (atual === tipo ? null : tipo))
-    setRefrigeranteSabor('')
-    setRefrigeranteTamanho(null)
-    setAguaTipo(null)
-    setSaborPersonalizadoAtivo(false)
-    setQuantidadeBebida(1)
+  function adicionarRefrigerante() {
+    const saborFinal = saborCustomAtivo ? saborCustomTexto.trim() : refriSaborSel
+
+    if (!saborFinal) {
+      alert('Selecione ou digite o sabor do refrigerante.')
+      return
+    }
+
+    if (!refriTamanhoSel) {
+      alert('Selecione o tamanho do refrigerante.')
+      return
+    }
+
+    const idUnico = `refri-${refriTamanhoSel.nome}-${saborFinal}`
+    const precoUnitario = Number(refriTamanhoSel.preco)
+
+    setBebidas((atuais) => {
+      const existente = atuais.find((b) => b.id === idUnico)
+      if (existente) {
+        return atuais.map((b) =>
+          b.id === idUnico
+            ? { ...b, quantidade: Math.min(MAX_QUANTIDADE_BEBIDA, b.quantidade + 1) }
+            : b
+        )
+      }
+      return [
+        ...atuais,
+        {
+          id: idUnico,
+          tipo: 'refrigerante',
+          nome: `${refriTamanhoSel.nome} • ${saborFinal}`,
+          sabor: saborFinal,
+          tamanho: refriTamanhoSel.nome,
+          preco: precoUnitario,
+          quantidade: 1
+        }
+      ]
+    })
+
+    if (saborCustomAtivo) {
+      setSaborCustomTexto('')
+      setSaborCustomAtivo(false)
+    }
   }
 
-  function selecionarSaborDaLista(nome) {
-    setSaborPersonalizadoAtivo(false)
-    setRefrigeranteSabor(nome)
+  function adicionarAgua() {
+    if (!aguaSel) return
+
+    const idUnico = `agua-${aguaSel.nome}`
+    const precoUnitario = Number(aguaSel.preco)
+
+    setBebidas((atuais) => {
+      const existente = atuais.find((b) => b.id === idUnico)
+      if (existente) {
+        return atuais.map((b) =>
+          b.id === idUnico
+            ? { ...b, quantidade: Math.min(MAX_QUANTIDADE_BEBIDA, b.quantidade + 1) }
+            : b
+        )
+      }
+      return [
+        ...atuais,
+        {
+          id: idUnico,
+          tipo: 'agua',
+          nome: aguaSel.nome,
+          sabor: '',
+          tamanho: 'Garrafa',
+          preco: precoUnitario,
+          quantidade: 1
+        }
+      ]
+    })
   }
 
-  function selecionarSaborPersonalizado() {
-    setSaborPersonalizadoAtivo(true)
-    setRefrigeranteSabor('')
-  }
-
-  function alterarQuantidade(delta) {
-    setQuantidadeBebida((atual) =>
-      Math.min(MAX_QUANTIDADE_BEBIDA, Math.max(1, atual + delta))
+  function alterarQtdBebida(id, delta) {
+    setBebidas((atuais) =>
+      atuais
+        .map((b) => {
+          if (b.id === id) {
+            const novaQtd = b.quantidade + delta
+            return novaQtd > 0 ? { ...b, quantidade: Math.min(MAX_QUANTIDADE_BEBIDA, novaQtd) } : null
+          }
+          return b
+        })
+        .filter(Boolean)
     )
   }
 
-  const precoUnitarioBebida = Number(
-    bebidaTipo === 'refrigerante' && refrigeranteTamanho
-      ? refrigeranteTamanho.preco
-      : bebidaTipo === 'agua' && aguaTipo
-      ? aguaTipo.preco
-      : 0
-  ) || 0
+  function removerBebida(id) {
+    setBebidas((atuais) => atuais.filter((b) => b.id !== id))
+  }
 
-  const precoBebida = precoUnitarioBebida * quantidadeBebida
-  const precoMarmita = Number(cardapio?.preco) || 0
-  const precoTotal = precoMarmita + precoBebida
+  // ===== CÁLCULOS MATEMÁTICOS CORRETOS E REATIVOS =====
+  const precoMarmita = (cardapio && cardapio.preco !== undefined && cardapio.preco !== null)
+    ? Number(cardapio.preco)
+    : 10.0
 
-  const bebidaIncompleta =
-    (bebidaTipo === 'refrigerante' && (!refrigeranteSabor.trim() || !refrigeranteTamanho)) ||
-    (bebidaTipo === 'agua' && !aguaTipo)
+  const totalBebidas = bebidas.reduce(
+    (acc, item) => acc + Number(item.preco) * Number(item.quantidade),
+    0
+  )
+  const totalGeral = precoMarmita + totalBebidas
+  const totalBebidasQtd = bebidas.reduce((acc, item) => acc + item.quantidade, 0)
 
-  const bebidaDefinida =
-    (bebidaTipo === 'refrigerante' && refrigeranteSabor.trim() && refrigeranteTamanho) ||
-    (bebidaTipo === 'agua' && aguaTipo)
-
-  function textoResumoBebida() {
-    if (bebidaTipo === 'refrigerante') {
-      if (!refrigeranteSabor.trim() || !refrigeranteTamanho) {
-        return 'Refrigerante (escolha sabor e tamanho)'
-      }
-      return `${quantidadeBebida}x ${refrigeranteTamanho.nome} • ${refrigeranteSabor}`
+  function tentarContinuar() {
+    if (carne.length === 0) {
+      alert('Por favor, selecione pelo menos uma opção de proteína para sua marmita.')
+      return
     }
 
-    if (bebidaTipo === 'agua') {
-      if (!aguaTipo) return 'Água (escolha o tipo)'
-      return `${quantidadeBebida}x ${aguaTipo.nome}`
-    }
+    const nomesRefris = bebidas
+      .filter((b) => b.tipo === 'refrigerante')
+      .map((b) => `${b.quantidade}x ${b.sabor} (${b.tamanho})`)
+      .join(', ')
 
-    return 'Sem bebida'
+    const nomesAguas = bebidas
+      .filter((b) => b.tipo === 'agua')
+      .map((b) => `${b.quantidade}x ${b.nome}`)
+      .join(', ')
+
+    continuar({
+      carne: carne.join(', '),
+      guarnicao: guarnicao.join(', '),
+      refrigerante_sabor: nomesRefris,
+      refrigerante_tamanho: bebidas
+        .filter((b) => b.tipo === 'refrigerante')
+        .map((b) => b.tamanho)
+        .join(', '),
+      agua_tipo: nomesAguas,
+      bebida_quantidade: totalBebidasQtd,
+      bebidas: bebidas,
+      preco_marmita: precoMarmita,
+      preco_bebida: totalBebidas,
+      preco: totalGeral,
+      valor_cobrar: totalGeral
+    })
   }
 
   return (
     <div className="marmitas-page">
 
-      {/* CABEÇALHO COM SETA DE VOLTAR PARA A HOME */}
+      {/* CABEÇALHO */}
       <header className="marmitas-header">
         <button
           type="button"
@@ -362,7 +456,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
       {/* CONTAINER CENTRAL DOS CARDS */}
       <main className="marmitas-container">
 
-        {/* PASSO 1: PROTEÍNA (Garfo e Faca elegantes) */}
+        {/* PASSO 1: PROTEÍNA */}
         <section className="escolha">
           <div className="escolha-cabecalho">
             <div className="escolha-icon">
@@ -379,7 +473,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
                 return (
                   <label
-                    key={opcao.id}
+                    key={opcao.id || opcao.nome}
                     className={`opcao-item ${selecionada ? 'opcao-item-selecionada' : ''} ${desabilitada ? 'opcao-desabilitada' : ''}`}
                   >
                     <input
@@ -396,7 +490,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
           </div>
         </section>
 
-        {/* PASSO 2: GUARNIÇÕES (Folha de tempero/manjericão fresca) */}
+        {/* PASSO 2: GUARNIÇÕES */}
         <section className="escolha">
           <div className="escolha-cabecalho">
             <div className="escolha-icon">
@@ -411,7 +505,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                 const selecionada = guarnicao.includes(opcao.nome)
                 return (
                   <label
-                    key={opcao.id}
+                    key={opcao.id || opcao.nome}
                     className={`opcao-item ${selecionada ? 'opcao-item-selecionada' : ''}`}
                   >
                     <input
@@ -427,7 +521,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
           </div>
         </section>
 
-        {/* PASSO 3: BEBIDA (Copo geométrico com canudo) */}
+        {/* PASSO 3: BEBIDAS */}
         <section className="escolha escolha-bebida">
           <div className="escolha-cabecalho">
             <div className="escolha-icon">
@@ -437,50 +531,40 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
           </div>
 
           <div className="escolha-conteudo">
-            <div className="bebida-tipo-botoes">
-              <button
-                type="button"
-                className={bebidaTipo === null ? 'bebida-tipo-ativo' : ''}
-                onClick={() => selecionarBebidaTipo(null)}
-              >
-                Sem bebida
-              </button>
 
+            {/* SELETOR DE ABA: REFRIGERANTE OU ÁGUA */}
+            <div className="bebida-abas">
               <button
                 type="button"
-                className={bebidaTipo === 'refrigerante' ? 'bebida-tipo-ativo' : ''}
-                onClick={() => selecionarBebidaTipo('refrigerante')}
+                className={`bebida-aba-btn ${abaBebida === 'refrigerante' ? 'bebida-aba-ativa' : ''}`}
+                onClick={() => setAbaBebida('refrigerante')}
               >
                 Refrigerante
               </button>
 
               <button
                 type="button"
-                className={bebidaTipo === 'agua' ? 'bebida-tipo-ativo' : ''}
-                onClick={() => selecionarBebidaTipo('agua')}
+                className={`bebida-aba-btn ${abaBebida === 'agua' ? 'bebida-aba-ativa' : ''}`}
+                onClick={() => setAbaBebida('agua')}
               >
                 Água
               </button>
             </div>
 
-            {/* TAMANHO + SABOR DO REFRIGERANTE */}
-            {bebidaTipo === 'refrigerante' && (
-              <div className="bebida-detalhe">
+            {/* PAINEL REFRIGERANTE */}
+            {abaBebida === 'refrigerante' && (
+              <div className="bebida-montador">
+                <p className="bebida-subtitulo">1. Escolha o tamanho:</p>
                 <div className="bebida-tamanhos-grid">
                   {opcoesPorCategoria('refrigerante_tamanho').map((opcao) => {
-                    const selecionado = refrigeranteTamanho?.nome === opcao.nome
+                    const ativo = refriTamanhoSel?.nome === opcao.nome
 
                     return (
                       <button
                         type="button"
-                        key={opcao.id}
-                        className={`bebida-tamanho-card ${selecionado ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() =>
-                          setRefrigeranteTamanho({
-                            nome: opcao.nome,
-                            preco: opcao.preco
-                          })
-                        }
+                        key={opcao.id || opcao.nome}
+                        className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
+                        onClick={() => setRefriTamanhoSel(opcao)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -488,87 +572,74 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   })}
                 </div>
 
+                <p className="bebida-subtitulo">2. Escolha o sabor:</p>
                 <div className="bebida-sabores">
                   {opcoesPorCategoria('refrigerante_sabor').map((opcao) => {
-                    const selecionado =
-                      !saborPersonalizadoAtivo && refrigeranteSabor === opcao.nome
+                    const ativo = !saborCustomAtivo && refriSaborSel === opcao.nome
 
                     return (
                       <button
                         type="button"
-                        key={opcao.id}
-                        className={`bebida-sabor-chip ${selecionado ? 'bebida-sabor-ativo' : ''}`}
-                        onClick={() => selecionarSaborDaLista(opcao.nome)}
+                        key={opcao.id || opcao.nome}
+                        className={`bebida-sabor-chip ${ativo ? 'bebida-sabor-ativo' : ''}`}
+                        onClick={() => {
+                          setSaborCustomAtivo(false)
+                          setRefriSaborSel(opcao.nome)
+                        }}
                       >
-                        {selecionado ? `✓ ${opcao.nome}` : opcao.nome}
+                        {ativo ? `✓ ${opcao.nome}` : opcao.nome}
                       </button>
                     )
                   })}
 
                   <button
                     type="button"
-                    className={`bebida-sabor-chip bebida-sabor-custom ${saborPersonalizadoAtivo ? 'bebida-sabor-ativo' : ''}`}
-                    onClick={selecionarSaborPersonalizado}
+                    className={`bebida-sabor-chip bebida-sabor-custom ${saborCustomAtivo ? 'bebida-sabor-ativo' : ''}`}
+                    onClick={() => {
+                      setSaborCustomAtivo(true)
+                      setRefriSaborSel('')
+                    }}
                   >
                     + Outro sabor
                   </button>
                 </div>
 
-                {saborPersonalizadoAtivo && (
+                {saborCustomAtivo && (
                   <input
                     type="text"
                     className="bebida-sabor-input"
-                    placeholder="Digite o sabor desejado (ex: Fanta Uva, Sprite Zero...)"
-                    value={refrigeranteSabor}
-                    onChange={(e) => setRefrigeranteSabor(e.target.value)}
+                    placeholder="Digite o sabor (ex: Sprite Zero, Guaraná Jesus...)"
+                    value={saborCustomTexto}
+                    onChange={(e) => setSaborCustomTexto(e.target.value)}
                     maxLength={40}
                     autoFocus
                   />
                 )}
 
-                {bebidaDefinida && (
-                  <div className="bebida-quantidade">
-                    <span className="bebida-quantidade-titulo">Quantidade:</span>
-                    <div className="quantidade-stepper">
-                      <button
-                        type="button"
-                        onClick={() => alterarQuantidade(-1)}
-                        disabled={quantidadeBebida <= 1}
-                      >
-                        −
-                      </button>
-                      <span className="quantidade-valor">{quantidadeBebida}</span>
-                      <button
-                        type="button"
-                        onClick={() => alterarQuantidade(1)}
-                        disabled={quantidadeBebida >= MAX_QUANTIDADE_BEBIDA}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className="adicionar-bebida-btn"
+                  onClick={adicionarRefrigerante}
+                >
+                  + Adicionar Refrigerante (R$ {Number(refriTamanhoSel?.preco || 5).toFixed(2).replace('.', ',')})
+                </button>
               </div>
             )}
 
-            {/* TIPO DE ÁGUA */}
-            {bebidaTipo === 'agua' && (
-              <div className="bebida-detalhe">
+            {/* PAINEL ÁGUA */}
+            {abaBebida === 'agua' && (
+              <div className="bebida-montador">
+                <p className="bebida-subtitulo">Escolha o tipo de água:</p>
                 <div className="bebida-tamanhos-grid">
                   {opcoesPorCategoria('agua').map((opcao) => {
-                    const selecionado = aguaTipo?.nome === opcao.nome
+                    const ativo = aguaSel?.nome === opcao.nome
 
                     return (
                       <button
                         type="button"
-                        key={opcao.id}
-                        className={`bebida-tamanho-card ${selecionado ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() =>
-                          setAguaTipo({
-                            nome: opcao.nome,
-                            preco: opcao.preco
-                          })
-                        }
+                        key={opcao.id || opcao.nome}
+                        className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
+                        onClick={() => setAguaSel(opcao)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -576,30 +647,70 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   })}
                 </div>
 
-                {bebidaDefinida && (
-                  <div className="bebida-quantidade">
-                    <span className="bebida-quantidade-titulo">Quantidade:</span>
-                    <div className="quantidade-stepper">
-                      <button
-                        type="button"
-                        onClick={() => alterarQuantidade(-1)}
-                        disabled={quantidadeBebida <= 1}
-                      >
-                        −
-                      </button>
-                      <span className="quantidade-valor">{quantidadeBebida}</span>
-                      <button
-                        type="button"
-                        onClick={() => alterarQuantidade(1)}
-                        disabled={quantidadeBebida >= MAX_QUANTIDADE_BEBIDA}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className="adicionar-bebida-btn"
+                  onClick={adicionarAgua}
+                >
+                  + Adicionar {aguaSel?.nome || 'Água'} (R$ {Number(aguaSel?.preco || 3).toFixed(2).replace('.', ',')})
+                </button>
               </div>
             )}
+
+            {/* LISTA DE BEBIDAS ADICIONADAS */}
+            {bebidas.length > 0 ? (
+              <div className="bebidas-selecionadas-bloco">
+                <h4 className="bebidas-selecionadas-titulo">Bebidas no seu pedido:</h4>
+
+                <div className="bebidas-lista">
+                  {bebidas.map((item) => (
+                    <div className="bebida-item-linha" key={item.id}>
+                      <div className="bebida-item-info">
+                        <span className="bebida-item-nome">{item.nome}</span>
+                        <span className="bebida-item-preco">
+                          R$ {(item.preco * item.quantidade).toFixed(2).replace('.', ',')}
+                        </span>
+                      </div>
+
+                      <div className="bebida-item-acoes">
+                        <div className="quantidade-stepper">
+                          <button
+                            type="button"
+                            onClick={() => alterarQtdBebida(item.id, -1)}
+                            title="Diminuir"
+                          >
+                            −
+                          </button>
+                          <span className="quantidade-valor">{item.quantidade}</span>
+                          <button
+                            type="button"
+                            onClick={() => alterarQtdBebida(item.id, 1)}
+                            disabled={item.quantidade >= MAX_QUANTIDADE_BEBIDA}
+                            title="Aumentar"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="bebida-remover-btn"
+                          onClick={() => removerBebida(item.id)}
+                          title="Remover"
+                        >
+                          <IconeLixeira size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bebidas-vazio-aviso">
+                <span>Nenhuma bebida adicionada no momento.</span>
+              </div>
+            )}
+
           </div>
         </section>
 
@@ -625,51 +736,41 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               {guarnicao.length > 0 && (
                 <span className="resumo-pill-tag">{guarnicao.join(', ')}</span>
               )}
-              {carne.length === 0 && guarnicao.length === 0 && (
+              {carne.length === 0 && (
                 <span className="resumo-pill-tag resumo-pill-pendente">
-                  Nenhum item selecionado
+                  Proteína não escolhida
                 </span>
               )}
             </div>
 
-            {bebidaDefinida && (
-              <div className="resumo-linha resumo-linha-bebida">
-                <span className="resumo-linha-titulo">
-                  Bebida: {textoResumoBebida()}
-                </span>
-                <span className="resumo-linha-valor">
-                  R$ {Number(precoBebida).toFixed(2).replace('.', ',')}
-                </span>
+            {/* LISTA DE TODAS AS BEBIDAS ADICIONADAS */}
+            {bebidas.length > 0 && (
+              <div className="resumo-bebidas-lista">
+                {bebidas.map((b) => (
+                  <div className="resumo-linha resumo-linha-bebida" key={b.id}>
+                    <span className="resumo-linha-titulo">
+                      {b.quantidade} x {b.nome}
+                    </span>
+                    <span className="resumo-linha-valor">
+                      + R$ {(b.preco * b.quantidade).toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
 
             <div className="resumo-divisor"></div>
 
+            {/* TOTAL CORRETAMENTE CALCULADO: MARMITA + BEBIDAS */}
             <div className="resumo-linha-total">
-              <span>Total: R$ {Number(precoTotal).toFixed(2).replace('.', ',')}</span>
+              <span>Total: R$ {totalGeral.toFixed(2).replace('.', ',')}</span>
             </div>
           </div>
 
           <button
+            type="button"
             className="continuar-btn"
-            disabled={bebidaIncompleta}
-            onClick={() =>
-              continuar({
-                carne: carne.join(', '),
-                guarnicao: guarnicao.join(', '),
-                refrigerante_sabor:
-                  bebidaTipo === 'refrigerante' ? refrigeranteSabor.trim() : '',
-                refrigerante_tamanho:
-                  bebidaTipo === 'refrigerante' && refrigeranteTamanho
-                    ? refrigeranteTamanho.nome
-                    : '',
-                agua_tipo: bebidaTipo === 'agua' && aguaTipo ? aguaTipo.nome : '',
-                bebida_quantidade: bebidaTipo ? quantidadeBebida : 0,
-                preco_marmita: precoMarmita,
-                preco_bebida: precoBebida,
-                preco: precoTotal
-              })
-            }
+            onClick={tentarContinuar}
           >
             Continuar Pedido →
           </button>
