@@ -1,15 +1,7 @@
-import {
-  Phone,
-  MapPin,
-  Clock,
-  Heart,
-  ArrowRight
-} from 'lucide-react'
 import './Home.css'
-import marmitaHero from './assets/marmita-hero.jpg'
 
-// ===== ÍCONES VETORIAIS (SVG OUTLINE) =====
-function IconeMarmita({ size = 24 }) {
+// Ícones SVG minimalistas
+function MapPin({ size = 14, ...props }) {
   return (
     <svg
       width={size}
@@ -17,20 +9,18 @@ function IconeMarmita({ size = 24 }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      {...props}
     >
-      <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z" />
-      <path d="M7 4v3" />
-      <path d="M12 2v5" />
-      <path d="M17 4v3" />
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
     </svg>
   )
 }
 
-function IconeLocal({ size = 24 }) {
+function Phone({ size = 16, ...props }) {
   return (
     <svg
       width={size}
@@ -38,30 +28,44 @@ function IconeLocal({ size = 24 }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      aria-hidden="true"
+      {...props}
     >
-      <path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7" />
-      <path d="M2 14h20" />
-      <path d="M12 14v7" />
-      <path d="M7 6v2" />
-      <path d="M17 6v2" />
-      <circle cx="12" cy="7" r="2.5" />
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   )
 }
 
-// Dados de contato e link direto para o Google Maps
-const TELEFONE = '61 99437-4490'
+function Clock({ size = 16, ...props }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+}
+
+const TELEFONE = '(61) 99437-4490'
 const WHATSAPP_LINK = 'https://wa.me/5561994374490'
-const ENDERECO = 'QR 202 Conjunto E, 3 — Santa Maria, Brasília - DF, 72502-409, Brasil'
+const ENDERECO =
+  'QR 202 Conjunto E, 3 - Santa Maria, Brasília - DF, 72502-409'
 const GOOGLE_MAPS_LINK =
   'https://www.google.com/maps/search/?api=1&query=QR+202+Conjunto+E,+3+-+Santa+Maria,+Bras%C3%ADlia+-+DF,+72502-409'
 const FUNCIONAMENTO = 'Segunda a Sábado, das 11:00 às 14:00'
 
-function Home({ irParaPedido, irParaAdmin }) {
+function Home({ irParaPedido }) {
   return (
     <div className="home-page">
 
@@ -69,7 +73,7 @@ function Home({ irParaPedido, irParaAdmin }) {
       <header className="home-header">
         <div className="home-container home-header-inner">
 
-          {/* Espaçador para garantir centralização perfeita */}
+          {/* Espaçadores laterais para manter o logo perfeitamente centralizado */}
           <div className="home-header-spacer"></div>
 
           <div className="home-logo">
@@ -77,13 +81,7 @@ function Home({ irParaPedido, irParaAdmin }) {
             <span className="home-logo-sub">— RESTAURANTE —</span>
           </div>
 
-          <button
-            type="button"
-            className="home-admin-link"
-            onClick={irParaAdmin}
-          >
-            Administração
-          </button>
+          <div className="home-header-spacer"></div>
 
         </div>
       </header>
@@ -96,7 +94,6 @@ function Home({ irParaPedido, irParaAdmin }) {
 
             <div className="home-hero-texto">
 
-              {/* Link do mapa também na tag de localização */}
               <a
                 href={GOOGLE_MAPS_LINK}
                 target="_blank"
@@ -120,62 +117,77 @@ function Home({ irParaPedido, irParaAdmin }) {
                 onClick={irParaPedido}
               >
                 Fazer Pedido
-                <ArrowRight size={16} aria-hidden="true" />
               </button>
-
-              <span className="home-pilula">
-                <Heart size={13} aria-hidden="true" />
-                Feita na hora, com sabor de casa.
-              </span>
 
             </div>
 
-            <div className="home-hero-imagem">
+            <div className="home-hero-imagem-wrap">
               <img
-                src={marmitaHero}
-                alt="Marmita com arroz, feijão, bife, farofa, salada e batata frita"
+                src="/assets/marmita1.jpeg"
+                alt="Marmita apetitosa servida pelo El Shadday Restaurante"
+                className="home-hero-imagem"
               />
             </div>
 
           </div>
         </section>
 
-        {/* ===== SEU ALMOÇO, DO SEU JEITO ===== */}
-        <section className="home-secao">
+        {/* ===== DESTAQUES ===== */}
+        <section className="home-destaques">
           <div className="home-container">
 
-            <h2 className="home-secao-titulo">Seu almoço, do seu jeito</h2>
+            <div className="home-destaques-grid">
 
-            <div className="home-opcoes">
+              <div className="home-destaque-card">
+                <h3>Comida Caseira de Verdade</h3>
+                <p>
+                  Receitas de família com tempero fresco e ingredientes
+                  selecionados todos os dias.
+                </p>
+              </div>
+
+              <div className="home-destaque-card">
+                <h3>Entrega Rápida e Quentinha</h3>
+                <p>
+                  Sua marmita chega no ponto ideal para o almoço, sem demora
+                  na sua região.
+                </p>
+              </div>
+
+              <div className="home-destaque-card">
+                <h3>Preço Justo, Prato Cheio</h3>
+                <p>
+                  Porções caprichadas que cabem no seu bolso e matam sua fome
+                  de verdade.
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        {/* ===== CARDÁPIO DO DIA ===== */}
+        <section className="home-cardapio-cta">
+          <div className="home-container">
+
+            <div className="home-cardapio-cta-box">
+
+              <div className="home-cardapio-cta-texto">
+                <span className="home-tag">Atualizado diariamente</span>
+                <h2>Veja o cardápio de hoje</h2>
+                <p>
+                  Carnes frescas, guarnições variadas e aquele feijãozinho
+                  caprichado esperando por você.
+                </p>
+              </div>
 
               <button
                 type="button"
-                className="home-opcao"
+                className="home-btn-pedido home-btn-cardapio"
                 onClick={irParaPedido}
               >
-                <span className="home-opcao-icone">
-                  <IconeMarmita size={24} />
-                </span>
-
-                <span className="home-opcao-texto">
-                  <strong>MARMITAS</strong>
-                  <span>Comida caseira feita na hora, pronta para o seu dia.</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className="home-opcao"
-                onClick={() => alert('Em breve: pedidos para consumir no local.')}
-              >
-                <span className="home-opcao-icone">
-                  <IconeLocal size={24} />
-                </span>
-
-                <span className="home-opcao-texto">
-                  <strong>NO LOCAL</strong>
-                  <span>O mesmo sabor caseiro, para comer aqui com a gente.</span>
-                </span>
+                Ver Cardápio de Hoje
               </button>
 
             </div>
@@ -183,18 +195,16 @@ function Home({ irParaPedido, irParaAdmin }) {
           </div>
         </section>
 
-        {/* ===== ESTAMOS POR AQUI ===== */}
-        <section className="home-secao home-secao-contato">
+        {/* ===== INFORMAÇÕES DE CONTATO E HORÁRIOS ===== */}
+        <section className="home-infos">
           <div className="home-container">
 
-            <h2 className="home-secao-titulo">Estamos por aqui</h2>
-
-            <div className="home-info-grade">
+            <div className="home-infos-grid">
 
               <div className="home-info">
                 <div className="home-info-topo">
                   <Phone size={16} aria-hidden="true" />
-                  <span>Telefone / WhatsApp</span>
+                  <span>WhatsApp / Telefone</span>
                 </div>
                 <a
                   className="home-info-valor home-info-link"
@@ -206,7 +216,6 @@ function Home({ irParaPedido, irParaAdmin }) {
                 </a>
               </div>
 
-              {/* CARD DE ENDEREÇO CLICÁVEL DIRETO PRO GOOGLE MAPS */}
               <div className="home-info">
                 <div className="home-info-topo">
                   <MapPin size={16} aria-hidden="true" />
@@ -217,7 +226,7 @@ function Home({ irParaPedido, irParaAdmin }) {
                   href={GOOGLE_MAPS_LINK}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="Abrir rota no Google Maps"
+                  title="Abrir no Google Maps"
                 >
                   {ENDERECO}
                 </a>
