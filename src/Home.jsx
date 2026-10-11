@@ -1,7 +1,15 @@
+import {
+  Phone,
+  MapPin,
+  Clock,
+  Heart,
+  ArrowRight
+} from 'lucide-react'
 import './Home.css'
+import marmitaHero from './assets/marmita-hero.jpg'
 
-// Ícones SVG minimalistas
-function MapPin({ size = 14, ...props }) {
+// ===== ÍCONES VETORIAIS (SVG OUTLINE) =====
+function IconeMarmita({ size = 24 }) {
   return (
     <svg
       width={size}
@@ -9,18 +17,20 @@ function MapPin({ size = 14, ...props }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
+      aria-hidden="true"
     >
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-      <circle cx="12" cy="10" r="3" />
+      <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z" />
+      <path d="M7 4v3" />
+      <path d="M12 2v5" />
+      <path d="M17 4v3" />
     </svg>
   )
 }
 
-function Phone({ size = 16, ...props }) {
+function IconeLocal({ size = 24 }) {
   return (
     <svg
       width={size}
@@ -28,39 +38,25 @@ function Phone({ size = 16, ...props }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
+      aria-hidden="true"
     >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+      <path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7" />
+      <path d="M2 14h20" />
+      <path d="M12 14v7" />
+      <path d="M7 6v2" />
+      <path d="M17 6v2" />
+      <circle cx="12" cy="7" r="2.5" />
     </svg>
   )
 }
 
-function Clock({ size = 16, ...props }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  )
-}
-
-const TELEFONE = '(61) 99437-4490'
+// Dados de contato e links diretos
+const TELEFONE = '61 99437-4490'
 const WHATSAPP_LINK = 'https://wa.me/5561994374490'
-const ENDERECO =
-  'QR 202 Conjunto E, 3 - Santa Maria, Brasília - DF, 72502-409'
+const ENDERECO = 'QR 202 Conjunto E, 3 — Santa Maria, Brasília - DF, 72502-409, Brasil'
 const GOOGLE_MAPS_LINK =
   'https://www.google.com/maps/search/?api=1&query=QR+202+Conjunto+E,+3+-+Santa+Maria,+Bras%C3%ADlia+-+DF,+72502-409'
 const FUNCIONAMENTO = 'Segunda a Sábado, das 11:00 às 14:00'
@@ -117,16 +113,64 @@ function Home({ irParaPedido }) {
                 onClick={irParaPedido}
               >
                 Fazer Pedido
+                <ArrowRight size={16} aria-hidden="true" />
               </button>
+
+              <span className="home-pilula">
+                <Heart size={13} aria-hidden="true" />
+                Feita na hora, com sabor de casa.
+              </span>
 
             </div>
 
-            <div className="home-hero-imagem-wrap">
+            <div className="home-hero-imagem">
               <img
-                src="/assets/marmita1.jpeg"
-                alt="Marmita apetitosa servida pelo El Shadday Restaurante"
-                className="home-hero-imagem"
+                src={marmitaHero}
+                alt="Marmita com arroz, feijão, bife, farofa, salada e batata frita"
               />
+            </div>
+
+          </div>
+        </section>
+
+        {/* ===== SEU ALMOÇO, DO SEU JEITO ===== */}
+        <section className="home-secao">
+          <div className="home-container">
+
+            <h2 className="home-secao-titulo">Seu almoço, do seu jeito</h2>
+
+            <div className="home-opcoes">
+
+              <button
+                type="button"
+                className="home-opcao"
+                onClick={irParaPedido}
+              >
+                <span className="home-opcao-icone">
+                  <IconeMarmita size={24} />
+                </span>
+
+                <span className="home-opcao-texto">
+                  <strong>MARMITAS</strong>
+                  <span>Comida caseira feita na hora, pronta para o seu dia.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="home-opcao"
+                onClick={irParaPedido}
+              >
+                <span className="home-opcao-icone">
+                  <IconeLocal size={24} />
+                </span>
+
+                <span className="home-opcao-texto">
+                  <strong>ALMOÇO NO LOCAL</strong>
+                  <span>Venha comer com a gente em um ambiente acolhedor.</span>
+                </span>
+              </button>
+
             </div>
 
           </div>
