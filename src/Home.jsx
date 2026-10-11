@@ -159,15 +159,15 @@ function Home({ irParaPedido }) {
               <button
                 type="button"
                 className="home-opcao"
-                onClick={irParaPedido}
+                onClick={() => alert('Em breve: pedidos para consumir no local.')}
               >
                 <span className="home-opcao-icone">
                   <IconeLocal size={24} />
                 </span>
 
                 <span className="home-opcao-texto">
-                  <strong>ALMOÇO NO LOCAL</strong>
-                  <span>Venha comer com a gente em um ambiente acolhedor.</span>
+                  <strong>NO LOCAL</strong>
+                  <span>O mesmo sabor caseiro, para comer aqui com a gente.</span>
                 </span>
               </button>
 
@@ -176,79 +176,18 @@ function Home({ irParaPedido }) {
           </div>
         </section>
 
-        {/* ===== DESTAQUES ===== */}
-        <section className="home-destaques">
+        {/* ===== ESTAMOS POR AQUI ===== */}
+        <section className="home-secao home-secao-contato">
           <div className="home-container">
 
-            <div className="home-destaques-grid">
+            <h2 className="home-secao-titulo">Estamos por aqui</h2>
 
-              <div className="home-destaque-card">
-                <h3>Comida Caseira de Verdade</h3>
-                <p>
-                  Receitas de família com tempero fresco e ingredientes
-                  selecionados todos os dias.
-                </p>
-              </div>
-
-              <div className="home-destaque-card">
-                <h3>Entrega Rápida e Quentinha</h3>
-                <p>
-                  Sua marmita chega no ponto ideal para o almoço, sem demora
-                  na sua região.
-                </p>
-              </div>
-
-              <div className="home-destaque-card">
-                <h3>Preço Justo, Prato Cheio</h3>
-                <p>
-                  Porções caprichadas que cabem no seu bolso e matam sua fome
-                  de verdade.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* ===== CARDÁPIO DO DIA ===== */}
-        <section className="home-cardapio-cta">
-          <div className="home-container">
-
-            <div className="home-cardapio-cta-box">
-
-              <div className="home-cardapio-cta-texto">
-                <span className="home-tag">Atualizado diariamente</span>
-                <h2>Veja o cardápio de hoje</h2>
-                <p>
-                  Carnes frescas, guarnições variadas e aquele feijãozinho
-                  caprichado esperando por você.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="home-btn-pedido home-btn-cardapio"
-                onClick={irParaPedido}
-              >
-                Ver Cardápio de Hoje
-              </button>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* ===== INFORMAÇÕES DE CONTATO E HORÁRIOS ===== */}
-        <section className="home-infos">
-          <div className="home-container">
-
-            <div className="home-infos-grid">
+            <div className="home-info-grade">
 
               <div className="home-info">
                 <div className="home-info-topo">
                   <Phone size={16} aria-hidden="true" />
-                  <span>WhatsApp / Telefone</span>
+                  <span>Telefone / WhatsApp</span>
                 </div>
                 <a
                   className="home-info-valor home-info-link"
@@ -260,6 +199,7 @@ function Home({ irParaPedido }) {
                 </a>
               </div>
 
+              {/* CARD DE ENDEREÇO COM LINK DIRETO PRO GOOGLE MAPS */}
               <div className="home-info">
                 <div className="home-info-topo">
                   <MapPin size={16} aria-hidden="true" />
