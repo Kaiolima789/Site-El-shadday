@@ -1,4 +1,4 @@
-/* ===== PAINEL ADMIN: PEDIDOS RECEBIDOS — EL SHADDAY ===== */
+/* ===== PAINEL ADMIN: PEDIDOS RECEBIDOS — FIGMA DESIGN ===== */
 
 .pedidos-vivendas-page {
   min-height: 100vh;
@@ -10,57 +10,183 @@
   padding-bottom: 60px;
 }
 
+/* ===== BARRA SUPERIOR (HEADER BRANCO FIGMA) ===== */
+.admin-header {
+  height: 60px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #EAE4D9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
+
+.admin-header-esquerda h1 {
+  margin: 0;
+  color: #6E2636;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.admin-header-direita {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2E1E1E;
+  user-select: none;
+}
+
+.status-dot-verde {
+  color: #2E7D32;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.admin-status-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch {
+  width: 36px;
+  height: 20px;
+  background: #2E7D32;
+  border-radius: 20px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.admin-status-toggle input:not(:checked) + .toggle-switch {
+  background: #C4B5A5;
+}
+
+.admin-status-toggle input:not(:checked) + .toggle-switch::after {
+  transform: translateX(-16px);
+}
+
+.admin-sair-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #2E1E1E;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-family: inherit;
+  transition: color 0.15s ease;
+}
+
+.admin-sair-btn:hover {
+  color: #6E2636;
+}
+
+/* ===== ABAS CENTRAIS DO ADMIN (GERENCIAR CARDÁPIO | PEDIDOS RECEBIDOS) ===== */
+.admin-abas-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+
+.admin-aba-btn {
+  padding: 10px 22px;
+  border-radius: 24px;
+  border: 1px solid #EAE4D9;
+  background: #FFFFFF;
+  color: #2E1E1E;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.admin-aba-btn:hover {
+  border-color: #C4B5A5;
+}
+
+.admin-aba-btn.admin-aba-ativa {
+  background: #6E2636;
+  border-color: #6E2636;
+  color: #FFFFFF;
+}
+
+/* ===== CONTEÚDO PRINCIPAL ===== */
 .pedidos-vivendas-conteudo {
   width: 100%;
-  max-width: 760px;
-  margin: 20px auto 0;
+  max-width: 820px;
+  margin: 0 auto;
   padding: 0 20px;
   box-sizing: border-box;
 }
 
+/* ===== BARRA DE FILTROS (DATA, STATUS E ATUALIZAR) ===== */
 .pedidos-filtro-barra {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .pedidos-dia-nav {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
   border-radius: 20px;
-  padding: 4px 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E1E1E;
+  cursor: pointer;
 }
 
 .pedidos-dia-nav button {
   border: none;
   background: transparent;
   color: #6E2636;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 2px 6px;
-}
-
-.pedidos-dia-nav span {
   font-size: 13px;
-  font-weight: 600;
-  color: #2E1E1E;
+  cursor: pointer;
+  padding: 0 4px;
+  font-weight: bold;
 }
 
 .pedidos-abas {
   display: flex;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 6px;
 }
 
 .aba-btn {
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
   border: 1px solid #EAE4D9;
   background: #FFFFFF;
@@ -76,22 +202,26 @@
   border-color: #C4B5A5;
 }
 
-.aba-ativa {
+.aba-btn.aba-ativa {
   background: #6E2636;
   border-color: #6E2636;
   color: #FFFFFF;
 }
 
 .atualizar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
   border-radius: 20px;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #5C4A42;
+  color: #2E1E1E;
   cursor: pointer;
   transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .atualizar-btn:hover {
@@ -99,264 +229,306 @@
   color: #6E2636;
 }
 
-.pedidos-vazio {
-  text-align: center;
-  color: #8C7D73;
-  margin: 40px 0;
-}
-
-.pedido-vazio-card {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.pedido-vazio-card h3 {
-  margin: 0 0 6px;
-  color: #5C4A42;
+/* ===== CARDS DE PEDIDO (FIGMA DESIGN) ===== */
+.pedidos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .pedido-card {
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
   border-radius: 16px;
-  padding: 22px 24px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  padding: 24px 26px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
 }
 
-.pedido-cabecalho {
+/* Topo do Card */
+.pedido-card-cabecalho {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.pedido-id-linha h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #2E1E1E;
-  font-weight: 700;
-}
-
-.pedido-hora {
-  font-size: 13px;
-  color: #8C7D73;
-  font-weight: 500;
-}
-
-.pedido-tags {
-  display: flex;
+  flex-direction: column;
   gap: 8px;
-}
-
-.pedido-status-badge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-
-.status-aguardando {
-  background: #FFF3DC;
-  color: #B45309;
-}
-
-.status-aprovado,
-.status-em_preparo {
-  background: #E8F5E9;
-  color: #2E7D32;
-}
-
-.status-pronto {
-  background: #E0F2FE;
-  color: #0369A1;
-}
-
-.status-recusado {
-  background: #FEE2E2;
-  color: #B91C1C;
-}
-
-.pedido-origem-badge {
-  background: #F5EFEA;
-  color: #6E2636;
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.pedido-cliente-bloco {
-  background: #FAF7F2;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  font-size: 13.5px;
-}
-
-.cliente-linha-principal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.pedido-cliente-bloco p {
-  margin: 4px 0;
-  color: #2E1E1E;
-}
-
-.whatsapp-contato-btn {
-  background: #25D366;
-  color: #FFFFFF;
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.15s ease;
-}
-
-.whatsapp-contato-btn:hover {
-  background: #1EBE5D;
-}
-
-.pedido-itens-bloco {
-  padding: 10px 0;
-  border-top: 1px solid #EAE4D9;
-  border-bottom: 1px solid #EAE4D9;
-  margin-bottom: 12px;
-}
-
-.pedido-itens-bloco h4 {
-  margin: 0 0 8px;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: #6E2636;
-  font-weight: 700;
-}
-
-.pedido-itens-bloco p {
-  margin: 4px 0;
-  font-size: 14px;
-  color: #2E1E1E;
-}
-
-.pedido-obs {
-  color: #8C7D73;
-  font-style: italic;
-  font-size: 13px !important;
-}
-
-.pedido-cobranca-bloco {
-  background: #EBF3FA;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #1E3A8A;
   margin-bottom: 16px;
 }
 
-.pedido-cobranca-bloco p {
-  margin: 0;
+.pedido-titulo-linha {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2E1E1E;
 }
 
-.pedido-troco-info {
-  margin-top: 4px !important;
-  font-weight: 600;
-}
-
-.pedido-acoes-barra {
+.pedido-tags-linha {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Badges de Status e Origem */
+.badge-status-aguardando {
+  background: #FFF8E7;
+  color: #B7791F;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-status-aprovado {
+  background: #EBF8F2;
+  color: #22543D;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-status-em_preparo {
+  background: #EBF8FF;
+  color: #2B6CB0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-status-pronto {
+  background: #FAF5FF;
+  color: #6B46C1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-status-recusado {
+  background: #FFF5F5;
+  color: #C53030;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-origem-comum {
+  background: #EBF4FA;
+  color: #2B6CB0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.badge-origem-vivendas {
+  background: #FDF2F2;
+  color: #9B1C1C;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+/* Caixa Creme do Cliente */
+.pedido-cliente-caixa {
+  background: #FAF7F2;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.cliente-topo-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.cliente-dados-linha {
+  font-size: 13.5px;
+  color: #2E1E1E;
+}
+
+.btn-whatsapp-figma {
+  background: #25D366;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-whatsapp-figma:hover {
+  opacity: 0.9;
+}
+
+.cliente-endereco-linha {
+  font-size: 13px;
+  color: #5C4A42;
+}
+
+/* Detalhes da Marmita */
+.pedido-detalhes-bloco {
+  margin-bottom: 16px;
+}
+
+.detalhes-titulo {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7A6961;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.pedido-detalhes-bloco p {
+  margin: 4px 0;
+  font-size: 13.5px;
+  color: #2E1E1E;
+}
+
+/* Faixa Azul de Cobrança */
+.pedido-cobranca-faixa {
+  background: #EBF3FA;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E3A8A;
+  margin-bottom: 20px;
+}
+
+/* Botões de Ação na Base */
+.pedido-acoes-botoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.btn-aprovar,
-.btn-recusar,
-.btn-preparo,
-.btn-pronto,
-.btn-imprimir {
-  padding: 11px 18px;
-  border-radius: 24px;
-  font-size: 13px;
+.btn-aprovar-figma {
+  background: #25853B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-aprovar-figma:hover {
+  opacity: 0.92;
+}
+
+.btn-recusar-figma {
+  background: #FFFFFF;
+  color: #6E2636;
+  border: 1.5px solid #6E2636;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
+}
+
+.btn-recusar-figma:hover {
+  background: #FFF5F5;
+}
+
+.btn-preparo-figma {
+  background: #2B6CB0;
+  color: #FFFFFF;
   border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.btn-aprovar {
-  background: #2E7D32;
+.btn-pronto-figma {
+  background: #6B46C1;
   color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.btn-aprovar:hover {
-  background: #256628;
-}
-
-.btn-recusar {
-  background: transparent;
-  border: 1px solid #6E2636;
-  color: #6E2636;
-}
-
-.btn-recusar:hover {
-  background: #FDF2F4;
-}
-
-.btn-preparo,
-.btn-pronto {
-  background: #6E2636;
-  color: #FFFFFF;
-}
-
-.btn-preparo:hover,
-.btn-pronto:hover {
-  background: #551A27;
-}
-
-.btn-imprimir {
-  background: #FAF7F2;
+.btn-imprimir-figma {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  color: #2E1E1E;
   border: 1px solid #EAE4D9;
-  color: #5C4A42;
-  margin-left: auto;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
-.btn-imprimir:hover {
-  border-color: #6E2636;
-  color: #6E2636;
+.btn-imprimir-figma:hover {
+  border-color: #C4B5A5;
 }
 
+/* Card Vazio */
+.pedido-vazio-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  color: #7A6961;
+}
+
+.pedido-vazio-card h3 {
+  margin: 0 0 8px;
+  color: #2E1E1E;
+  font-size: 16px;
+}
+
+/* Celular */
 @media (max-width: 600px) {
+  .admin-header {
+    padding: 0 16px;
+  }
+
   .pedidos-filtro-barra {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .pedidos-abas {
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-
-  .aba-btn {
-    white-space: nowrap;
-    padding: 6px 12px;
-  }
-
-  .pedido-acoes-barra {
+  .cliente-topo-linha {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .btn-imprimir {
-    margin-left: 0;
+  .pedido-acoes-botoes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pedido-acoes-botoes button {
+    width: 100%;
+    justify-content: center;
   }
 }

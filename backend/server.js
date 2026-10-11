@@ -213,26 +213,31 @@ app.post('/pedidos', (req, res) => {
   const ehClienteComum = origem === 'cliente_comum'
 
   // Regra de pagamento:
-  // - Vivendas: marmita é paga pelo código; cliente paga só a bebida.
-  // - Cliente comum: paga marmita + bebida.
-  // Se o frontend não mandar os valores separados, assume tudo como marmita.
+  // - Vivendas: marmita é coberta pelo convênio; paga só a bebida (se houver).
+  // - Cliente comum: paga marmita + bebidas + taxa de entrega.
   let valorMarmita = Number(preco_marmita)
   let valorBebida = Number(preco_bebida)
 
-  if (Number.isNaN(valorMarmita) && Number.isNaN(valorBebida)) {
-    valorMarmita = Number(preco) || 0
-    valorBebida = 0
-  } else {
-    valorMarmita = Number.isNaN(valorMarmita) ? 0 : valorMarmita
-    valorBebida = Number.isNaN(valorBebida) ? 0 : valorBebida
+  if (Number.isNaN(valorMarmita)) {
+    valorMarmita = Number(preco) || 18.0
+  }
+  if (Number.isNaN(valorBebida)) {
+    valorBebida = 0.0
   }
 
-  const valorCobrar = ehClienteComum
-    ? valorMarmita + valorBebida
-    : valorBebida
+  // Respeita o valor_cobrar enviado pelo frontend (que já inclui marmita + bebidas + taxa de entrega)
+  let valorCobrar = Number(req.body.valor_cobrar)
+  if (Number.isNaN(valorCobrar)) {
+    const taxa = (tipo_entrega === 'entrega' && ehClienteComum) ? 4.0 : 0.0
+    valorCobrar = ehClienteComum
+      ? valorMarmita + valorBebida + taxa
+      : valorBebida
+  }
+
+  const precoFinal = Number(preco) || valorCobrar || (valorMarmita + valorBebida)
 
   if (ehClienteComum) {
-    if (!nome || !telefone || !preco) {
+    if (!nome || !telefone || preco === undefined || preco === null) {
       return res.status(400).json({
         erro: 'Nome, telefone e preço são obrigatórios.'
       })
@@ -244,7 +249,7 @@ app.post('/pedidos', (req, res) => {
       })
     }
   } else {
-    if (!nome || !loja || !codigo || !preco) {
+    if (!nome || !loja || !codigo || preco === undefined || preco === null) {
       return res.status(400).json({
         erro: 'Nome, loja, código e preço são obrigatórios.'
       })
@@ -327,7 +332,7 @@ app.post('/pedidos', (req, res) => {
       formaValida ? forma_pagamento : '',
       trocoPara,
       observacao || '',
-      preco,
+      precoFinal,
       'aguardando'
     )
 

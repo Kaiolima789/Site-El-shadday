@@ -12,33 +12,34 @@
 
 /* ===== CABEÇALHO ===== */
 .cc-header {
-  height: 64px;
+  height: 56px;
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 32px;
   box-sizing: border-box;
 }
 
-.cc-voltar {
+.cc-voltar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
-  color: #6E2636;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #2E1E1E;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
+  font-family: inherit;
 }
 
-.cc-voltar:hover {
-  background: #F5EFEA;
+.cc-voltar-btn:hover {
   border-color: #6E2636;
+  color: #6E2636;
 }
 
 .cc-logo {
@@ -49,45 +50,35 @@
   margin: 0;
   color: #6E2636;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.5px;
   font-weight: 700;
 }
 
-.cc-logo span {
-  color: #8A6D3B;
-  font-size: 10px;
-  letter-spacing: 2px;
-  display: block;
-  margin-top: 1px;
-  font-weight: 600;
-}
-
 .cc-header-spacer {
-  width: 38px;
+  width: 60px;
 }
 
 /* ===== CONTEÚDO PRINCIPAL ===== */
 .cc-conteudo {
   width: 100%;
-  max-width: 960px;
-  margin: 20px auto 0;
+  max-width: 980px;
+  margin: 0 auto;
   padding: 0 20px;
   box-sizing: border-box;
 }
 
 .cc-titulo-bloco {
   text-align: center;
-  margin-bottom: 28px;
+  margin: 16px 0 28px;
 }
 
 .cc-titulo-bloco h2 {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 26px;
   color: #2E1E1E;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 32px;
   margin: 0 0 6px;
   font-weight: 600;
-  letter-spacing: -0.5px;
 }
 
 .cc-titulo-bloco p {
@@ -96,21 +87,20 @@
   margin: 0;
 }
 
-/* ===== GRID DE 2 COLUNAS (DESKTOP) ===== */
+/* ===== GRID 2 COLUNAS NO DESKTOP ===== */
 .cc-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: 1fr 340px;
   gap: 24px;
   align-items: start;
 }
 
-/* ===== FORMULÁRIO (CARD ESQUERDO) ===== */
+/* ===== CARD DO FORMULÁRIO ===== */
 .cc-card {
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
-  border-radius: 16px;
-  padding: 24px 28px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 24px;
   box-sizing: border-box;
 }
 
@@ -132,11 +122,11 @@
   box-sizing: border-box;
   padding: 12px 14px;
   border: 1px solid #EAE4D9;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #FFFFFF;
-  font-size: 16px;
-  font-family: inherit;
+  font-size: 14px;
   color: #2E1E1E;
+  font-family: inherit;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -147,63 +137,112 @@
 }
 
 .cc-campo textarea {
-  min-height: 75px;
   resize: vertical;
+  min-height: 70px;
 }
 
-.cc-campo-endereco {
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Toggle Entrega vs Retirada */
+/* Toggle Entrega / Retirada */
 .cc-toggle {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .cc-toggle-btn {
-  flex: 1;
-  padding: 12px 14px;
+  padding: 12px;
   border: 1px solid #EAE4D9;
   border-radius: 10px;
-  background: #FAF7F2;
+  background: #FFFFFF;
   color: #5C4A42;
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
-}
-
-.cc-toggle-btn:hover {
-  border-color: #C4B5A5;
+  text-align: center;
 }
 
 .cc-toggle-btn.ativo {
-  background: #6E2636;
-  border-color: #6E2636;
-  color: #FFFFFF;
+  background: #F5EFEA;
+  border: 1.5px solid #6E2636;
+  color: #6E2636;
   font-weight: 600;
 }
 
-/* ===== CARD DE RESUMO (DIREITA NO DESKTOP) ===== */
+/* ===== GRADE DE BOTÕES DE REGIÃO DE ENTREGA ===== */
+.cc-regioes-grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cc-regiao-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  text-align: left;
+}
+
+.cc-regiao-btn:hover {
+  border-color: #C4B5A5;
+}
+
+.cc-regiao-btn.ativo {
+  background: #F5EFEA;
+  border: 1.5px solid #6E2636;
+}
+
+.cc-regiao-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E1E1E;
+}
+
+.cc-regiao-btn.ativo .cc-regiao-nome {
+  color: #6E2636;
+}
+
+.cc-regiao-taxa {
+  font-size: 12px;
+  font-weight: 500;
+  color: #5C4A42;
+  margin-top: 2px;
+}
+
+.cc-regiao-btn.ativo .cc-regiao-taxa {
+  color: #6E2636;
+  font-weight: 600;
+}
+
+/* 5ª Opção (Demais regiões) ocupa as 2 colunas */
+.cc-regiao-btn:nth-child(5) {
+  grid-column: span 2;
+}
+
+.cc-regiao-aviso {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  background: #F5EFEA;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #5C4A42;
+  line-height: 1.45;
+}
+
+/* ===== CARD DE RESUMO (LATERAL) ===== */
 .cc-resumo-card {
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
-  border-radius: 16px;
-  padding: 24px 28px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 20px;
   box-sizing: border-box;
   position: sticky;
   top: 20px;
@@ -212,164 +251,137 @@
 .cc-resumo-topo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 16px;
-  color: #2E1E1E;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #EAE4D9;
+}
+
+.cc-resumo-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #F5EFEA;
+  color: #6E2636;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .cc-resumo-topo h3 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
   margin: 0;
-  font-weight: 600;
+  font-size: 16px;
+  font-family: 'Lora', Georgia, serif;
+  color: #2E1E1E;
 }
 
 .cc-resumo-extrato {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .cc-resumo-linha {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 13.5px;
+  color: #2E1E1E;
 }
 
 .cc-resumo-item-nome {
-  color: #2E1E1E;
   font-weight: 500;
 }
 
 .cc-resumo-item-preco {
-  color: #2E1E1E;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-.cc-resumo-linha-taxa .taxa-gratis {
+.taxa-gratis {
   color: #2E7D32;
-  font-weight: 700;
 }
 
 .cc-resumo-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 2px 0 6px;
+  margin-top: -2px;
 }
 
 .cc-resumo-tag {
-  background: #F5EFEA;
-  border-radius: 12px;
-  padding: 3px 10px;
-  font-size: 11px;
-  color: #6E2636;
-  font-weight: 500;
+  background: #FAF7F2;
+  border: 1px solid #EAE4D9;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  color: #5C4A42;
 }
 
 .cc-resumo-divisor {
   height: 1px;
   background: #EAE4D9;
-  margin: 12px 0 10px;
+  margin: 4px 0;
 }
 
 .cc-resumo-total-linha {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: #2E1E1E;
-}
-
-.cc-resumo-total-valor {
-  font-size: 22px;
-  font-weight: 800;
   color: #6E2636;
+  padding-top: 4px;
 }
 
-/* Botão Finalizar */
 .cc-finalizar-btn {
   width: 100%;
-  margin-top: 18px;
-  padding: 16px;
-  border: none;
-  border-radius: 28px;
+  padding: 14px;
   background: #6E2636;
   color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: background 0.15s ease;
-  box-shadow: 0 4px 12px rgba(110, 38, 54, 0.15);
+  transition: opacity 0.15s ease;
   font-family: inherit;
 }
 
 .cc-finalizar-btn:hover {
-  background: #551A27;
+  opacity: 0.95;
 }
 
 .cc-finalizar-btn:disabled {
-  background: #C4B5A5;
-  box-shadow: none;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .cc-resumo-aviso {
   margin: 12px 0 0;
-  font-size: 12px;
-  color: #8C7D73;
+  font-size: 11.5px;
+  color: #5C4A42;
   text-align: center;
   line-height: 1.4;
 }
 
-/* ===== CELULAR / RESPONSIVO (<= 768px) ===== */
-@media (max-width: 768px) {
-  .cc-conteudo {
-    max-width: 520px;
-    padding: 0 16px;
-  }
-
-  .cc-titulo-bloco h2 {
-    font-size: 26px;
-  }
-
+/* Responsividade Mobile */
+@media (max-width: 820px) {
   .cc-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .cc-card,
-  .cc-resumo-card {
-    padding: 20px 18px;
-    border-radius: 14px;
   }
 
   .cc-resumo-card {
     position: static;
   }
-}
-/* Bloco quando 'Sem bebida' está selecionado */
-.bebida-sem-escolha-bloco {
-  background: #FAF7F2;
-  border: 1px dashed #D6CBC1;
-  border-radius: 10px;
-  padding: 16px 20px;
-  text-align: center;
-  color: #5C4A42;
-  font-size: 13.5px;
-  margin-top: 4px;
-}
 
-.bebida-sem-escolha-bloco p {
-  margin: 0 0 4px;
-  font-weight: 600;
-  color: #2E1E1E;
-}
+  .cc-regioes-grade {
+    grid-template-columns: 1fr;
+  }
 
-.bebida-sem-escolha-bloco span {
-  font-size: 12.5px;
-  color: #7A6961;
+  .cc-regiao-btn:nth-child(5) {
+    grid-column: span 1;
+  }
 }

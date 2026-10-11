@@ -2,7 +2,33 @@ import { useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 
-const TAXA_ENTREGA = 4.0
+// Regiões de entrega e taxas diferenciadas
+const REGIOES_ENTREGA = [
+  { id: 'sm_sul', nome: 'Santa Maria Sul', taxa: 3.0 },
+  { id: 'sm_norte', nome: 'Santa Maria Norte', taxa: 5.0 },
+  { id: 'novo_gama', nome: 'Novo Gama', taxa: 7.0 },
+  { id: 'gama', nome: 'Gama', taxa: 10.0 },
+  { id: 'demais', nome: 'Demais Regiões', taxa: 15.0 }
+]
+
+function IconeVoltar({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
+  )
+}
 
 function IconeRecibo({ size = 18 }) {
   return (
@@ -29,16 +55,17 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
   const [tipoEntrega, setTipoEntrega] = useState('entrega')
+  const [regiaoEntrega, setRegiaoEntrega] = useState(REGIOES_ENTREGA[0]) // Padrão: Santa Maria Sul (R$ 3,00)
   const [endereco, setEndereco] = useState('')
   const [observacao, setObservacao] = useState('')
   const [formaPagamento, setFormaPagamento] = useState('dinheiro')
   const [trocoPara, setTrocoPara] = useState('')
   const [enviando, setEnviando] = useState(false)
 
-  // Cálculos de valores
+  // Cálculos de valores dinâmicos
   const subtotalMarmita = Number(pedido?.preco_marmita || (pedido?.preco ? pedido.preco - (pedido.preco_bebida || 0) : 18.0)) || 18.0
   const subtotalBebida = Number(pedido?.preco_bebida || 0.0)
-  const valorEntrega = tipoEntrega === 'entrega' ? TAXA_ENTREGA : 0.0
+  const valorEntrega = tipoEntrega === 'entrega' ? Number(regiaoEntrega.taxa) : 0.0
   const totalFinal = subtotalMarmita + subtotalBebida + valorEntrega
 
   async function enviar() {
@@ -70,12 +97,17 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
 
     setEnviando(true)
 
+    const enderecoCompleto = tipoEntrega === 'entrega'
+      ? `${regiaoEntrega.nome} - ${endereco.trim()}`
+      : ''
+
     const dadosPedido = {
       ...pedido,
       nome: nome.trim(),
       telefone: telefone.trim(),
       tipo_entrega: tipoEntrega,
-      endereco: tipoEntrega === 'entrega' ? endereco.trim() : '',
+      endereco: enderecoCompleto,
+      regiao_entrega: tipoEntrega === 'entrega' ? regiaoEntrega.nome : '',
       observacao: observacao.trim(),
       forma_pagamento: formaPagamento,
       troco_para:
@@ -105,10 +137,16 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
         return
       }
 
-      enviarPedido({
+      const pedidoCompleto = {
         ...dadosPedido,
         id: dados.id
-      })
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
+      }
+
+      enviarPedido(pedidoCompleto)
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')
@@ -131,8 +169,10 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
           type="button"
           className="cc-voltar-btn"
           onClick={voltar}
+          title="Voltar"
         >
-          ← Voltar
+          <IconeVoltar size={16} />
+          <span>Voltar</span>
         </button>
 
         <div className="cc-logo">
@@ -194,17 +234,48 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
               </div>
             </div>
 
+            {/* SELEÇÃO DE REGIÃO E TAXA DE ENTREGA */}
             {tipoEntrega === 'entrega' && (
-              <div className="cc-campo cc-campo-endereco">
-                <label>Endereço de entrega</label>
-                <input
-                  type="text"
-                  placeholder="Rua, número, quadra, referência"
-                  value={endereco}
-                  onChange={(e) => setEndereco(e.target.value)}
-                  autoFocus
-                />
-              </div>
+              <>
+                <div className="cc-campo cc-campo-endereco">
+                  <label>Região de entrega</label>
+                  <div className="cc-regioes-grade">
+                    {REGIOES_ENTREGA.map((reg) => {
+                      const ativo = regiaoEntrega.id === reg.id
+                      return (
+                        <button
+                          type="button"
+                          key={reg.id}
+                          className={`cc-regiao-btn ${ativo ? 'ativo' : ''}`}
+                          onClick={() => setRegiaoEntrega(reg)}
+                        >
+                          <span className="cc-regiao-nome">{reg.nome}</span>
+                          <span className="cc-regiao-taxa">
+                            R$ {reg.taxa.toFixed(2).replace('.', ',')}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {regiaoEntrega.id === 'demais' && (
+                    <p className="cc-regiao-aviso">
+                      ℹ️ Válido para bairros próximos (raio de até ~15 km). Endereços muito distantes serão confirmados pela loja.
+                    </p>
+                  )}
+                </div>
+
+                <div className="cc-campo cc-campo-endereco">
+                  <label>Endereço de entrega</label>
+                  <input
+                    type="text"
+                    placeholder="Rua, número, quadra, referência"
+                    value={endereco}
+                    onChange={(e) => setEndereco(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </>
             )}
 
             <FormaPagamento
@@ -264,10 +335,15 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
                 </div>
               )}
 
+              {/* TAXA DE ENTREGA DINÂMICA CONFORME REGIÃO */}
               <div className="cc-resumo-linha cc-resumo-linha-taxa">
-                <span className="cc-resumo-item-nome">Taxa de Entrega</span>
+                <span className="cc-resumo-item-nome">
+                  Taxa de Entrega {tipoEntrega === 'entrega' && `(${regiaoEntrega.nome})`}
+                </span>
                 <span className={`cc-resumo-item-preco ${tipoEntrega === 'retirada' ? 'taxa-gratis' : ''}`}>
-                  {tipoEntrega === 'entrega' ? `R$ ${TAXA_ENTREGA.toFixed(2).replace('.', ',')}` : 'Grátis'}
+                  {tipoEntrega === 'entrega'
+                    ? `R$ ${valorEntrega.toFixed(2).replace('.', ',')}`
+                    : 'Grátis'}
                 </span>
               </div>
 

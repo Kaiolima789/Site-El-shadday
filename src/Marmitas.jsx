@@ -164,11 +164,11 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
   // Seletor de abas: começa em 'nenhuma' (Sem bebida)
   const [abaBebida, setAbaBebida] = useState('nenhuma') // 'nenhuma' | 'refrigerante' | 'agua'
-  const [refriTamanhoSel, setRefriTamanhoSel] = useState(REFRIGERANTE_TAMANHOS_PADRAO[1]) // Padrão 600 ml
+  const [refriTamanhoNome, setRefriTamanhoNome] = useState('600 ml')
   const [refriSaborSel, setRefriSaborSel] = useState('Fanta Laranja')
   const [saborCustomAtivo, setSaborCustomAtivo] = useState(false)
   const [saborCustomTexto, setSaborCustomTexto] = useState('')
-  const [aguaSel, setAguaSel] = useState(AGUA_TIPOS_PADRAO[0])
+  const [aguaNome, setAguaNome] = useState('Água sem gás')
 
   const [cardapio, setCardapio] = useState(null)
   const [carregando, setCarregando] = useState(true)
@@ -277,6 +277,18 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     )
   }
 
+  // ===== RESOLUÇÃO DINÂMICA DE TAMANHO E PREÇO =====
+  const listaTamanhos = opcoesPorCategoria('refrigerante_tamanho')
+  const refriTamanhoAtual = listaTamanhos.find(
+    (t) => String(t.nome).trim().toLowerCase() === String(refriTamanhoNome).trim().toLowerCase()
+  ) || listaTamanhos[1] || REFRIGERANTE_TAMANHOS_PADRAO[1]
+
+  const listaAguas = opcoesPorCategoria('agua')
+  const aguaAtual = listaAguas.find(
+    (a) => String(a.nome).trim().toLowerCase() === String(aguaNome).trim().toLowerCase()
+  ) || listaAguas[0] || AGUA_TIPOS_PADRAO[0]
+
+  // ===== ADICIONAR REFRIGERANTE =====
   function adicionarRefrigerante() {
     const saborFinal = saborCustomAtivo ? saborCustomTexto.trim() : refriSaborSel
 
@@ -285,13 +297,8 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
       return
     }
 
-    if (!refriTamanhoSel) {
-      alert('Selecione o tamanho do refrigerante.')
-      return
-    }
-
-    const idUnico = `refri-${refriTamanhoSel.nome}-${saborFinal}`
-    const precoUnitario = Number(refriTamanhoSel.preco)
+    const idUnico = `refri-${refriTamanhoAtual.nome}-${saborFinal}`
+    const precoUnitario = Number(refriTamanhoAtual.preco)
 
     setBebidas((atuais) => {
       const existente = atuais.find((b) => b.id === idUnico)
@@ -307,9 +314,9 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         {
           id: idUnico,
           tipo: 'refrigerante',
-          nome: `${refriTamanhoSel.nome} • ${saborFinal}`,
+          nome: `${refriTamanhoAtual.nome} • ${saborFinal}`,
           sabor: saborFinal,
-          tamanho: refriTamanhoSel.nome,
+          tamanho: refriTamanhoAtual.nome,
           preco: precoUnitario,
           quantidade: 1
         }
@@ -322,11 +329,10 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     }
   }
 
+  // ===== ADICIONAR ÁGUA =====
   function adicionarAgua() {
-    if (!aguaSel) return
-
-    const idUnico = `agua-${aguaSel.nome}`
-    const precoUnitario = Number(aguaSel.preco)
+    const idUnico = `agua-${aguaAtual.nome}`
+    const precoUnitario = Number(aguaAtual.preco)
 
     setBebidas((atuais) => {
       const existente = atuais.find((b) => b.id === idUnico)
@@ -342,7 +348,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         {
           id: idUnico,
           tipo: 'agua',
-          nome: aguaSel.nome,
+          nome: aguaAtual.nome,
           sabor: '',
           tamanho: 'Garrafa',
           preco: precoUnitario,
@@ -576,15 +582,15 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               <div className="bebida-montador">
                 <p className="bebida-subtitulo">1. Escolha o tamanho:</p>
                 <div className="bebida-tamanhos-grid">
-                  {opcoesPorCategoria('refrigerante_tamanho').map((opcao) => {
-                    const ativo = refriTamanhoSel?.nome === opcao.nome
+                  {listaTamanhos.map((opcao) => {
+                    const ativo = String(refriTamanhoAtual.nome).trim().toLowerCase() === String(opcao.nome).trim().toLowerCase()
 
                     return (
                       <button
                         type="button"
                         key={opcao.id || opcao.nome}
                         className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() => setRefriTamanhoSel(opcao)}
+                        onClick={() => setRefriTamanhoNome(opcao.nome)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -636,12 +642,13 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   />
                 )}
 
+                {/* BOTÃO COM PREÇO 100% DINÂMICO CONFORME O TAMANHO SELECIONADO */}
                 <button
                   type="button"
                   className="adicionar-bebida-btn"
                   onClick={adicionarRefrigerante}
                 >
-                  + Adicionar Refrigerante (R$ {Number(refriTamanhoSel?.preco || 5).toFixed(2).replace('.', ',')})
+                  + Adicionar refrigerante (R$ {Number(refriTamanhoAtual.preco).toFixed(2).replace('.', ',')})
                 </button>
               </div>
             )}
@@ -651,15 +658,15 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               <div className="bebida-montador">
                 <p className="bebida-subtitulo">Escolha o tipo de água:</p>
                 <div className="bebida-tamanhos-grid">
-                  {opcoesPorCategoria('agua').map((opcao) => {
-                    const ativo = aguaSel?.nome === opcao.nome
+                  {listaAguas.map((opcao) => {
+                    const ativo = String(aguaAtual.nome).trim().toLowerCase() === String(opcao.nome).trim().toLowerCase()
 
                     return (
                       <button
                         type="button"
                         key={opcao.id || opcao.nome}
                         className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() => setAguaSel(opcao)}
+                        onClick={() => setAguaNome(opcao.nome)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -667,17 +674,18 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   })}
                 </div>
 
+                {/* BOTÃO COM PREÇO DINÂMICO CONFORME O TIPO DE ÁGUA */}
                 <button
                   type="button"
                   className="adicionar-bebida-btn"
                   onClick={adicionarAgua}
                 >
-                  + Adicionar {aguaSel?.nome || 'Água'} (R$ {Number(aguaSel?.preco || 3).toFixed(2).replace('.', ',')})
+                  + Adicionar {aguaAtual.nome} (R$ {Number(aguaAtual.preco).toFixed(2).replace('.', ',')})
                 </button>
               </div>
             )}
 
-            {/* LISTA DE BEBIDAS ADICIONADAS */}
+            {/* LISTA DE BEBIDAS ADICIONADAS COM QUANTIDADE E EXCLUSÃO INDIVIDUAL */}
             {bebidas.length > 0 ? (
               <div className="bebidas-selecionadas-bloco">
                 <h4 className="bebidas-selecionadas-titulo">Bebidas no seu pedido:</h4>

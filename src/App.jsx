@@ -13,15 +13,26 @@ function App() {
   const [pagina, setPagina] = useState('home')
   const [pedido, setPedido] = useState(null)
 
+  // Painel Admin: Gerenciar Cardápio
   if (pagina === 'admin') {
-  return (
-    <AdminCardapio
-      voltar={() => setPagina('home')}
-      pedidos={() => setPagina('pedidos-vivendas')}
-    />
-  )
-}
+    return (
+      <AdminCardapio
+        voltar={() => setPagina('home')}
+        pedidos={() => setPagina('admin-pedidos')}
+      />
+    )
+  }
 
+  // Painel Admin: Pedidos Recebidos
+  if (pagina === 'admin-pedidos' || pagina === 'pedidos-vivendas') {
+    return (
+      <PedidosVivendas
+        voltar={() => setPagina('admin')}
+      />
+    )
+  }
+
+  // Demais telas...
   if (pagina === 'destino') {
     return (
       <DestinoPedido
@@ -44,26 +55,19 @@ function App() {
       />
     )
   }
-if (pagina === 'pedidos-vivendas') {
-  return (
-    <PedidosVivendas
-      voltar={() => setPagina('admin')}
-    />
-  )
-}
 
   if (pagina === 'vivendas') {
-  return (
-    <Vivendas
-      pedido={pedido}
-      voltar={() => setPagina('destino')}
-      enviarPedido={(pedidoVivendas) => {
-        setPedido(pedidoVivendas)
-        setPagina('aguardando')
-      }}
-    />
-  )
-}
+    return (
+      <Vivendas
+        pedido={pedido}
+        voltar={() => setPagina('destino')}
+        enviarPedido={(pedidoVivendas) => {
+          setPedido(pedidoVivendas)
+          setPagina('aguardando')
+        }}
+      />
+    )
+  }
 
   if (pagina === 'cliente-comum') {
     return (

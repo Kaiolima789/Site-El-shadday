@@ -1,58 +1,80 @@
-/* ===== FORMA DE PAGAMENTO ===== */
-
 .fp-bloco {
-  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.fp-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E1E1E;
 }
 
 .fp-grade {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 .fp-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 8px;
-  border: 1px solid #d9c9a8;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
   border-radius: 10px;
-  background: #fffdf9;
-  color: #2d211b;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
+  color: #2E1E1E;
+  font-size: 13.5px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .fp-btn:hover {
-  border-color: #b99b7b;
+  border-color: #C4B5A5;
 }
 
 .fp-btn-ativo {
-  background: #6b1f24;
-  border-color: #6b1f24;
-  color: #fff;
+  background: #F5EFEA;
+  border: 1.5px solid #6E2636;
+  color: #6E2636;
+  font-weight: 600;
 }
 
-.fp-aviso {
-  margin: 10px 0 0;
-  padding: 9px 12px;
-  background: #fdf3e7;
-  border: 1px solid #ecd9bd;
-  border-radius: 8px;
-  font-size: 12.5px;
-  color: #6b5a44;
-  text-align: left;
-}
-
-/* ===== TROCO (aparece só quando a forma é dinheiro) ===== */
-
+/* ===== CAMPO DE TROCO FORMATADO E ALINHADO ===== */
 .fp-troco {
-  margin-top: 12px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .fp-troco label {
-  margin-top: 0;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5C4A42;
+}
+
+.fp-troco input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #EAE4D9;
+  border-radius: 8px;
+  background: #FFFFFF;
+  font-size: 14px;
+  color: #2E1E1E;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fp-troco input:focus {
+  border-color: #6E2636;
+  box-shadow: 0 0 0 2px rgba(110, 38, 54, 0.1);
 }

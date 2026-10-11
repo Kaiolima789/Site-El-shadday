@@ -1,4 +1,4 @@
-/* ===== PÁGINA ACOMPANHAMENTO DO PEDIDO — EL SHADDAY DESIGN SYSTEM ===== */
+/* ===== PÁGINA ACOMPANHAMENTO DO PEDIDO — FIGMA DESIGN ===== */
 
 .acompanhar-page {
   min-height: 100vh;
@@ -8,12 +8,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 60px;
+  justify-content: center;
+  padding: 36px 16px 50px;
+  box-sizing: border-box;
 }
 
-/* ===== CABEÇALHO ===== */
+/* ===== CABEÇALHO SUPERIOR ===== */
 .acompanhar-header {
-  padding: 32px 0 16px;
+  margin-bottom: 18px;
   text-align: center;
 }
 
@@ -21,199 +23,261 @@
   margin: 0;
   color: #6E2636;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 13.5px;
-  letter-spacing: 0.5px;
+  font-size: 12.5px;
+  letter-spacing: 0.8px;
   font-weight: 700;
+  text-transform: uppercase;
 }
 
-/* ===== CONTAINER CENTRAL ===== */
-.acompanhar-conteudo {
-  width: min(92%, 440px);
-  margin: 10px auto 40px;
-  padding: 32px 28px 24px;
-  border-radius: 16px;
+/* ===== CARD CENTRAL BRANCO ===== */
+.acompanhar-card {
+  width: 100%;
+  max-width: 420px;
   background: #FFFFFF;
+  border-radius: 20px;
+  padding: 36px 30px 28px;
   border: 1px solid #EAE4D9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
   text-align: center;
   box-sizing: border-box;
+  margin: 0 auto;
 }
 
 .acompanhar-numero {
-  color: #5C4A42;
-  font-size: 13px;
+  color: #7A6961;
+  font-size: 12px;
+  font-weight: 500;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  text-align: center;
 }
 
-.acompanhar-conteudo h2 {
+.acompanhar-titulo {
   color: #2E1E1E;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 28px;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 25px;
   font-weight: 600;
-  margin: 0 0 14px;
-  letter-spacing: -0.5px;
+  margin: 0 0 16px;
+  letter-spacing: -0.3px;
+  text-align: center;
 }
 
+/* Pílula de Previsão de Entrega */
 .acompanhar-previsao-pill {
   display: inline-block;
   background: #FAF7F2;
-  color: #2E1E1E;
-  padding: 8px 18px;
+  color: #5C4A42;
+  padding: 8px 20px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  margin-bottom: 28px;
+  margin: 0 auto 26px;
+  text-align: center;
 }
 
-/* ===== DOT STEPPER (LINHA DO TEMPO) ===== */
+/* Botão sutil para permitir notificações no celular/navegador */
+.acompanhar-notif-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FAF7F2;
+  border: 1px solid #EAE4D9;
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #6E2636;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: -12px auto 22px;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.acompanhar-notif-btn:hover {
+  background: #F5EFEA;
+  border-color: #6E2636;
+}
+
+/* ===== DOT STEPPER VERTICAL (LINHA DO TEMPO) ===== */
 .acompanhar-stepper {
   display: flex;
   flex-direction: column;
-  gap: 22px;
   max-width: 250px;
-  margin: 0 auto 28px;
-  position: relative;
+  margin: 0 auto 24px;
   text-align: left;
 }
 
-.acompanhar-passo {
-  position: relative;
+.stepper-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
+  min-height: 38px;
 }
 
-.stepper-linha {
-  position: absolute;
-  left: 7px;
-  top: 16px;
-  bottom: -22px;
-  width: 1.5px;
-  background: #EAE4D9;
-  z-index: 1;
-}
-
-.stepper-linha-completa {
-  background: #C4B5A5;
-}
-
-.stepper-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  z-index: 2;
+.stepper-trilho {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  width: 16px;
+  position: relative;
   flex-shrink: 0;
 }
 
+.stepper-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  margin-top: 4px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
 .dot-concluido {
-  background: #F5EFEA;
-  border: 1.5px solid #6E2636;
-  color: #6E2636;
-  font-size: 9px;
-  font-weight: bold;
+  background: #A8988C;
+  width: 12px;
+  height: 12px;
+  color: #FFFFFF;
+}
+
+.dot-concluido .check-icon {
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .dot-ativo {
   background: #6E2636;
-  box-shadow: 0 0 0 4px #F5EFEA;
+  width: 12px;
+  height: 12px;
 }
 
 .dot-pendente {
+  background: #D6CBC1;
+  width: 9px;
+  height: 9px;
+}
+
+.stepper-linha {
+  width: 1.5px;
+  flex: 1;
+  min-height: 24px;
   background: #EAE4D9;
+  z-index: 1;
+  margin: 2px 0;
 }
 
-.stepper-texto {
-  font-size: 14px;
+.stepper-linha.linha-concluida {
+  background: #A8988C;
 }
 
-.texto-ativo {
+.stepper-label {
+  font-size: 12.5px;
+  line-height: 18px;
+  padding-top: 1px;
+}
+
+.label-ativa {
   color: #2E1E1E;
   font-weight: 700;
 }
 
-.texto-concluido {
+.label-concluida {
   color: #5C4A42;
+  font-weight: 500;
 }
 
-.texto-pendente {
-  color: #A89684;
+.label-pendente {
+  color: #8C7A70;
+  font-weight: 400;
 }
 
-/* ===== INFO BOX (TOTAL, PAGAMENTO, ENDEREÇO) ===== */
+/* ===== CARD CREME DE INFORMAÇÕES (TOTAL, PAGAMENTO, ENDEREÇO) ===== */
 .acompanhar-info-box {
   background: #FAF7F2;
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 18px;
   text-align: left;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  box-sizing: border-box;
 }
 
 .info-total {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #2E1E1E;
+  margin-bottom: 2px;
 }
 
 .info-secundario {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #5C4A42;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
-/* ===== BOTÃO WHATSAPP ===== */
+/* ===== BOTÃO VERDE WHATSAPP (PÍLULA) ===== */
 .acompanhar-whatsapp-btn {
   width: 100%;
   background: #25D366;
   color: #FFFFFF;
-  border-radius: 28px;
-  padding: 15px;
-  font-size: 14px;
+  border-radius: 24px;
+  padding: 13px 20px;
+  font-size: 13.5px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
   box-sizing: border-box;
+  border: none;
+  font-family: inherit;
 }
 
 .acompanhar-whatsapp-btn:hover {
-  background: #1EBE5D;
+  background: #20BA5A;
 }
 
 /* ===== LINK VOLTAR AO INÍCIO ===== */
-.acompanhar-voltar-link {
+.acompanhar-voltar-btn {
   margin-top: 16px;
   background: transparent;
   border: none;
   color: #5C4A42;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  padding: 6px;
+  padding: 6px 10px;
   transition: color 0.15s ease;
+  font-family: inherit;
+  display: inline-block;
 }
 
-.acompanhar-voltar-link:hover {
+.acompanhar-voltar-btn:hover {
   color: #6E2636;
-  text-decoration: underline;
 }
 
-/* ===== CASO RECUSADO ===== */
+/* Estado de recusa */
+.acompanhar-recusado {
+  text-align: center;
+}
+
 .acompanhar-recusado h2 {
   color: #6E2636;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 22px;
+  margin: 0 0 10px;
 }
 
 .acompanhar-recusado p {
   color: #5C4A42;
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.5;
   margin-bottom: 20px;
 }
@@ -225,16 +289,17 @@
   background: #FAF7F2;
   color: #5C4A42;
   font-size: 12px;
+  text-align: center;
 }
 
-/* ===== CELULAR (RESPONSIVO <= 600px) ===== */
-@media (max-width: 600px) {
-  .acompanhar-conteudo {
-    width: calc(100% - 32px);
-    padding: 24px 20px;
+/* Celular */
+@media (max-width: 480px) {
+  .acompanhar-card {
+    padding: 28px 20px 22px;
+    border-radius: 16px;
   }
 
-  .acompanhar-conteudo h2 {
-    font-size: 24px;
+  .acompanhar-titulo {
+    font-size: 22px;
   }
 }
