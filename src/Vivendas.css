@@ -22,19 +22,26 @@
 }
 
 .vivendas-voltar-btn {
-  background: transparent;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid #D4C9BC;
+  border-radius: 20px;
+  padding: 6px 14px;
   color: #2E1E1E;
-  font-size: 13.5px;
-  cursor: pointer;
-  padding: 6px 0;
-  font-family: inherit;
+  font-size: 13px;
   font-weight: 500;
-  transition: color 0.15s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .vivendas-voltar-btn:hover {
+  border-color: #6E2636;
   color: #6E2636;
+  box-shadow: 0 2px 6px rgba(110, 38, 54, 0.12);
 }
 
 .vivendas-logo {
@@ -55,20 +62,17 @@
   font-size: 10px;
   letter-spacing: 2px;
   display: block;
-  margin-top: 1px;
-  font-weight: 600;
 }
 
 .vivendas-header-spacer {
-  width: 60px;
+  width: 70px;
 }
 
 /* ===== CONTEÚDO PRINCIPAL ===== */
 .vivendas-conteudo {
-  width: 100%;
-  max-width: 980px;
-  margin: 16px auto 0;
-  padding: 0 24px;
+  width: 90%;
+  max-width: 1040px;
+  margin: 10px auto 40px;
   box-sizing: border-box;
 }
 
@@ -125,75 +129,80 @@
   margin-bottom: 16px;
 }
 
+.vivendas-campo:last-child {
+  margin-bottom: 0;
+}
+
 .vivendas-campo label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #2E1E1E;
+  color: #3D2D24;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
 }
 
 .vivendas-campo input,
 .vivendas-campo textarea {
   width: 100%;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  border: 1px solid #EAE4D9;
+  padding: 11px 14px;
+  border: 1px solid #E5DCD0;
   border-radius: 10px;
   background: #FFFFFF;
-  font-size: 16px;
-  font-family: inherit;
+  font-size: 13.5px;
   color: #2E1E1E;
-  outline: none;
-  transition: border-color 0.15s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .vivendas-campo input:focus,
 .vivendas-campo textarea:focus {
+  outline: none;
   border-color: #6E2636;
+  box-shadow: 0 0 0 3px rgba(110, 38, 54, 0.08);
 }
 
 .vivendas-campo textarea {
-  min-height: 75px;
+  min-height: 70px;
   resize: vertical;
 }
 
-/* Alerta de benefício do convênio */
+/* AVISO DO BENEFÍCIO */
 .vivendas-alerta-beneficio {
-  background: #E8F5E9;
-  border: 1px solid #C8E6C9;
-  color: #1B5E20;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #FDF9F2;
+  border: 1px solid #EEDEC8;
   border-radius: 10px;
   padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 16px 0;
+  margin-bottom: 18px;
+  color: #6B4E28;
+  font-size: 12.5px;
   line-height: 1.4;
 }
 
 .vivendas-alerta-beneficio svg {
+  color: #2E7D32;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .vivendas-bloco-pagamento {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #EAE4D9;
+  margin-bottom: 16px;
 }
 
-/* ===== CARD DE RESUMO (DIREITA NO DESKTOP) ===== */
+/* ===== RESUMO (CARD DIREITO) ===== */
 .vivendas-resumo-card {
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
   border-radius: 16px;
-  padding: 24px 28px;
+  padding: 24px 26px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
   position: sticky;
-  top: 20px;
+  top: 24px;
 }
 
 .vivendas-resumo-topo {
@@ -201,13 +210,14 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 18px;
-  color: #2E1E1E;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #F0EAE1;
 }
 
 .vivendas-resumo-icon-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: #F5EFEA;
   color: #6E2636;
   display: flex;
@@ -216,78 +226,73 @@
 }
 
 .vivendas-resumo-topo h3 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
   margin: 0;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2E1E1E;
 }
 
 .vivendas-resumo-extrato {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .vivendas-resumo-linha {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: #3D2D24;
 }
 
-.vivendas-resumo-item-nome {
-  color: #2E1E1E;
+.vivendas-resumo-linha-cobertura {
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.vivendas-cobertura-valor {
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.vivendas-resumo-linha-bebida {
+  color: #6E2636;
   font-weight: 500;
-}
-
-.vivendas-resumo-item-preco {
-  color: #2E1E1E;
-  font-weight: 700;
 }
 
 .vivendas-resumo-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 2px 0 6px;
+  margin: 4px 0 12px;
 }
 
 .vivendas-resumo-tag {
-  background: #F5EFEA;
-  border-radius: 12px;
-  padding: 3px 10px;
+  background: #F8F5F0;
+  border: 1px solid #EAE4D9;
+  border-radius: 6px;
+  padding: 3px 8px;
   font-size: 11px;
-  color: #6E2636;
-  font-weight: 500;
-}
-
-.vivendas-resumo-linha-cobertura {
-  color: #2E7D32;
-}
-
-.vivendas-cobertura-valor {
-  color: #2E7D32;
-  font-weight: 700;
+  color: #5C4A42;
 }
 
 .vivendas-resumo-divisor {
   height: 1px;
   background: #EAE4D9;
-  margin: 12px 0 10px;
+  margin: 14px 0;
 }
 
 .vivendas-resumo-total-linha {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #2E1E1E;
 }
 
 .vivendas-resumo-total-valor {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
   color: #6E2636;
 }
 
@@ -295,49 +300,49 @@
   color: #2E7D32;
 }
 
-/* Botão Enviar Pedido */
 .vivendas-finalizar-btn {
   width: 100%;
-  margin-top: 18px;
-  padding: 15px;
-  border: none;
-  border-radius: 28px;
   background: #6E2636;
   color: #FFFFFF;
-  font-size: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: background 0.15s ease;
-  font-family: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(110, 38, 54, 0.2);
 }
 
-.vivendas-finalizar-btn:hover {
-  background: #551A27;
+.vivendas-finalizar-btn:hover:not(:disabled) {
+  background: #551D29;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(110, 38, 54, 0.28);
 }
 
 .vivendas-finalizar-btn:disabled {
-  background: #C4B5A5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .vivendas-resumo-aviso {
-  margin: 12px 0 0;
-  font-size: 12px;
-  color: #8C7D73;
   text-align: center;
-  line-height: 1.4;
+  font-size: 11.5px;
+  color: #8A7A70;
+  margin: 12px 0 0;
+  line-height: 1.35;
 }
 
-/* ===== CELULAR / RESPONSIVO (<= 768px) ===== */
+/* ===== RESPONSIVO CELULAR (<= 768px) ===== */
 @media (max-width: 768px) {
   .vivendas-header {
     padding: 0 16px;
   }
 
   .vivendas-conteudo {
-    max-width: 520px;
-    padding: 0 16px;
+    width: calc(100% - 32px);
+    margin: 10px auto 30px;
   }
 
   .vivendas-titulo-bloco h2 {
@@ -346,13 +351,12 @@
 
   .vivendas-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 18px;
   }
 
   .vivendas-card,
   .vivendas-resumo-card {
-    padding: 20px 18px;
-    border-radius: 14px;
+    padding: 18px 18px;
   }
 
   .vivendas-resumo-card {

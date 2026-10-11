@@ -2,6 +2,25 @@ import { useState } from 'react'
 import './Vivendas.css'
 import FormaPagamento from './FormaPagamento'
 
+function IconeVoltar({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
+  )
+}
+
 function IconeRecibo({ size = 18 }) {
   return (
     <svg
@@ -15,7 +34,7 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
@@ -51,15 +70,21 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
   const [trocoPara, setTrocoPara] = useState('')
   const [enviando, setEnviando] = useState(false)
 
-  // Na Vivendas a marmita é coberta pelo convênio: o cliente só paga a bebida se tiver pedido
+  // Na Vivendas a marmita e a entrega são cobertas pelo convênio: o cliente só paga a bebida se tiver pedido
   const subtotalMarmita = Number(pedido?.preco_marmita || (pedido?.preco ? pedido.preco - (pedido.preco_bebida || 0) : 18.0)) || 18.0
   const valorBebida = Number(pedido?.preco_bebida) || 0
   const temCobranca = valorBebida > 0
   const valorTotalAPagar = temCobranca ? valorBebida : 0
 
   async function enviar() {
-    if (!nome.trim() || !loja.trim() || !codigo.trim()) {
-      alert('Preencha seu nome, loja e código da Vivendas.')
+    const partesNome = nome.trim().split(/\s+/)
+    if (partesNome.length < 2) {
+      alert('Por favor, digite seu nome e sobrenome.')
+      return
+    }
+
+    if (!loja.trim() || !codigo.trim()) {
+      alert('Preencha a loja e o código da Vivendas.')
       return
     }
 
@@ -87,6 +112,10 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       loja: loja.trim(),
       codigo: codigo.trim(),
       codigo_vivendas: codigo.trim(),
+      tipo_entrega: 'loja',
+      endereco: '',
+      regiao_entrega: '',
+      taxa_entrega: 0,
       observacao: observacao.trim(),
       forma_pagamento: temCobranca ? formaPagamento : '',
       troco_para:
@@ -95,7 +124,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
           : null,
       preco_marmita: subtotalMarmita,
       preco_bebida: valorBebida,
-      preco: valorTotalAPagar,
+      preco: subtotalMarmita + valorBebida,
       valor_cobrar: valorTotalAPagar,
       origem: 'vivendas'
     }
@@ -146,7 +175,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
           title="Voltar"
           aria-label="Voltar"
         >
-          ← Voltar
+          <IconeVoltar size={16} />
+          <span>Voltar</span>
         </button>
 
         <div className="vivendas-logo">
@@ -171,10 +201,10 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
           <div className="vivendas-card">
 
             <div className="vivendas-campo">
-              <label>Nome completo</label>
+              <label>Nome e Sobrenome</label>
               <input
                 type="text"
-                placeholder="Digite seu nome"
+                placeholder="Digite seu nome e sobrenome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
               />
@@ -205,8 +235,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
               <IconeCheckCirculo size={18} />
               <span>
                 {temCobranca
-                  ? `Marmita coberta pelo código Vivendas. Bebida a pagar na entrega: R$ ${valorBebida.toFixed(2).replace('.', ',')}.`
-                  : 'Marmita paga pelo código Vivendas. Nada a pagar na entrega.'}
+                  ? `Marmita e entrega cobertas pelo convênio. Bebida a pagar na entrega: R$ ${valorBebida.toFixed(2).replace('.', ',')}.`
+                  : 'Marmita e entrega 100% cobertas pelo convênio. Nada a pagar na entrega.'}
               </span>
             </div>
 
@@ -268,6 +298,13 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
                 </span>
               </div>
 
+              <div className="vivendas-resumo-linha">
+                <span className="vivendas-resumo-item-nome">Entrega na Loja</span>
+                <span className="vivendas-resumo-item-preco" style={{ color: '#2e7d32', fontWeight: 600 }}>
+                  Grátis (R$ 0,00)
+                </span>
+              </div>
+
               {detalheBebidaResumo() && (
                 <div className="vivendas-resumo-linha vivendas-resumo-linha-bebida">
                   <span className="vivendas-resumo-item-nome">
@@ -301,8 +338,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
 
             <p className="vivendas-resumo-aviso">
               {temCobranca
-                ? 'Marmita faturada pelo convênio. Valor da bebida cobrado na entrega.'
-                : 'Marmita faturada pelo convênio. Nada a pagar na entrega.'}
+                ? 'Marmita e entrega faturadas pelo convênio. Bebida cobrada na entrega.'
+                : 'Marmita e entrega 100% faturadas pelo convênio. Nada a pagar na entrega.'}
             </p>
 
           </aside>

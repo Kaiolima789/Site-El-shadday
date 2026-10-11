@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 12px;
   box-sizing: border-box;
 }
 
@@ -26,13 +26,14 @@
   align-items: center;
   gap: 6px;
   background: #FFFFFF;
-  border: 1px solid #EAE4D9;
+  border: 1.5px solid #D4C9BC;
   border-radius: 20px;
   padding: 6px 14px;
   color: #2E1E1E;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   transition: all 0.15s ease;
   font-family: inherit;
 }
@@ -40,6 +41,7 @@
 .cc-voltar-btn:hover {
   border-color: #6E2636;
   color: #6E2636;
+  box-shadow: 0 2px 6px rgba(110, 38, 54, 0.12);
 }
 
 .cc-logo {
@@ -56,29 +58,30 @@
 }
 
 .cc-header-spacer {
-  width: 60px;
+  width: 80px;
 }
 
 /* ===== CONTEÚDO PRINCIPAL ===== */
 .cc-conteudo {
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
-  padding: 0 20px;
+  margin: 16px auto 0;
+  padding: 0 24px;
   box-sizing: border-box;
 }
 
 .cc-titulo-bloco {
   text-align: center;
-  margin: 16px 0 28px;
+  margin-bottom: 26px;
 }
 
 .cc-titulo-bloco h2 {
-  font-family: 'Lora', Georgia, serif;
-  font-size: 26px;
   color: #2E1E1E;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 34px;
   margin: 0 0 6px;
   font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .cc-titulo-bloco p {
@@ -87,20 +90,21 @@
   margin: 0;
 }
 
-/* ===== GRID 2 COLUNAS NO DESKTOP ===== */
+/* ===== GRID DE 2 COLUNAS (DESKTOP) ===== */
 .cc-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1.25fr 1fr;
   gap: 24px;
   align-items: start;
 }
 
-/* ===== CARD DO FORMULÁRIO ===== */
+/* ===== FORMULÁRIO (CARD ESQUERDO) ===== */
 .cc-card {
   background: #FFFFFF;
   border: 1px solid #EAE4D9;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   box-sizing: border-box;
 }
 
@@ -108,95 +112,283 @@
   margin-bottom: 16px;
 }
 
+.cc-campo:last-child {
+  margin-bottom: 0;
+}
+
 .cc-campo label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #2E1E1E;
+  color: #3D2D24;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
 }
 
 .cc-campo input,
 .cc-campo textarea {
   width: 100%;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  border: 1px solid #EAE4D9;
-  border-radius: 8px;
+  padding: 11px 14px;
+  border: 1px solid #E5DCD0;
+  border-radius: 10px;
   background: #FFFFFF;
-  font-size: 14px;
+  font-size: 13.5px;
   color: #2E1E1E;
   font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .cc-campo input:focus,
 .cc-campo textarea:focus {
+  outline: none;
   border-color: #6E2636;
+  box-shadow: 0 0 0 3px rgba(110, 38, 54, 0.08);
 }
 
 .cc-campo textarea {
-  resize: vertical;
   min-height: 70px;
+  resize: vertical;
 }
 
-/* Toggle Entrega / Retirada */
+/* ===== TOGGLE RETIRADA / ENTREGA ===== */
 .cc-toggle {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
+  background: #F5EFEA;
+  padding: 4px;
+  border-radius: 10px;
 }
 
 .cc-toggle-btn {
-  padding: 12px;
-  border: 1px solid #EAE4D9;
-  border-radius: 10px;
-  background: #FFFFFF;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   color: #5C4A42;
-  font-size: 13.5px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   font-family: inherit;
-  text-align: center;
 }
 
 .cc-toggle-btn.ativo {
-  background: #F5EFEA;
-  border: 1.5px solid #6E2636;
+  background: #FFFFFF;
   color: #6E2636;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Campo endereço que surge quando seleciona entrega */
+.cc-campo-endereco {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESUMO (CARD DIREITO) ===== */
+.cc-resumo-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+  position: sticky;
+  top: 24px;
+}
+
+.cc-resumo-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #F0EAE1;
+}
+
+.cc-resumo-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F5EFEA;
+  color: #6E2636;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cc-resumo-topo h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2E1E1E;
+}
+
+.cc-resumo-extrato {
+  margin-bottom: 20px;
+}
+
+.cc-resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: #3D2D24;
+}
+
+.cc-resumo-linha-bebida {
+  color: #6E2636;
+  font-weight: 500;
+}
+
+.cc-resumo-linha-taxa {
+  color: #5C4A42;
+}
+
+.taxa-gratis {
+  color: #2E7D32;
   font-weight: 600;
 }
 
-/* ===== GRADE DE BOTÕES DE REGIÃO DE ENTREGA ===== */
+.cc-resumo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.cc-resumo-tag {
+  background: #F8F5F0;
+  border: 1px solid #EAE4D9;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #5C4A42;
+}
+
+.cc-resumo-divisor {
+  height: 1px;
+  background: #EAE4D9;
+  margin: 14px 0;
+}
+
+.cc-resumo-total-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #6E2636;
+}
+
+.cc-finalizar-btn {
+  width: 100%;
+  background: #6E2636;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(110, 38, 54, 0.2);
+}
+
+.cc-finalizar-btn:hover:not(:disabled) {
+  background: #551D29;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(110, 38, 54, 0.28);
+}
+
+.cc-finalizar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cc-resumo-aviso {
+  text-align: center;
+  font-size: 11.5px;
+  color: #8A7A70;
+  margin: 12px 0 0;
+  line-height: 1.35;
+}
+
+/* ===== RESPONSIVO CELULAR (<= 768px) ===== */
+@media (max-width: 768px) {
+  .cc-header {
+    padding: 0 12px;
+  }
+
+  .cc-conteudo {
+    width: 100%;
+    padding: 0 16px;
+    margin: 10px auto 30px;
+  }
+
+  .cc-titulo-bloco h2 {
+    font-size: 26px;
+  }
+
+  .cc-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .cc-card,
+  .cc-resumo-card {
+    padding: 18px 18px;
+  }
+
+  .cc-resumo-card {
+    position: static;
+  }
+}
+
+/* ===== SELEÇÃO DE REGIÕES DE ENTREGA ===== */
 .cc-regioes-grade {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin-top: 6px;
+  margin-bottom: 12px;
 }
 
 .cc-regiao-btn {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   padding: 10px 14px;
   background: #FFFFFF;
-  border: 1px solid #EAE4D9;
+  border: 1.5px solid #E5DCD0;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-family: inherit;
   text-align: left;
+  font-family: inherit;
 }
 
 .cc-regiao-btn:hover {
-  border-color: #C4B5A5;
+  border-color: #6E2636;
+  background: #FAF7F2;
 }
 
 .cc-regiao-btn.ativo {
-  background: #F5EFEA;
+  background: #FFF8F6;
   border: 1.5px solid #6E2636;
 }
 
@@ -222,7 +414,6 @@
   font-weight: 600;
 }
 
-/* 5ª Opção (Demais regiões) ocupa as 2 colunas */
 .cc-regiao-btn:nth-child(5) {
   grid-column: span 2;
 }
@@ -237,150 +428,7 @@
   line-height: 1.45;
 }
 
-/* ===== CARD DE RESUMO (LATERAL) ===== */
-.cc-resumo-card {
-  background: #FFFFFF;
-  border: 1px solid #EAE4D9;
-  border-radius: 12px;
-  padding: 20px;
-  box-sizing: border-box;
-  position: sticky;
-  top: 20px;
-}
-
-.cc-resumo-topo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #EAE4D9;
-}
-
-.cc-resumo-icon-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #F5EFEA;
-  color: #6E2636;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.cc-resumo-topo h3 {
-  margin: 0;
-  font-size: 16px;
-  font-family: 'Lora', Georgia, serif;
-  color: #2E1E1E;
-}
-
-.cc-resumo-extrato {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.cc-resumo-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13.5px;
-  color: #2E1E1E;
-}
-
-.cc-resumo-item-nome {
-  font-weight: 500;
-}
-
-.cc-resumo-item-preco {
-  font-weight: 600;
-}
-
-.taxa-gratis {
-  color: #2E7D32;
-}
-
-.cc-resumo-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: -2px;
-}
-
-.cc-resumo-tag {
-  background: #FAF7F2;
-  border: 1px solid #EAE4D9;
-  border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 11.5px;
-  color: #5C4A42;
-}
-
-.cc-resumo-divisor {
-  height: 1px;
-  background: #EAE4D9;
-  margin: 4px 0;
-}
-
-.cc-resumo-total-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: #6E2636;
-  padding-top: 4px;
-}
-
-.cc-finalizar-btn {
-  width: 100%;
-  padding: 14px;
-  background: #6E2636;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-  font-family: inherit;
-}
-
-.cc-finalizar-btn:hover {
-  opacity: 0.95;
-}
-
-.cc-finalizar-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.cc-resumo-aviso {
-  margin: 12px 0 0;
-  font-size: 11.5px;
-  color: #5C4A42;
-  text-align: center;
-  line-height: 1.4;
-}
-
-/* Responsividade Mobile */
 @media (max-width: 820px) {
-  .cc-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .cc-resumo-card {
-    position: static;
-  }
-
-  .cc-regioes-grade {
-    grid-template-columns: 1fr;
-  }
-
   .cc-regiao-btn:nth-child(5) {
     grid-column: span 1;
   }

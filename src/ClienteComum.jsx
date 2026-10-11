@@ -43,7 +43,7 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
@@ -69,8 +69,14 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
   const totalFinal = subtotalMarmita + subtotalBebida + valorEntrega
 
   async function enviar() {
-    if (!nome.trim() || !telefone.trim()) {
-      alert('Preencha seu nome e telefone.')
+    const partesNome = nome.trim().split(/\s+/)
+    if (partesNome.length < 2) {
+      alert('Por favor, digite seu nome e sobrenome.')
+      return
+    }
+
+    if (!telefone.trim()) {
+      alert('Preencha seu telefone / WhatsApp.')
       return
     }
 
@@ -175,8 +181,13 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
           <span>Voltar</span>
         </button>
 
-        <div className="cc-logo">
-          <h1>EL SHADDAY - RESTAURANTE</h1>
+        <div className="cc-logo" style={{ textAlign: 'center' }}>
+          <h1 style={{ margin: 0, color: '#6E2636', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '13px', letterSpacing: '0.5px', fontWeight: 700 }}>
+            EL SHADDAY
+          </h1>
+          <span style={{ color: '#8A6D3B', fontSize: '10px', letterSpacing: '2px', display: 'block', marginTop: '1px', fontWeight: 600 }}>
+            — RESTAURANTE —
+          </span>
         </div>
 
         <div className="cc-header-spacer"></div>
@@ -195,10 +206,10 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
           <div className="cc-card">
 
             <div className="cc-campo">
-              <label>Nome completo</label>
+              <label>Nome e Sobrenome</label>
               <input
                 type="text"
-                placeholder="Digite seu nome"
+                placeholder="Digite seu nome e sobrenome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
               />
