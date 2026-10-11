@@ -3,89 +3,65 @@ import './PedidosVivendas.css'
 import './PedidosOrigem.css'
 import { rotuloPagamento, textoTroco } from './formasPagamento'
 
-// O SQLite salva criado_em em UTC (CURRENT_TIMESTAMP).
-// Aqui convertemos pro horário local do navegador antes de exibir.
 function formatarHora(criadoEm) {
   if (!criadoEm) return ''
-
   const dataUtc = new Date(criadoEm.replace(' ', 'T') + 'Z')
-
   if (Number.isNaN(dataUtc.getTime())) return ''
-
   return dataUtc.toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
-// Retorna a data (YYYY-MM-DD) local do navegador a partir do criado_em em UTC
 function dataLocalDoPedido(criadoEm) {
   if (!criadoEm) return ''
-
   const d = new Date(criadoEm.replace(' ', 'T') + 'Z')
-
   if (Number.isNaN(d.getTime())) return ''
-
   const ano = d.getFullYear()
   const mes = String(d.getMonth() + 1).padStart(2, '0')
   const dia = String(d.getDate()).padStart(2, '0')
-
   return `${ano}-${mes}-${dia}`
 }
 
-// Data de hoje (YYYY-MM-DD) no horário local do navegador
 function hojeLocal() {
   const agora = new Date()
-
   const ano = agora.getFullYear()
   const mes = String(agora.getMonth() + 1).padStart(2, '0')
   const dia = String(agora.getDate()).padStart(2, '0')
-
   return `${ano}-${mes}-${dia}`
 }
 
-// Formata YYYY-MM-DD pra exibição (Hoje / Ontem / DD/MM)
 function formatarDataSelecionada(dataStr) {
   if (dataStr === hojeLocal()) return 'Hoje'
-
   const [ano, mes, dia] = dataStr.split('-')
-
   const ontem = new Date()
   ontem.setDate(ontem.getDate() - 1)
   const ontemStr = `${ontem.getFullYear()}-${String(ontem.getMonth() + 1).padStart(2, '0')}-${String(ontem.getDate()).padStart(2, '0')}`
-
   if (dataStr === ontemStr) return 'Ontem'
-
   return `${dia}/${mes}`
 }
 
 function mudarDia(dataStr, delta) {
   const [ano, mes, dia] = dataStr.split('-').map(Number)
-
   const data = new Date(ano, mes - 1, dia)
   data.setDate(data.getDate() + delta)
-
   const novoAno = data.getFullYear()
   const novoMes = String(data.getMonth() + 1).padStart(2, '0')
   const novoDia = String(data.getDate()).padStart(2, '0')
-
   return `${novoAno}-${novoMes}-${novoDia}`
 }
 
-// Rótulo de exibição para cada status do pedido
 function rotuloStatus(status) {
   const rotulos = {
-    aguardando: 'AGUARDANDO APROVAÇÃO',
-    aprovado: 'APROVADO',
-    em_preparo: 'EM PREPARO',
-    pronto: 'PRONTO',
-    recusado: 'RECUSADO'
+    aguardando: 'Aguardando Aprovação',
+    aprovado: 'Aprovado',
+    em_preparo: 'Em Preparo',
+    pronto: 'Pronto / Entrega',
+    recusado: 'Recusado'
   }
-
   return rotulos[status] || status.toUpperCase()
 }
 
-// Monta a linha de bebida do pedido (refrigerante ou água), ou null se não houver
 function textoBebida(pedido) {
   const qtd = Number(pedido.bebida_quantidade) > 1
     ? `${pedido.bebida_quantidade}x `
@@ -93,60 +69,53 @@ function textoBebida(pedido) {
 
   if (pedido.refrigerante_sabor || pedido.refrigerante_tamanho) {
     const partes = [pedido.refrigerante_sabor, pedido.refrigerante_tamanho].filter(Boolean)
-    return `🥤 ${qtd}${partes.join(' - ')}`
+    return `${qtd}${partes.join(' - ')}`
   }
 
   if (pedido.agua_tipo) {
-    return `💧 ${qtd}${pedido.agua_tipo}`
+    return `${qtd}${pedido.agua_tipo}`
   }
 
   return null
 }
 
-// Carne: usa o campo novo (carne); cai pro campo antigo (proteina) se o pedido for de antes da mudança
 function textoCarne(pedido) {
   return pedido.carne || pedido.proteina || ''
 }
 
-// ===== ORIGEM DO PEDIDO =====
-// Pedidos antigos (sem origem) contam como Vivendas.
 function ehClienteComum(pedido) {
   return pedido.origem === 'cliente_comum'
 }
 
 function rotuloOrigem(pedido) {
-  return ehClienteComum(pedido) ? 'CLIENTE COMUM' : 'VIVENDAS'
+  return ehClienteComum(pedido) ? 'Cliente Comum' : 'Convênio Vivendas'
 }
 
 function formatarReais(valor) {
-  return `R$ ${Number(valor || 0).toFixed(2)}`
+  return `R$ ${Number(valor || 0).toFixed(2).replace('.', ',')}`
 }
 
 function rotuloEntrega(pedido) {
   return pedido.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada no local'
 }
 
-// Texto do que deve ser cobrado do cliente
-// - Vivendas: marmita paga pelo código, cobra só a bebida
-// - Cliente comum: cobra marmita + bebida
 function textoCobranca(pedido) {
   const semValorSeparado =
     pedido.valor_cobrar === null || pedido.valor_cobrar === undefined
 
-  // Pedido antigo, de antes da regra de pagamento
   if (semValorSeparado) {
-    return `Valor: ${formatarReais(pedido.preco)}`
+    return `Total: ${formatarReais(pedido.preco)}`
   }
 
   if (ehClienteComum(pedido)) {
-    return `Cobrar do cliente: ${formatarReais(pedido.valor_cobrar)}`
+    return `Total a cobrar: ${formatarReais(pedido.valor_cobrar)}`
   }
 
   if (Number(pedido.valor_cobrar) > 0) {
-    return `Cobrar do cliente: ${formatarReais(pedido.valor_cobrar)} (só a bebida)`
+    return `Total a cobrar: ${formatarReais(pedido.valor_cobrar)} (apenas a bebida)`
   }
 
-  return 'Nada a cobrar — marmita paga pelo código Vivendas'
+  return 'Nada a cobrar — coberto pelo convênio Vivendas'
 }
 
 function PedidosVivendas({ voltar }) {
@@ -158,13 +127,10 @@ function PedidosVivendas({ voltar }) {
   async function carregarPedidos(mostrarErro = true) {
     try {
       const resposta = await fetch('http://localhost:3000/pedidos')
-
       if (!resposta.ok) {
         throw new Error('Erro ao buscar pedidos')
       }
-
       const dados = await resposta.json()
-
       setPedidos(dados)
     } catch (erro) {
       console.error(erro)
@@ -178,13 +144,9 @@ function PedidosVivendas({ voltar }) {
 
   useEffect(() => {
     carregarPedidos()
-
-    // Atualiza a lista automaticamente a cada 10s,
-    // sem mostrar alert se falhar em segundo plano
     const intervalo = setInterval(() => {
       carregarPedidos(false)
     }, 10000)
-
     return () => clearInterval(intervalo)
   }, [])
 
@@ -192,22 +154,15 @@ function PedidosVivendas({ voltar }) {
     try {
       const resposta = await fetch(
         `http://localhost:3000/pedidos/${pedido.id}/aprovar`,
-        {
-          method: 'PUT'
-        }
+        { method: 'PUT' }
       )
-
       const dados = await resposta.json()
-
       if (!resposta.ok) {
         alert(dados.erro || 'Erro ao aprovar pedido.')
         return
       }
-
       imprimirPedido({ ...pedido, status: 'aprovado' })
-
       carregarPedidos()
-
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')
@@ -218,22 +173,15 @@ function PedidosVivendas({ voltar }) {
     try {
       const resposta = await fetch(
         `http://localhost:3000/pedidos/${id}/recusar`,
-        {
-          method: 'PUT'
-        }
+        { method: 'PUT' }
       )
-
       const dados = await resposta.json()
-
       if (!resposta.ok) {
         alert(dados.erro || 'Erro ao recusar pedido.')
         return
       }
-
       alert('Pedido recusado!')
-
       carregarPedidos()
-
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')
@@ -244,20 +192,14 @@ function PedidosVivendas({ voltar }) {
     try {
       const resposta = await fetch(
         `http://localhost:3000/pedidos/${id}/preparo`,
-        {
-          method: 'PUT'
-        }
+        { method: 'PUT' }
       )
-
       const dados = await resposta.json()
-
       if (!resposta.ok) {
         alert(dados.erro || 'Erro ao atualizar pedido.')
         return
       }
-
       carregarPedidos()
-
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')
@@ -268,20 +210,14 @@ function PedidosVivendas({ voltar }) {
     try {
       const resposta = await fetch(
         `http://localhost:3000/pedidos/${id}/pronto`,
-        {
-          method: 'PUT'
-        }
+        { method: 'PUT' }
       )
-
       const dados = await resposta.json()
-
       if (!resposta.ok) {
         alert(dados.erro || 'Erro ao atualizar pedido.')
         return
       }
-
       carregarPedidos()
-
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')
@@ -290,184 +226,67 @@ function PedidosVivendas({ voltar }) {
 
   function imprimirPedido(pedido) {
     const janela = window.open('', '_blank', 'width=320,height=600')
-
     if (!janela) {
-      alert('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.')
+      alert('O navegador bloqueou a janela de impressão. Permita pop-ups.')
       return
     }
 
     const bebida = textoBebida(pedido)
     const carne = textoCarne(pedido)
-    const comum = ehClienteComum(pedido)
 
-    // Bloco de identificação: muda conforme a origem do pedido
-    const blocoCliente = comum
+    const blocoCliente = ehClienteComum(pedido)
       ? `
-          <p><strong>Cliente:</strong> ${pedido.nome}</p>
-          <p><strong>Tel:</strong> ${pedido.telefone || ''}</p>
-          <p><strong>${rotuloEntrega(pedido)}</strong></p>
-          ${
-            pedido.tipo_entrega === 'entrega' && pedido.endereco
-              ? `<p><strong>End:</strong> ${pedido.endereco}</p>`
-              : ''
-          }
-        `
+        <p><strong>Cliente:</strong> ${pedido.nome}</p>
+        <p><strong>Telefone:</strong> ${pedido.telefone || '-'}</p>
+        <p><strong>Recebimento:</strong> ${rotuloEntrega(pedido)}</p>
+        ${pedido.tipo_entrega === 'entrega' && pedido.endereco ? `<p><strong>Endereço:</strong> ${pedido.endereco}</p>` : ''}
+      `
       : `
-          <p><strong>Cliente:</strong> ${pedido.nome}</p>
-          <p><strong>Loja:</strong> ${pedido.loja}</p>
-          <p><strong>Código:</strong> ${pedido.codigo_vivendas}</p>
-        `
+        <p><strong>Cliente:</strong> ${pedido.nome}</p>
+        <p><strong>Loja:</strong> ${pedido.loja}</p>
+        <p><strong>Cód. Vivendas:</strong> ${pedido.codigo_vivendas}</p>
+      `
 
-    // Bloco de pagamento: Vivendas paga só a bebida; cliente comum paga tudo
-    const semValorSeparado =
-      pedido.valor_cobrar === null || pedido.valor_cobrar === undefined
-
-    let blocoPagamento
-
-    if (semValorSeparado) {
-      blocoPagamento = `<p class="total">TOTAL: ${formatarReais(pedido.preco)}</p>`
-    } else if (comum) {
-      blocoPagamento = `<p class="total">COBRAR: ${formatarReais(pedido.valor_cobrar)}</p>`
-    } else if (Number(pedido.valor_cobrar) > 0) {
-      blocoPagamento = `
-          <p>Marmita: paga pelo código</p>
-          <p class="total">COBRAR (bebida): ${formatarReais(pedido.valor_cobrar)}</p>
-        `
-    } else {
-      blocoPagamento = `<p class="total">PAGO PELO CÓDIGO</p>`
-    }
-
-    const linhaForma = pedido.forma_pagamento
-      ? `<p><strong>Pagto na entrega:</strong> ${rotuloPagamento(pedido.forma_pagamento)}</p>${
-          textoTroco(pedido) ? `<p><strong>${textoTroco(pedido)}</strong></p>` : ''
-        }`
-      : ''
+    const blocoPagamento = ehClienteComum(pedido)
+      ? `<p class="total">Total a Pagar: ${formatarReais(pedido.valor_cobrar)}</p>`
+      : Number(pedido.valor_cobrar) > 0
+      ? `<p class="total">Bebida a Pagar: ${formatarReais(pedido.valor_cobrar)}</p>`
+      : `<p class="total">Total: Grátis (Convênio)</p>`
 
     janela.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <meta charset="utf-8" />
-          <title>Pedido #${pedido.id}</title>
+          <title>Comanda #${pedido.id}</title>
           <style>
-            /* Define o tamanho físico do papel da térmica 58mm.
-               "auto" na altura deixa a impressora cortar no tamanho do conteúdo. */
-            @page {
-              size: 58mm auto;
-              margin: 0;
-            }
-
-            * {
-              box-sizing: border-box;
-            }
-
-            html, body {
-              width: 58mm;
-              margin: 0;
-              padding: 0;
-            }
-
-            body {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 12px;
-              line-height: 1.35;
-              color: #000;
-              padding: 2mm 3mm 6mm;
-            }
-
-            h1 {
-              text-align: center;
-              font-size: 15px;
-              margin: 0 0 2px;
-              letter-spacing: 0.5px;
-            }
-
-            .subtitulo {
-              text-align: center;
-              font-size: 10px;
-              margin-bottom: 8px;
-            }
-
-            .origem {
-              text-align: center;
-              font-size: 13px;
-              font-weight: bold;
-              border: 1px solid #000;
-              padding: 2px 0;
-              margin: 4px 0;
-            }
-
-            hr {
-              border: none;
-              border-top: 1px dashed #000;
-              margin: 6px 0;
-            }
-
-            p {
-              margin: 2px 0;
-              word-break: break-word;
-            }
-
-            .item {
-              margin: 1px 0;
-            }
-
-            .secao-titulo {
-              font-weight: bold;
-              margin-top: 4px;
-            }
-
-            .total {
-              font-size: 14px;
-              font-weight: bold;
-              margin-top: 8px;
-              text-align: right;
-            }
-
-            .rodape {
-              text-align: center;
-              font-size: 9px;
-              margin-top: 10px;
-            }
+            body { font-family: monospace; font-size: 12px; margin: 10px; }
+            h1 { font-size: 14px; text-align: center; margin: 0; }
+            hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+            .total { font-weight: bold; font-size: 13px; text-align: right; }
           </style>
         </head>
         <body>
           <h1>EL SHADDAY RESTAURANTE</h1>
-          <p class="subtitulo">${rotuloStatus(pedido.status)} — Nº ${pedido.id}</p>
-
-          <p class="origem">${rotuloOrigem(pedido)}</p>
-
+          <p style="text-align:center;">Pedido #${pedido.id} — ${formatarHora(pedido.criado_em)}</p>
+          <p style="text-align:center; font-weight:bold;">${rotuloOrigem(pedido).toUpperCase()}</p>
           <hr />
-
           ${blocoCliente}
-          <p><strong>Horário:</strong> ${formatarHora(pedido.criado_em)}</p>
-
           <hr />
-
-          <p class="secao-titulo">MARMITA</p>
-          ${carne ? `<p class="item">🍗 ${carne}</p>` : ''}
-          ${pedido.guarnicao ? `<p class="item">🥗 ${pedido.guarnicao}</p>` : ''}
-
-          ${bebida ? `<p class="item">${bebida}</p>` : ''}
-
-          ${pedido.observacao ? `<p><strong>Obs:</strong> ${pedido.observacao}</p>` : ''}
-
+          <p><strong>ITENS:</strong></p>
+          ${carne ? `<p>• Proteína: ${carne}</p>` : ''}
+          ${pedido.guarnicao ? `<p>• Guarnições: ${pedido.guarnicao}</p>` : ''}
+          ${bebida ? `<p>• Bebida: ${bebida}</p>` : ''}
+          ${pedido.observacao ? `<p>• Obs: ${pedido.observacao}</p>` : ''}
           <hr />
-
-          ${linhaForma}
           ${blocoPagamento}
-
-          <p class="rodape">${new Date().toLocaleString('pt-BR')}</p>
+          <p style="text-align:center; font-size:10px; margin-top:10px;">${new Date().toLocaleString('pt-BR')}</p>
         </body>
       </html>
     `)
 
     janela.document.close()
     janela.focus()
-
-    setTimeout(() => {
-      janela.print()
-    }, 250)
+    setTimeout(() => janela.print(), 250)
   }
 
   const pedidosDoDia = pedidos.filter(
@@ -486,320 +305,255 @@ function PedidosVivendas({ voltar }) {
     recusado: pedidosDoDia.filter((p) => p.status === 'recusado').length
   }
 
-  const ehHoje = dataSelecionada === hojeLocal()
-
   return (
     <div className="pedidos-vivendas-page">
 
-      <header className="pedidos-vivendas-header">
-
-        <button
-          className="pedidos-voltar"
-          onClick={voltar}
-        >
-          ←
-        </button>
-
-        <div>
-          <h1>EL SHADDAY</h1>
-          <span>— RESTAURANTE —</span>
+      <header className="admin-header">
+        <div className="admin-header-esquerda">
+          <h1>EL SHADDAY • PAINEL ADMIN</h1>
         </div>
 
+        <div className="admin-header-direita">
+          <label className="admin-status-toggle">
+            <input type="checkbox" defaultChecked />
+            <span className="toggle-switch"></span>
+            <span className="toggle-texto">Restaurante Aberto</span>
+          </label>
+
+          <button onClick={voltar} className="admin-sair-btn">
+            Cardápio
+          </button>
+        </div>
       </header>
+
+      <div className="admin-abas-nav">
+        <button className="admin-aba-btn" onClick={voltar}>
+          Gerenciar Cardápio
+        </button>
+
+        <button className="admin-aba-btn admin-aba-ativa">
+          Pedidos Recebidos ({contagem.aguardando})
+        </button>
+      </div>
 
       <main className="pedidos-vivendas-conteudo">
 
-        <h2>PEDIDOS</h2>
+        <div className="pedidos-filtro-barra">
+          <div className="pedidos-dia-nav">
+            <button
+              type="button"
+              onClick={() => setDataSelecionada((d) => mudarDia(d, -1))}
+            >
+              ←
+            </button>
+            <span>{formatarDataSelecionada(dataSelecionada)}</span>
+            <button
+              type="button"
+              onClick={() => setDataSelecionada((d) => mudarDia(d, 1))}
+            >
+              →
+            </button>
+          </div>
 
-        <div className="pedidos-topo-lista">
-          <p className="pedidos-subtitulo">
-            Pedidos recebidos
-          </p>
+          <div className="pedidos-abas">
+            <button
+              className={`aba-btn ${filtro === 'aguardando' ? 'aba-ativa' : ''}`}
+              onClick={() => setFiltro('aguardando')}
+            >
+              Aguardando ({contagem.aguardando})
+            </button>
+
+            <button
+              className={`aba-btn ${filtro === 'em_preparo' ? 'aba-ativa' : ''}`}
+              onClick={() => setFiltro('em_preparo')}
+            >
+              Em Preparo ({contagem.em_preparo})
+            </button>
+
+            <button
+              className={`aba-btn ${filtro === 'pronto' ? 'aba-ativa' : ''}`}
+              onClick={() => setFiltro('pronto')}
+            >
+              Prontos / Entrega ({contagem.pronto})
+            </button>
+
+            <button
+              className={`aba-btn ${filtro === 'recusado' ? 'aba-ativa' : ''}`}
+              onClick={() => setFiltro('recusado')}
+            >
+              Recusados ({contagem.recusado})
+            </button>
+          </div>
 
           <button
+            type="button"
             className="atualizar-btn"
-            onClick={() => carregarPedidos()}
+            onClick={() => carregarPedidos(true)}
           >
-            ↻ Atualizar
+            ⟳ Atualizar
           </button>
         </div>
 
-        {/* NAVEGAÇÃO POR DIA */}
-        <div className="pedidos-dia-nav">
-
-          <button
-            onClick={() => setDataSelecionada(mudarDia(dataSelecionada, -1))}
-          >
-            ←
-          </button>
-
-          <span>
-            {formatarDataSelecionada(dataSelecionada)}
-          </span>
-
-          <button
-            onClick={() => setDataSelecionada(mudarDia(dataSelecionada, 1))}
-            disabled={ehHoje}
-          >
-            →
-          </button>
-
-          <input
-            type="date"
-            className="pedidos-dia-input"
-            value={dataSelecionada}
-            max={hojeLocal()}
-            onChange={(e) => {
-              if (e.target.value) setDataSelecionada(e.target.value)
-            }}
-          />
-
-        </div>
-
-        <div className="pedidos-abas">
-
-          <button
-            className={`aba-btn ${filtro === 'aguardando' ? 'aba-ativa' : ''}`}
-            onClick={() => setFiltro('aguardando')}
-          >
-            Aguardando ({contagem.aguardando})
-          </button>
-
-          <button
-            className={`aba-btn ${filtro === 'aprovado' ? 'aba-ativa' : ''}`}
-            onClick={() => setFiltro('aprovado')}
-          >
-            Aprovados ({contagem.aprovado})
-          </button>
-
-          <button
-            className={`aba-btn ${filtro === 'em_preparo' ? 'aba-ativa' : ''}`}
-            onClick={() => setFiltro('em_preparo')}
-          >
-            Preparo ({contagem.em_preparo})
-          </button>
-
-          <button
-            className={`aba-btn ${filtro === 'pronto' ? 'aba-ativa' : ''}`}
-            onClick={() => setFiltro('pronto')}
-          >
-            Prontos ({contagem.pronto})
-          </button>
-
-          <button
-            className={`aba-btn ${filtro === 'recusado' ? 'aba-ativa' : ''}`}
-            onClick={() => setFiltro('recusado')}
-          >
-            Recusados ({contagem.recusado})
-          </button>
-
-        </div>
-
-        {carregando && (
-          <p>Carregando pedidos...</p>
-        )}
+        {carregando && <p className="pedidos-vazio">Carregando pedidos...</p>}
 
         {!carregando && pedidosFiltrados.length === 0 && (
-          <div className="pedido-pendente">
+          <div className="pedido-pendente pedido-vazio-card">
             <h3>Nenhum pedido aqui</h3>
             <p>
-              {filtro === 'aguardando' && ehHoje
-                ? 'Quando um cliente enviar um pedido, ele aparecerá aqui.'
-                : `Nenhum pedido "${rotuloStatus(filtro).toLowerCase()}" em ${formatarDataSelecionada(dataSelecionada) === 'Hoje' ? 'hoje' : formatarDataSelecionada(dataSelecionada)}.`}
+              {filtro === 'aguardando'
+                ? 'Quando um cliente enviar um pedido, ele aparecerá aqui automaticamente.'
+                : `Nenhum pedido marcado como "${rotuloStatus(filtro)}".`}
             </p>
           </div>
         )}
 
-        {pedidosFiltrados.map((pedido) => (
+        {pedidosFiltrados.map((pedido) => {
+          const carne = textoCarne(pedido)
+          const bebida = textoBebida(pedido)
+          const telLimpo = pedido.telefone ? pedido.telefone.replace(/\D/g, '') : ''
 
-          <div
-            className={`pedido-pendente pedido-${pedido.status}`}
-            key={pedido.id}
-          >
+          return (
+            <div className={`pedido-card pedido-${pedido.status}`} key={pedido.id}>
 
-            <div className="pedido-topo">
-
-              <div>
+              <div className="pedido-cabecalho">
+                <div className="pedido-id-linha">
+                  <h3>
+                    Pedido #{pedido.id}{' '}
+                    <span className="pedido-hora">• {formatarHora(pedido.criado_em)}</span>
+                  </h3>
+                </div>
 
                 <div className="pedido-tags">
-
-                  <span className={`pedido-status pedido-status-${pedido.status}`}>
+                  <span className={`pedido-status-badge status-${pedido.status}`}>
                     {rotuloStatus(pedido.status)}
                   </span>
 
-                  <span
-                    className={`pedido-origem ${
-                      ehClienteComum(pedido)
-                        ? 'pedido-origem-comum'
-                        : 'pedido-origem-vivendas'
-                    }`}
-                  >
-                    {ehClienteComum(pedido) ? '👤' : '🏢'} {rotuloOrigem(pedido)}
+                  <span className="pedido-origem-badge">
+                    {rotuloOrigem(pedido)}
                   </span>
+                </div>
+              </div>
 
+              <div className="pedido-cliente-bloco">
+                <div className="cliente-linha-principal">
+                  <p>
+                    <strong>Cliente:</strong> {pedido.nome}
+                  </p>
+
+                  {telLimpo && (
+                    <a
+                      href={`https://wa.me/55${telLimpo}?text=${encodeURIComponent(
+                        `Olá, ${pedido.nome}! Estamos com seu pedido #${pedido.id} no Restaurante El Shadday.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="whatsapp-contato-btn"
+                    >
+                      WhatsApp
+                    </a>
+                  )}
                 </div>
 
-                <h3>
-                  Pedido #{pedido.id}
-                  <span className="pedido-hora">
-                    {' '}
-                    {formatarHora(pedido.criado_em)}
-                  </span>
-                </h3>
-
-              </div>
-
-            </div>
-
-            <div className="pedido-dados">
-
-              <p>
-                <strong>Cliente:</strong> {pedido.nome}
-              </p>
-
-              {ehClienteComum(pedido) ? (
-                <>
-                  <p>
-                    <strong>Telefone:</strong> {pedido.telefone}
-                  </p>
-
-                  <p>
-                    <strong>Recebimento:</strong> {rotuloEntrega(pedido)}
-                  </p>
-
-                  {pedido.tipo_entrega === 'entrega' && pedido.endereco && (
+                {ehClienteComum(pedido) ? (
+                  <>
                     <p>
-                      <strong>Endereço:</strong> {pedido.endereco}
+                      <strong>Telefone:</strong> {pedido.telefone || '-'}
                     </p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p>
-                    <strong>Loja:</strong> {pedido.loja}
-                  </p>
-
-                  <p>
-                    <strong>Código Vivendas:</strong> {pedido.codigo_vivendas}
-                  </p>
-                </>
-              )}
-
-            </div>
-
-            <div className="pedido-marmita">
-
-              <h4>DETALHES DA MARMITA</h4>
-
-              {textoCarne(pedido) && (
-                <p>🍗 {textoCarne(pedido)}</p>
-              )}
-
-              {pedido.guarnicao && (
-                <p>🥗 {pedido.guarnicao}</p>
-              )}
-
-              {textoBebida(pedido) && (
-                <p>{textoBebida(pedido)}</p>
-              )}
-
-              {pedido.observacao && (
-                <p>
-                  <strong>Observação:</strong> {pedido.observacao}
-                </p>
-              )}
-
-            </div>
-
-            <div
-              className={`pedido-cobranca ${
-                ehClienteComum(pedido)
-                  ? 'pedido-cobranca-comum'
-                  : 'pedido-cobranca-vivendas'
-              }`}
-            >
-              <p>{textoCobranca(pedido)}</p>
-
-              {pedido.forma_pagamento && (
-                <p>
-                  Pagamento na entrega: {rotuloPagamento(pedido.forma_pagamento)}
-                </p>
-              )}
-
-              {textoTroco(pedido) && (
-                <p>{textoTroco(pedido)}</p>
-              )}
-            </div>
-
-            {pedido.status === 'aguardando' && (
-
-              <div className="pedido-acoes">
-
-                <button
-                  className="aprovar-btn"
-                  onClick={() => aprovarPedido(pedido)}
-                >
-                  ✓ APROVAR PEDIDO
-                </button>
-
-                <button
-                  className="recusar-btn"
-                  onClick={() => recusarPedido(pedido.id)}
-                >
-                  ✕ RECUSAR
-                </button>
-
+                    <p>
+                      <strong>Recebimento:</strong> {rotuloEntrega(pedido)}
+                    </p>
+                    {pedido.tipo_entrega === 'entrega' && pedido.endereco && (
+                      <p>
+                        <strong>Endereço:</strong> {pedido.endereco}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      <strong>Loja:</strong> {pedido.loja}
+                    </p>
+                    <p>
+                      <strong>Código Vivendas:</strong> {pedido.codigo_vivendas}
+                    </p>
+                  </>
+                )}
               </div>
 
-            )}
+              <div className="pedido-itens-bloco">
+                <h4>DETALHES DA MARMITA</h4>
+                {carne && <p>• <strong>Proteína:</strong> {carne}</p>}
+                {pedido.guarnicao && <p>• <strong>Guarnições:</strong> {pedido.guarnicao}</p>}
+                {bebida && <p>• <strong>Bebida:</strong> {bebida}</p>}
+                {pedido.observacao && (
+                  <p className="pedido-obs">
+                    • <strong>Observação:</strong> {pedido.observacao}
+                  </p>
+                )}
+              </div>
 
-            {pedido.status === 'aprovado' && (
+              <div className="pedido-cobranca-bloco">
+                <p>
+                  <strong>{textoCobranca(pedido)}</strong>
+                  {pedido.forma_pagamento && ` • Pagamento: ${rotuloPagamento(pedido.forma_pagamento)} na entrega`}
+                </p>
+                {pedido.forma_pagamento === 'dinheiro' && pedido.troco_para && (
+                  <p className="pedido-troco-info">{textoTroco(pedido)}</p>
+                )}
+              </div>
 
-              <div className="pedido-acoes">
+              <div className="pedido-acoes-barra">
+                {pedido.status === 'aguardando' && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn-aprovar"
+                      onClick={() => aprovarPedido(pedido)}
+                    >
+                      ✓ Aprovar Pedido
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-recusar"
+                      onClick={() => recusarPedido(pedido.id)}
+                    >
+                      ✕ Recusar
+                    </button>
+                  </>
+                )}
+
+                {pedido.status === 'aprovado' && (
+                  <button
+                    type="button"
+                    className="btn-preparo"
+                    onClick={() => marcarEmPreparo(pedido.id)}
+                  >
+                    Iniciar Preparo →
+                  </button>
+                )}
+
+                {pedido.status === 'em_preparo' && (
+                  <button
+                    type="button"
+                    className="btn-pronto"
+                    onClick={() => marcarPronto(pedido.id)}
+                  >
+                    Marcar como Pronto / Saiu para Entrega →
+                  </button>
+                )}
 
                 <button
-                  className="imprimir-btn"
+                  type="button"
+                  className="btn-imprimir"
                   onClick={() => imprimirPedido(pedido)}
                 >
-                  🖨 IMPRIMIR
+                  🖨️ Imprimir comanda
                 </button>
-
-                <button
-                  className="preparo-btn"
-                  onClick={() => marcarEmPreparo(pedido.id)}
-                >
-                  👨‍🍳 INICIAR PREPARO
-                </button>
-
               </div>
 
-            )}
-
-            {pedido.status === 'em_preparo' && (
-
-              <div className="pedido-acoes">
-
-                <button
-                  className="imprimir-btn"
-                  onClick={() => imprimirPedido(pedido)}
-                >
-                  🖨 IMPRIMIR
-                </button>
-
-                <button
-                  className="pronto-btn"
-                  onClick={() => marcarPronto(pedido.id)}
-                >
-                  ✅ MARCAR COMO PRONTO
-                </button>
-
-              </div>
-
-            )}
-
-          </div>
-
-        ))}
+            </div>
+          )
+        })}
 
       </main>
 

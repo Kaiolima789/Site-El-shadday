@@ -8,10 +8,8 @@ import {
 import './Home.css'
 import marmitaHero from './assets/marmita-hero.jpg'
 
-// ===== ÍCONES PRÓPRIOS (SVGs enviados pelo Kaio) =====
-// Usam currentColor: a cor vem do CSS (branco dentro do card vinho).
-
-function IconeMarmita({ size = 22 }) {
+// ===== ÍCONES VETORIAIS (SVG OUTLINE) =====
+function IconeMarmita({ size = 24 }) {
   return (
     <svg
       width={size}
@@ -24,14 +22,15 @@ function IconeMarmita({ size = 22 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 11h16a1 1 0 0 1 1 1v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-6a1 1 0 0 1 1-1Z" />
-      <path d="M5.5 11 7 4h10l1.5 7" />
-      <path d="M9 14h6" />
+      <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z" />
+      <path d="M7 4v3" />
+      <path d="M12 2v5" />
+      <path d="M17 4v3" />
     </svg>
   )
 }
 
-function IconeLocal({ size = 22 }) {
+function IconeLocal({ size = 24 }) {
   return (
     <svg
       width={size}
@@ -47,26 +46,31 @@ function IconeLocal({ size = 22 }) {
       <path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7" />
       <path d="M2 14h20" />
       <path d="M12 14v7" />
-      <circle cx="12" cy="7" r="3" />
       <path d="M7 6v2" />
       <path d="M17 6v2" />
+      <circle cx="12" cy="7" r="2.5" />
     </svg>
   )
 }
 
-// Dados de contato (mudou algo? é só editar aqui)
+// Dados de contato e link direto para o Google Maps
 const TELEFONE = '61 99437-4490'
 const WHATSAPP_LINK = 'https://wa.me/5561994374490'
 const ENDERECO = 'QR 202 Conjunto E, 3 — Santa Maria, Brasília - DF, 72502-409, Brasil'
+const GOOGLE_MAPS_LINK =
+  'https://www.google.com/maps/search/?api=1&query=QR+202+Conjunto+E,+3+-+Santa+Maria,+Bras%C3%ADlia+-+DF,+72502-409'
 const FUNCIONAMENTO = 'Segunda a Sábado, das 11:00 às 14:00'
 
 function Home({ irParaPedido, irParaAdmin }) {
   return (
     <div className="home-page">
 
-      {/* ===== HEADER ===== */}
+      {/* ===== HEADER COM LOGO CENTRALIZADO ===== */}
       <header className="home-header">
         <div className="home-container home-header-inner">
+
+          {/* Espaçador para garantir centralização perfeita */}
+          <div className="home-header-spacer"></div>
 
           <div className="home-logo">
             <span className="home-logo-nome">EL SHADDAY</span>
@@ -78,7 +82,7 @@ function Home({ irParaPedido, irParaAdmin }) {
             className="home-admin-link"
             onClick={irParaAdmin}
           >
-            Admin
+            Administração
           </button>
 
         </div>
@@ -92,10 +96,17 @@ function Home({ irParaPedido, irParaAdmin }) {
 
             <div className="home-hero-texto">
 
-              <span className="home-localizacao">
+              {/* Link do mapa também na tag de localização */}
+              <a
+                href={GOOGLE_MAPS_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="home-localizacao"
+                title="Abrir no Google Maps"
+              >
                 <MapPin size={14} aria-hidden="true" />
                 Santa Maria, Brasília
-              </span>
+              </a>
 
               <h1>Comida feita com carinho, pronta pra você</h1>
 
@@ -143,7 +154,7 @@ function Home({ irParaPedido, irParaAdmin }) {
                 onClick={irParaPedido}
               >
                 <span className="home-opcao-icone">
-                  <IconeMarmita size={22} />
+                  <IconeMarmita size={24} />
                 </span>
 
                 <span className="home-opcao-texto">
@@ -158,7 +169,7 @@ function Home({ irParaPedido, irParaAdmin }) {
                 onClick={() => alert('Em breve: pedidos para consumir no local.')}
               >
                 <span className="home-opcao-icone">
-                  <IconeLocal size={22} />
+                  <IconeLocal size={24} />
                 </span>
 
                 <span className="home-opcao-texto">
@@ -195,12 +206,21 @@ function Home({ irParaPedido, irParaAdmin }) {
                 </a>
               </div>
 
+              {/* CARD DE ENDEREÇO CLICÁVEL DIRETO PRO GOOGLE MAPS */}
               <div className="home-info">
                 <div className="home-info-topo">
                   <MapPin size={16} aria-hidden="true" />
                   <span>Endereço</span>
                 </div>
-                <p className="home-info-valor">{ENDERECO}</p>
+                <a
+                  className="home-info-valor home-info-link home-info-endereco-link"
+                  href={GOOGLE_MAPS_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir rota no Google Maps"
+                >
+                  {ENDERECO}
+                </a>
               </div>
 
               <div className="home-info">

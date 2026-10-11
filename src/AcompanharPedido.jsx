@@ -2,39 +2,26 @@ import { useEffect, useState } from 'react'
 import './AcompanharPedido.css'
 import { rotuloPagamento } from './formasPagamento'
 
-// Ordem das etapas do fluxo normal (fora o caso de recusa)
+// Etapas do fluxo de entrega para a linha do tempo (dot stepper)
 const ETAPAS = [
-  { chave: 'aguardando', label: 'Aguardando aprovação', icone: '🕐' },
-  { chave: 'aprovado', label: 'Pedido aprovado', icone: '👍' },
-  { chave: 'em_preparo', label: 'Em preparo', icone: '👨‍🍳' },
-  { chave: 'pronto', label: 'Pronto', icone: '🍱' }
+  { chave: 'recebido', label: 'Pedido recebido' },
+  { chave: 'aguardando', label: 'Aguardando aprovação' },
+  { chave: 'em_preparo', label: 'Em preparo' },
+  { chave: 'saiu', label: 'Saiu para entrega' }
 ]
 
-function formatarReais(valor) {
-  return `R$ ${Number(valor || 0).toFixed(2)}`
-}
-
-// Texto do pagamento que o cliente verá:
-// - Vivendas: marmita paga pelo código, paga só a bebida
-// - Cliente comum: paga o valor total
-function textoPagamento(pedido) {
-  if (pedido.valor_cobrar === null || pedido.valor_cobrar === undefined) {
-    return null
-  }
-
-  const forma = pedido.forma_pagamento
-    ? ` Pagamento na entrega: ${rotuloPagamento(pedido.forma_pagamento)}.`
-    : ''
-
-  if (pedido.origem === 'cliente_comum') {
-    return `Valor a pagar: ${formatarReais(pedido.valor_cobrar)}.${forma}`
-  }
-
-  if (Number(pedido.valor_cobrar) > 0) {
-    return `Marmita paga pelo código Vivendas. Valor a pagar (bebida): ${formatarReais(pedido.valor_cobrar)}.${forma}`
-  }
-
-  return 'Marmita paga pelo código Vivendas. Nada a pagar.'
+function IconeWhatsApp({ size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.21 8.21 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.24 8.24-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.12.82.83-3.04-.19-.31a8.17 8.17 0 0 1-1.25-4.47c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.12-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.22-.18-.47-.31z" />
+    </svg>
+  )
 }
 
 function AcompanharPedido({ pedidoId, voltar }) {
@@ -44,13 +31,10 @@ function AcompanharPedido({ pedidoId, voltar }) {
   async function buscarPedido() {
     try {
       const resposta = await fetch(`http://localhost:3000/pedidos/${pedidoId}`)
-
       if (!resposta.ok) {
         throw new Error('Pedido não encontrado')
       }
-
       const dados = await resposta.json()
-
       setPedido(dados)
       setErro(false)
     } catch (e) {
@@ -61,130 +45,162 @@ function AcompanharPedido({ pedidoId, voltar }) {
 
   useEffect(() => {
     if (!pedidoId) return
-
     buscarPedido()
-
-    // Consulta o status a cada 5s, sem precisar recarregar a página
     const intervalo = setInterval(buscarPedido, 5000)
-
     return () => clearInterval(intervalo)
   }, [pedidoId])
 
-  const indiceAtual = pedido
-    ? ETAPAS.findIndex((etapa) => etapa.chave === pedido.status)
-    : -1
+  function obterIndiceEtapa() {
+    if (!pedido) return 1
+    const st = pedido.status
+    if (st === 'aguardando') return 1
+    if (st === 'aprovado' || st === 'em_preparo') return 2
+    if (st === 'pronto') return 3
+    return 1
+  }
 
+  const indiceAtual = obterIndiceEtapa()
   const foiRecusado = pedido?.status === 'recusado'
 
-  const pagamento = pedido ? textoPagamento(pedido) : null
+  const valorTotal = Number(pedido?.valor_cobrar || pedido?.preco || 0)
+  const formaPagamentoTexto = pedido?.forma_pagamento
+    ? rotuloPagamento(pedido.forma_pagamento)
+    : 'Pagamento na entrega'
+
+  const linkWhatsApp = `https://wa.me/5561994374490?text=${encodeURIComponent(
+    `Olá! Gostaria de informações sobre o meu Pedido #${pedido?.id || pedidoId}.`
+  )}`
 
   return (
     <div className="acompanhar-page">
 
       <header className="acompanhar-header">
-        <h1>EL SHADDAY</h1>
-        <span>— RESTAURANTE —</span>
+        <h1>EL SHADDAY - RESTAURANTE</h1>
       </header>
 
       <main className="acompanhar-conteudo">
 
         {erro && (
           <div className="acompanhar-aviso">
-            <p>Não foi possível consultar seu pedido agora. Tentando de novo...</p>
+            <p>Conectando ao pedido...</p>
           </div>
         )}
 
-        {!pedido && !erro && (
-          <p>Carregando status do pedido...</p>
-        )}
-
-        {pedido && foiRecusado && (
+        {foiRecusado ? (
           <div className="acompanhar-recusado">
-            <div className="acompanhar-icon-grande">✕</div>
             <h2>Pedido não aprovado</h2>
             <p>
-              Infelizmente seu pedido não pôde ser aprovado desta vez.
-              Entre em contato com o restaurante para mais detalhes.
+              Infelizmente seu pedido não pôde ser aprovado. Entre em contato com
+              o restaurante para mais detalhes.
             </p>
           </div>
-        )}
-
-        {pedido && !foiRecusado && (
+        ) : (
           <>
-            <div className="acompanhar-icon-grande">
-              {ETAPAS[indiceAtual]?.icone || '🕐'}
+            <span className="acompanhar-numero">
+              Pedido #{pedido?.id || pedidoId}
+            </span>
+
+            <h2>
+              {pedido?.status === 'pronto'
+                ? 'Saiu para entrega'
+                : pedido?.status === 'em_preparo' || pedido?.status === 'aprovado'
+                ? 'Em preparo'
+                : 'Aguardando aprovação'}
+            </h2>
+
+            <div className="acompanhar-previsao-pill">
+              Previsão de entrega: 35 a 45 min
             </div>
 
-            <h2>{ETAPAS[indiceAtual]?.label || 'Aguardando aprovação'}</h2>
+            {/* DOT STEPPER (LINHA DO TEMPO MINIMALISTA) */}
+            <div className="acompanhar-stepper">
 
-            <p className="acompanhar-numero">
-              Pedido #{pedido.id}
-            </p>
+              {ETAPAS.map((etapa, index) => {
+                const conluida = index < indiceAtual
+                const ativa = index === indiceAtual
 
-            {pagamento && (
-              <p
-                style={{
-                  background: '#fdf3e7',
-                  border: '1px solid #ecd9bd',
-                  borderRadius: '10px',
-                  padding: '10px 14px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#6b1f24',
-                  margin: '4px 0 18px'
-                }}
-              >
-                {pagamento}
-              </p>
-            )}
+                return (
+                  <div className="acompanhar-passo" key={etapa.chave}>
+                    {index < ETAPAS.length - 1 && (
+                      <div
+                        className={`stepper-linha ${
+                          index < indiceAtual ? 'stepper-linha-completa' : ''
+                        }`}
+                      />
+                    )}
 
-            <div className="acompanhar-linha">
-
-              {ETAPAS.map((etapa, index) => (
-                <div className="acompanhar-etapa" key={etapa.chave}>
-
-                  <div
-                    className={`acompanhar-bolinha ${
-                      index <= indiceAtual ? 'acompanhar-bolinha-ativa' : ''
-                    }`}
-                  >
-                    {index < indiceAtual ? '✓' : etapa.icone}
-                  </div>
-
-                  <span
-                    className={
-                      index <= indiceAtual ? 'acompanhar-label-ativa' : ''
-                    }
-                  >
-                    {etapa.label}
-                  </span>
-
-                  {index < ETAPAS.length - 1 && (
                     <div
-                      className={`acompanhar-conector ${
-                        index < indiceAtual ? 'acompanhar-conector-ativo' : ''
+                      className={`stepper-dot ${
+                        conluida
+                          ? 'dot-concluido'
+                          : ativa
+                          ? 'dot-ativo'
+                          : 'dot-pendente'
                       }`}
-                    />
-                  )}
+                    >
+                      {conluida ? '✓' : ''}
+                    </div>
 
-                </div>
-              ))}
+                    <span
+                      className={`stepper-texto ${
+                        ativa
+                          ? 'texto-ativo'
+                          : conluida
+                          ? 'texto-concluido'
+                          : 'texto-pendente'
+                      }`}
+                    >
+                      {etapa.label}
+                    </span>
+                  </div>
+                )
+              })}
 
             </div>
 
-            {pedido.status === 'pronto' && (
-              <p className="acompanhar-pronto-msg">
-                Seu pedido está pronto! 🎉
-              </p>
-            )}
+            {/* CARD DE INFORMAÇÕES DO PEDIDO */}
+            <div className="acompanhar-info-box">
+              <div className="acompanhar-info-linha">
+                <span className="info-total">
+                  Total a pagar: R$ {valorTotal.toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+
+              <div className="acompanhar-info-linha">
+                <span className="info-secundario">
+                  Pagamento: {formaPagamentoTexto} na entrega
+                </span>
+              </div>
+
+              {pedido?.tipo_entrega === 'entrega' && pedido?.endereco && (
+                <div className="acompanhar-info-linha">
+                  <span className="info-secundario">
+                    Endereço de entrega: {pedido.endereco}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* BOTÃO WHATSAPP */}
+            <a
+              href={linkWhatsApp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="acompanhar-whatsapp-btn"
+            >
+              <IconeWhatsApp size={20} />
+              Dúvidas? Falar no WhatsApp
+            </a>
           </>
         )}
 
+        {/* LINK VOLTAR AO INÍCIO */}
         <button
+          type="button"
           onClick={voltar}
-          className="acompanhar-voltar-btn"
+          className="acompanhar-voltar-link"
         >
-          ← VOLTAR PARA O INÍCIO
+          ← Voltar ao início
         </button>
 
       </main>

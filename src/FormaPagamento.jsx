@@ -1,13 +1,15 @@
-import { FORMAS_PAGAMENTO } from './formasPagamento'
 import './FormaPagamento.css'
 
-// Seletor de forma de pagamento, usado no fluxo Cliente Comum e no Vivendas.
-// Quando a forma é "dinheiro", mostra o campo opcional de troco.
+const FORMAS = [
+  { chave: 'pix', label: 'Pix' },
+  { chave: 'debito', label: 'Débito' },
+  { chave: 'credito', label: 'Crédito' },
+  { chave: 'dinheiro', label: 'Dinheiro' }
+]
+
 function FormaPagamento({ valor, onChange, troco, onTrocoChange }) {
   function escolher(chave) {
     onChange(chave)
-
-    // Trocou pra outra forma: limpa o troco digitado
     if (chave !== 'dinheiro' && onTrocoChange) {
       onTrocoChange('')
     }
@@ -15,27 +17,28 @@ function FormaPagamento({ valor, onChange, troco, onTrocoChange }) {
 
   return (
     <div className="fp-bloco">
-
-      <label>Forma de pagamento</label>
+      <label className="fp-label">Forma de pagamento</label>
 
       <div className="fp-grade">
-        {FORMAS_PAGAMENTO.map((forma) => (
-          <button
-            type="button"
-            key={forma.chave}
-            className={valor === forma.chave ? 'fp-btn fp-btn-ativo' : 'fp-btn'}
-            onClick={() => escolher(forma.chave)}
-          >
-            <span>{forma.icone}</span>
-            {forma.label}
-          </button>
-        ))}
+        {FORMAS.map((forma) => {
+          const selecionado = valor === forma.chave
+
+          return (
+            <button
+              type="button"
+              key={forma.chave}
+              className={`fp-btn ${selecionado ? 'fp-btn-ativo' : ''}`}
+              onClick={() => escolher(forma.chave)}
+            >
+              {forma.label}
+            </button>
+          )
+        })}
       </div>
 
       {valor === 'dinheiro' && onTrocoChange && (
         <div className="fp-troco">
           <label>Troco para quanto? (opcional)</label>
-
           <input
             type="text"
             inputMode="decimal"
@@ -45,11 +48,6 @@ function FormaPagamento({ valor, onChange, troco, onTrocoChange }) {
           />
         </div>
       )}
-
-      <p className="fp-aviso">
-        O pagamento é feito na entrega (ou retirada), na maquininha ou em dinheiro.
-      </p>
-
     </div>
   )
 }

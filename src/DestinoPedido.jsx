@@ -1,66 +1,100 @@
 import './DestinoPedido.css'
 
-// Fotos ilustrativas (Unsplash, uso livre)
-const FOTO_CLIENTE = 'https://images.unsplash.com/photo-1762631934518-f75e233413ca?auto=format&fit=crop&w=400&q=70'
-const FOTO_VIVENDAS = 'https://images.unsplash.com/photo-1779808721968-040c94b6cfa3?auto=format&fit=crop&w=400&q=70'
+// ===== ÍCONES VETORIAIS (SVG OUTLINE) =====
+function IconeClienteComum({ size = 22 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
+function IconeVivendas({ size = 22 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01" />
+      <path d="M16 6h.01" />
+      <path d="M12 6h.01" />
+      <path d="M12 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 10h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 10h.01" />
+      <path d="M8 14h.01" />
+    </svg>
+  )
+}
 
 function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
   return (
     <div className="destino-page">
 
       <header className="destino-header">
-
-        <button
-          className="destino-voltar"
-          onClick={voltar}
-        >
-          ←
-        </button>
-
         <div className="destino-logo">
           <h1>EL SHADDAY</h1>
           <span>— RESTAURANTE —</span>
         </div>
-
       </header>
 
       <main className="destino-conteudo">
 
-        <div className="destino-icon">
-          🍱
-        </div>
-
-        <h2>PARA QUEM É O PEDIDO?</h2>
-
-        <p>
-          Escolha como deseja continuar seu pedido.
-        </p>
+        <h2>Para quem é o pedido?</h2>
+        <p>Escolha como deseja continuar seu pedido.</p>
 
         <div className="destino-opcoes">
 
           <button
-            className="destino-card cliente"
+            type="button"
+            className="destino-card"
             onClick={clienteComum}
           >
-            <img className="destino-card-foto" src={FOTO_CLIENTE} alt="" />
+            <div className="destino-badge">
+              <IconeClienteComum size={22} />
+            </div>
 
-            <div>
-              <h3>CLIENTE COMUM</h3>
-              <p>Pedido normal para você.</p>
+            <div className="destino-card-info">
+              <h3>Cliente Comum</h3>
+              <p>Pedido para clientes normais</p>
             </div>
 
             <span className="destino-seta">→</span>
           </button>
 
           <button
-            className="destino-card vivendas"
+            type="button"
+            className="destino-card"
             onClick={vivendas}
           >
-            <img className="destino-card-foto" src={FOTO_VIVENDAS} alt="" />
+            <div className="destino-badge">
+              <IconeVivendas size={22} />
+            </div>
 
-            <div>
-              <h3>VIVENDAS</h3>
-              <p>Pedido destinado às Vivendas.</p>
+            <div className="destino-card-info">
+              <h3>Vivendas</h3>
+              <p>Pedido destinado a cliente Vivendas</p>
             </div>
 
             <span className="destino-seta">→</span>
@@ -68,46 +102,15 @@ function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
 
         </div>
 
+        <button
+          type="button"
+          className="destino-voltar-link"
+          onClick={voltar}
+        >
+          ← Voltar ao início
+        </button>
+
       </main>
-
-      {/* NAVEGAÇÃO INFERIOR */}
-      <nav className="nav-inferior">
-
-        <button onClick={voltar} className="nav-item">
-          <span>🏠</span>
-          Início
-        </button>
-
-        <button className="nav-item nav-item-ativo">
-          <span>🍱</span>
-          Marmitas
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: pedidos para consumir no local.')}
-        >
-          <span>🏪</span>
-          No Local
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: acompanhamento de pedidos por aqui.')}
-        >
-          <span>📋</span>
-          Pedidos
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: seu perfil.')}
-        >
-          <span>👤</span>
-          Perfil
-        </button>
-
-      </nav>
 
     </div>
   )

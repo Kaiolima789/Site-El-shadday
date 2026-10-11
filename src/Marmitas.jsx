@@ -1,19 +1,10 @@
 import { useEffect, useState } from 'react'
 import './Marmitas.css'
 
-// Fotos ilustrativas de cada categoria (Unsplash, uso livre)
-const FOTOS = {
-  carne: 'https://images.unsplash.com/photo-1762631934518-f75e233413ca?auto=format&fit=crop&w=300&q=70',
-  guarnicao: 'https://images.unsplash.com/photo-1594470603337-2e8778fda2be?auto=format&fit=crop&w=300&q=70'
-}
-
 const MAX_CARNES = 2
 const MAX_QUANTIDADE_BEBIDA = 10
 
 // ===== VALORES PADRÃO DE BEBIDA =====
-// Usados como fallback SOMENTE quando o cardápio do dia (Admin) ainda não
-// tiver essas opções cadastradas. Se o Admin configurar preços/sabores
-// próprios, eles têm prioridade sobre esses valores fixos.
 const REFRIGERANTE_TAMANHOS_PADRAO = [
   { id: 'padrao-tam-lata', nome: 'Lata', preco: 5.0 },
   { id: 'padrao-tam-600ml', nome: '600 ml', preco: 7.5 },
@@ -22,22 +13,21 @@ const REFRIGERANTE_TAMANHOS_PADRAO = [
 
 const REFRIGERANTE_SABORES_PADRAO = [
   { id: 'padrao-sabor-coca', nome: 'Coca-Cola' },
+  { id: 'padrao-sabor-guarana', nome: 'Guaraná' },
   { id: 'padrao-sabor-fanta-laranja', nome: 'Fanta Laranja' },
   { id: 'padrao-sabor-fanta-uva', nome: 'Fanta Uva' },
   { id: 'padrao-sabor-sprite', nome: 'Sprite' }
 ]
 
 const AGUA_TIPOS_PADRAO = [
-  { id: 'padrao-agua-comgas', nome: 'Água com gás', preco: 3.5 },
-  { id: 'padrao-agua-semgas', nome: 'Água sem gás', preco: 3.0 }
+  { id: 'padrao-agua-semgas', nome: 'Água sem gás', preco: 3.0 },
+  { id: 'padrao-agua-comgas', nome: 'Água com gás', preco: 3.5 }
 ]
 
-// ===== ÍCONES (SVG inline, estilo outline, sem emoji e sem cor fixa) =====
-// Usam stroke="currentColor" de propósito: assim herdam a cor do texto
-// ao redor (vinho no estado normal, branco quando o item está selecionado),
-// sem precisar de CSS extra por ícone.
+// ===== ÍCONES VETORIAIS (SOLUÇÃO B: GEOMETRIA LIMPA E NÍTIDA) =====
 
-function IconeSemBebida({ size = 16 }) {
+// Seta voltar
+function IconeVoltar({ size = 18 }) {
   return (
     <svg
       width={size}
@@ -45,18 +35,19 @@ function IconeSemBebida({ size = 16 }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <circle cx="12" cy="12" r="9" />
-      <line x1="5.5" y1="18.5" x2="18.5" y2="5.5" />
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
     </svg>
   )
 }
 
-function IconeCopo({ size = 16 }) {
+// 1. Proteína (Garfo e Faca elegantes — símbolo universal da refeição principal)
+function IconeProteina({ size = 18 }) {
   return (
     <svg
       width={size}
@@ -64,20 +55,62 @@ function IconeCopo({ size = 16 }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M6 8h12l-1.2 11.3a2 2 0 0 1-2 1.7H9.2a2 2 0 0 1-2-1.7L6 8Z" />
+      <path d="M18 2v20" />
+      <path d="M18 2a3 3 0 0 0-3 3v5a2 2 0 0 0 2 2h2" />
+      <path d="M6 2v6a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V2" />
+      <path d="M8 10v12" />
+    </svg>
+  )
+}
+
+// 2. Guarnições (Folha fresca de manjericão — símbolo clássico de salada e acompanhamentos)
+function IconeGuarnicao({ size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
+    </svg>
+  )
+}
+
+// 3. Bebida (Copo geométrico com canudo)
+function IconeBebida({ size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 8h10l-1.5 13H8.5L7 8Z" />
       <path d="M5 8h14" />
-      <path d="M14.5 3.2l1 4.8" />
-      <path d="M14.5 3.2h2.3" />
+      <path d="M15 2l-3 6" />
     </svg>
   )
 }
 
-function IconeAgua({ size = 16 }) {
+// 4. Resumo (Recibo / Comanda)
+function IconeRecibo({ size = 18 }) {
   return (
     <svg
       width={size}
@@ -90,98 +123,31 @@ function IconeAgua({ size = 16 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M12 3c4 5 7 8.6 7 12a7 7 0 0 1-14 0c0-3.4 3-7 7-12Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M8 7h8" />
+      <path d="M8 11h8" />
+      <path d="M8 15h5" />
     </svg>
   )
 }
 
-function IconeLata({ size = 26 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="7" y="3" width="10" height="18" rx="2" />
-      <line x1="7" y1="7" x2="17" y2="7" />
-    </svg>
-  )
-}
-
-function IconeGarrafa({ size = 26 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M10 2h4v3.4l2 2.4V20a1.6 1.6 0 0 1-1.6 1.6H9.6A1.6 1.6 0 0 1 8 20V7.8l2-2.4V2Z" />
-      <line x1="9" y1="10" x2="15" y2="10" />
-    </svg>
-  )
-}
-
-// Ícone de "editar/digitar" para o card de sabor personalizado
-function IconeEditar({ size = 15 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-    </svg>
-  )
-}
-
-// Mesmo ícone de garrafa para 600ml e 2 Litros — só o tamanho do SVG muda,
-// pra manter o estilo idêntico e não parecer produto diferente.
-function iconeTamanho(nome) {
-  const n = nome.toLowerCase()
-  if (n.includes('lata')) return <IconeLata size={26} />
-  if (n.includes('litro')) return <IconeGarrafa size={30} />
-  return <IconeGarrafa size={24} />
-}
-
-// Data de hoje (YYYY-MM-DD) no horário local, pra buscar o cardápio do dia
 function dataHojeLocal() {
   const hoje = new Date()
-
   const ano = hoje.getFullYear()
   const mes = String(hoje.getMonth() + 1).padStart(2, '0')
   const dia = String(hoje.getDate()).padStart(2, '0')
-
   return `${ano}-${mes}-${dia}`
 }
 
-function Marmitas({ voltar, continuar }) {
+function Marmitas({ voltar, continuar, irParaAdmin }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
 
   // ===== BEBIDA =====
-  const [bebidaTipo, setBebidaTipo] = useState(null) // null | 'refrigerante' | 'agua'
+  const [bebidaTipo, setBebidaTipo] = useState(null)
   const [refrigeranteSabor, setRefrigeranteSabor] = useState('')
-  const [refrigeranteTamanho, setRefrigeranteTamanho] = useState(null) // { nome, preco }
-  const [aguaTipo, setAguaTipo] = useState(null) // { nome, preco }
+  const [refrigeranteTamanho, setRefrigeranteTamanho] = useState(null)
+  const [aguaTipo, setAguaTipo] = useState(null)
   const [saborPersonalizadoAtivo, setSaborPersonalizadoAtivo] = useState(false)
   const [quantidadeBebida, setQuantidadeBebida] = useState(1)
 
@@ -189,35 +155,21 @@ function Marmitas({ voltar, continuar }) {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
-  const itensEscolhidos =
-    carne.length + guarnicao.length + (bebidaTipo ? 1 : 0)
-
   useEffect(() => {
     async function carregarCardapio() {
       try {
         setCarregando(true)
         setErro('')
 
-        const hoje = new Date()
-
-        const ano = hoje.getFullYear()
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0')
-        const dia = String(hoje.getDate()).padStart(2, '0')
-
-        const dataHoje = `${ano}-${mes}-${dia}`
-
-        const resposta = await fetch(
-          `http://localhost:3000/cardapios/${dataHoje}`
-        )
+        const dataHoje = dataHojeLocal()
+        const resposta = await fetch(`http://localhost:3000/cardapios/${dataHoje}`)
 
         if (!resposta.ok) {
           throw new Error('Nenhum cardápio disponível para hoje.')
         }
 
         const dados = await resposta.json()
-
         setCardapio(dados)
-
       } catch (erro) {
         console.error(erro)
         setErro(erro.message)
@@ -228,19 +180,14 @@ function Marmitas({ voltar, continuar }) {
 
     carregarCardapio()
 
-    // Atualiza só o cardápio (preço da marmita e opções) a cada 15s,
-    // sem mostrar "carregando" e sem perder o que o cliente já escolheu.
     const intervalo = setInterval(async () => {
       try {
-        const resposta = await fetch(
-          `http://localhost:3000/cardapios/${dataHojeLocal()}`
-        )
-
+        const resposta = await fetch(`http://localhost:3000/cardapios/${dataHojeLocal()}`)
         if (resposta.ok) {
           setCardapio(await resposta.json())
         }
       } catch (e) {
-        // falha em segundo plano: mantém o cardápio que já está na tela
+        // falha silenciosa em segundo plano
       }
     }, 15000)
 
@@ -249,7 +196,7 @@ function Marmitas({ voltar, continuar }) {
 
   if (carregando) {
     return (
-      <div className="marmitas-page">
+      <div className="marmitas-page marmitas-carregando">
         <h2>Carregando cardápio...</h2>
       </div>
     )
@@ -257,28 +204,22 @@ function Marmitas({ voltar, continuar }) {
 
   if (erro) {
     return (
-      <div className="marmitas-page">
+      <div className="marmitas-page marmitas-erro">
         <h2>Cardápio indisponível</h2>
         <p>{erro}</p>
-
-        <button onClick={voltar}>
-          ← Voltar
+        <button onClick={voltar} className="voltar-erro-btn">
+          ← Voltar para a tela inicial
         </button>
       </div>
     )
   }
 
-  // Retorna as opções do cardápio de hoje para a categoria pedida.
-  // Para as categorias de bebida, se o Admin ainda não tiver cadastrado
-  // nada, cai nos valores padrão definidos no topo do arquivo.
   function opcoesPorCategoria(categoria) {
     const doCardapio = cardapio
       ? cardapio.opcoes.filter((opcao) => opcao.categoria === categoria)
       : []
 
-    if (doCardapio.length > 0) {
-      return doCardapio
-    }
+    if (doCardapio.length > 0) return doCardapio
 
     if (categoria === 'refrigerante_tamanho') return REFRIGERANTE_TAMANHOS_PADRAO
     if (categoria === 'refrigerante_sabor') return REFRIGERANTE_SABORES_PADRAO
@@ -301,15 +242,12 @@ function Marmitas({ voltar, continuar }) {
   function alternarCarne(nome) {
     setCarne((atual) => {
       const jaSelecionada = atual.includes(nome)
-
       if (jaSelecionada) {
         return atual.filter((item) => item !== nome)
       }
-
       if (atual.length >= MAX_CARNES) {
         return atual
       }
-
       return [...atual, nome]
     })
   }
@@ -347,9 +285,6 @@ function Marmitas({ voltar, continuar }) {
     )
   }
 
-  // preço unitário da bebida escolhida (0 se nada selecionado ainda)
-  // Number(...) é importante: o preço pode chegar do servidor como texto
-  // (ex.: "18.00"), e texto + número vira concatenação em vez de soma.
   const precoUnitarioBebida = Number(
     bebidaTipo === 'refrigerante' && refrigeranteTamanho
       ? refrigeranteTamanho.preco
@@ -359,18 +294,13 @@ function Marmitas({ voltar, continuar }) {
   ) || 0
 
   const precoBebida = precoUnitarioBebida * quantidadeBebida
-
   const precoMarmita = Number(cardapio?.preco) || 0
-
   const precoTotal = precoMarmita + precoBebida
 
-  // bebida incompleta = escolheu o tipo mas não terminou de escolher sabor/tamanho/tipo
-  // (no caso de sabor personalizado, exige que o texto não esteja vazio)
   const bebidaIncompleta =
     (bebidaTipo === 'refrigerante' && (!refrigeranteSabor.trim() || !refrigeranteTamanho)) ||
     (bebidaTipo === 'agua' && !aguaTipo)
 
-  // Mostra o seletor de quantidade só quando a bebida já está totalmente definida
   const bebidaDefinida =
     (bebidaTipo === 'refrigerante' && refrigeranteSabor.trim() && refrigeranteTamanho) ||
     (bebidaTipo === 'agua' && aguaTipo)
@@ -391,461 +321,369 @@ function Marmitas({ voltar, continuar }) {
     return 'Sem bebida'
   }
 
-  function seletorQuantidade() {
-    return (
-      <div className="bebida-quantidade">
-        <span className="bebida-subtitulo bebida-quantidade-titulo">Quantidade:</span>
-
-        <div className="quantidade-stepper">
-          <button
-            type="button"
-            onClick={() => alterarQuantidade(-1)}
-            disabled={quantidadeBebida <= 1}
-          >
-            −
-          </button>
-
-          <span className="quantidade-valor">{quantidadeBebida}</span>
-
-          <button
-            type="button"
-            onClick={() => alterarQuantidade(1)}
-            disabled={quantidadeBebida >= MAX_QUANTIDADE_BEBIDA}
-          >
-            +
-          </button>
-        </div>
-
-        <span className="bebida-quantidade-subtotal">
-          Subtotal: R$ {Number(precoBebida).toFixed(2)}
-        </span>
-      </div>
-    )
-  }
-
   return (
     <div className="marmitas-page">
 
-      {/* CABEÇALHO */}
+      {/* CABEÇALHO COM SETA DE VOLTAR PARA A HOME */}
       <header className="marmitas-header">
-
         <button
-          className="voltar-btn"
+          type="button"
+          className="marmitas-voltar-btn"
           onClick={voltar}
+          title="Voltar para a página inicial"
         >
-          ←
+          <IconeVoltar size={18} />
+          <span>Voltar</span>
         </button>
 
         <div className="marmitas-logo">
-          <h1>EL SHADDAY</h1>
-          <span>— RESTAURANTE —</span>
+          <h1>EL SHADDAY - RESTAURANTE</h1>
         </div>
 
-        <button className="carrinho-btn">
-          🛒
-          {itensEscolhidos > 0 && (
-            <span className="carrinho-badge">{itensEscolhidos}</span>
+        <div className="marmitas-header-dir">
+          {irParaAdmin ? (
+            <button onClick={irParaAdmin} className="admin-link">
+              Admin
+            </button>
+          ) : (
+            <a href="#admin" onClick={(e) => { e.preventDefault(); if (voltar) voltar(); }} className="admin-link">
+              Admin
+            </a>
           )}
-        </button>
-
+        </div>
       </header>
 
-
-      {/* TÍTULO */}
+      {/* TÍTULO PRINCIPAL */}
       <section className="titulo-marmita">
-
-        <h2>MONTE SUA MARMITA</h2>
-
-        <p>
-          Escolha as opções de hoje
-        </p>
-
+        <h2>Monte sua Marmita</h2>
+        <p>Escolha as opções de hoje</p>
       </section>
 
+      {/* CONTAINER CENTRAL DOS CARDS */}
+      <main className="marmitas-container">
 
-      {/* CARNE */}
-      <section className="escolha">
-
-        <div className="escolha-icon">
-          🍗
-        </div>
-
-        <div className="escolha-conteudo">
-
-          <h3>1. ESCOLHA A CARNE ({carne.length}/{MAX_CARNES})</h3>
-
-          {opcoesPorCategoria('carne').map((opcao) => {
-            const selecionada = carne.includes(opcao.nome)
-            const desabilitada = !selecionada && carne.length >= MAX_CARNES
-
-            return (
-              <label
-                key={opcao.id}
-                className={desabilitada ? 'opcao-desabilitada' : ''}
-              >
-                <input
-                  type="checkbox"
-                  checked={selecionada}
-                  disabled={desabilitada}
-                  onChange={() => alternarCarne(opcao.nome)}
-                />
-
-                {opcao.nome}
-              </label>
-            )
-          })}
-
-        </div>
-
-        <img className="escolha-foto" src={FOTOS.carne} alt="Carne" />
-
-      </section>
-
-
-      {/* GUARNIÇÃO */}
-      <section className="escolha">
-
-        <div className="escolha-icon">
-          🥗
-        </div>
-
-        <div className="escolha-conteudo">
-
-          <h3>2. ESCOLHA AS GUARNIÇÕES</h3>
-
-          {opcoesPorCategoria('guarnicao').map((opcao) => (
-            <label key={opcao.id}>
-              <input
-                type="checkbox"
-                checked={guarnicao.includes(opcao.nome)}
-                onChange={() => alternarGuarnicao(opcao.nome)}
-              />
-
-              {opcao.nome}
-            </label>
-          ))}
-
-        </div>
-
-        <img className="escolha-foto" src={FOTOS.guarnicao} alt="Guarnição" />
-
-      </section>
-
-
-      {/* BEBIDA */}
-      <section className="escolha escolha-bebida">
-
-        <div className="escolha-icon">
-          <IconeCopo size={24} />
-        </div>
-
-        <div className="escolha-conteudo">
-
-          <h3>3. BEBIDA (opcional)</h3>
-
-          <p className="bebida-legenda">Escolha sua bebida:</p>
-
-          <div className="bebida-tipo-botoes">
-            <button
-              type="button"
-              className={bebidaTipo === null ? 'bebida-tipo-ativo' : ''}
-              onClick={() => selecionarBebidaTipo(null)}
-            >
-              <span className="bebida-tipo-icone">
-                <IconeSemBebida />
-              </span>
-              Sem bebida
-            </button>
-
-            <button
-              type="button"
-              className={bebidaTipo === 'refrigerante' ? 'bebida-tipo-ativo' : ''}
-              onClick={() => selecionarBebidaTipo('refrigerante')}
-            >
-              <span className="bebida-tipo-icone">
-                <IconeCopo />
-              </span>
-              Refrigerante
-            </button>
-
-            <button
-              type="button"
-              className={bebidaTipo === 'agua' ? 'bebida-tipo-ativo' : ''}
-              onClick={() => selecionarBebidaTipo('agua')}
-            >
-              <span className="bebida-tipo-icone">
-                <IconeAgua />
-              </span>
-              Água
-            </button>
+        {/* PASSO 1: PROTEÍNA (Garfo e Faca elegantes) */}
+        <section className="escolha">
+          <div className="escolha-cabecalho">
+            <div className="escolha-icon">
+              <IconeProteina size={18} />
+            </div>
+            <h3>1. Escolha a sua proteína ({carne.length}/{MAX_CARNES})</h3>
           </div>
 
-          {/* TAMANHO + SABOR DO REFRIGERANTE */}
-          {bebidaTipo === 'refrigerante' && (
-            <div className="bebida-detalhe">
+          <div className="escolha-conteudo">
+            <div className="opcoes-lista">
+              {opcoesPorCategoria('carne').map((opcao) => {
+                const selecionada = carne.includes(opcao.nome)
+                const desabilitada = !selecionada && carne.length >= MAX_CARNES
 
-              <p className="bebida-subtitulo">Escolha o tamanho:</p>
+                return (
+                  <label
+                    key={opcao.id}
+                    className={`opcao-item ${selecionada ? 'opcao-item-selecionada' : ''} ${desabilitada ? 'opcao-desabilitada' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selecionada}
+                      disabled={desabilitada}
+                      onChange={() => alternarCarne(opcao.nome)}
+                    />
+                    <span>{opcao.nome}</span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+        </section>
 
-              <div className="bebida-cartoes">
-                {opcoesPorCategoria('refrigerante_tamanho').map((opcao) => {
-                  const selecionado = refrigeranteTamanho?.nome === opcao.nome
+        {/* PASSO 2: GUARNIÇÕES (Folha de tempero/manjericão fresca) */}
+        <section className="escolha">
+          <div className="escolha-cabecalho">
+            <div className="escolha-icon">
+              <IconeGuarnicao size={18} />
+            </div>
+            <h3>2. Escolha as guarnições</h3>
+          </div>
 
-                  return (
-                    <button
-                      type="button"
-                      key={opcao.id}
-                      className={
-                        selecionado ? 'bebida-cartao bebida-cartao-ativo' : 'bebida-cartao'
-                      }
-                      onClick={() =>
-                        setRefrigeranteTamanho({
-                          nome: opcao.nome,
-                          preco: opcao.preco
-                        })
-                      }
-                    >
-                      {selecionado && <span className="bebida-check">✓</span>}
-                      <span className="bebida-cartao-icone">
-                        {iconeTamanho(opcao.nome)}
-                      </span>
-                      <span className="bebida-cartao-nome">{opcao.nome}</span>
-                      <span className="bebida-cartao-preco">
-                        R$ {Number(opcao.preco).toFixed(2)}
-                      </span>
-                    </button>
-                  )
-                })}
+          <div className="escolha-conteudo">
+            <div className="opcoes-grid-guarnicoes">
+              {opcoesPorCategoria('guarnicao').map((opcao) => {
+                const selecionada = guarnicao.includes(opcao.nome)
+                return (
+                  <label
+                    key={opcao.id}
+                    className={`opcao-item ${selecionada ? 'opcao-item-selecionada' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selecionada}
+                      onChange={() => alternarGuarnicao(opcao.nome)}
+                    />
+                    <span>{opcao.nome}</span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* PASSO 3: BEBIDA (Copo geométrico com canudo) */}
+        <section className="escolha escolha-bebida">
+          <div className="escolha-cabecalho">
+            <div className="escolha-icon">
+              <IconeBebida size={18} />
+            </div>
+            <h3>3. Escolha sua bebida (opcional)</h3>
+          </div>
+
+          <div className="escolha-conteudo">
+            <div className="bebida-tipo-botoes">
+              <button
+                type="button"
+                className={bebidaTipo === null ? 'bebida-tipo-ativo' : ''}
+                onClick={() => selecionarBebidaTipo(null)}
+              >
+                Sem bebida
+              </button>
+
+              <button
+                type="button"
+                className={bebidaTipo === 'refrigerante' ? 'bebida-tipo-ativo' : ''}
+                onClick={() => selecionarBebidaTipo('refrigerante')}
+              >
+                Refrigerante
+              </button>
+
+              <button
+                type="button"
+                className={bebidaTipo === 'agua' ? 'bebida-tipo-ativo' : ''}
+                onClick={() => selecionarBebidaTipo('agua')}
+              >
+                Água
+              </button>
+            </div>
+
+            {/* TAMANHO + SABOR DO REFRIGERANTE */}
+            {bebidaTipo === 'refrigerante' && (
+              <div className="bebida-detalhe">
+                <div className="bebida-tamanhos-grid">
+                  {opcoesPorCategoria('refrigerante_tamanho').map((opcao) => {
+                    const selecionado = refrigeranteTamanho?.nome === opcao.nome
+
+                    return (
+                      <button
+                        type="button"
+                        key={opcao.id}
+                        className={`bebida-tamanho-card ${selecionado ? 'bebida-tamanho-ativo' : ''}`}
+                        onClick={() =>
+                          setRefrigeranteTamanho({
+                            nome: opcao.nome,
+                            preco: opcao.preco
+                          })
+                        }
+                      >
+                        {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="bebida-sabores">
+                  {opcoesPorCategoria('refrigerante_sabor').map((opcao) => {
+                    const selecionado =
+                      !saborPersonalizadoAtivo && refrigeranteSabor === opcao.nome
+
+                    return (
+                      <button
+                        type="button"
+                        key={opcao.id}
+                        className={`bebida-sabor-chip ${selecionado ? 'bebida-sabor-ativo' : ''}`}
+                        onClick={() => selecionarSaborDaLista(opcao.nome)}
+                      >
+                        {selecionado ? `✓ ${opcao.nome}` : opcao.nome}
+                      </button>
+                    )
+                  })}
+
+                  <button
+                    type="button"
+                    className={`bebida-sabor-chip bebida-sabor-custom ${saborPersonalizadoAtivo ? 'bebida-sabor-ativo' : ''}`}
+                    onClick={selecionarSaborPersonalizado}
+                  >
+                    + Outro sabor
+                  </button>
+                </div>
+
+                {saborPersonalizadoAtivo && (
+                  <input
+                    type="text"
+                    className="bebida-sabor-input"
+                    placeholder="Digite o sabor desejado (ex: Fanta Uva, Sprite Zero...)"
+                    value={refrigeranteSabor}
+                    onChange={(e) => setRefrigeranteSabor(e.target.value)}
+                    maxLength={40}
+                    autoFocus
+                  />
+                )}
+
+                {bebidaDefinida && (
+                  <div className="bebida-quantidade">
+                    <span className="bebida-quantidade-titulo">Quantidade:</span>
+                    <div className="quantidade-stepper">
+                      <button
+                        type="button"
+                        onClick={() => alterarQuantidade(-1)}
+                        disabled={quantidadeBebida <= 1}
+                      >
+                        −
+                      </button>
+                      <span className="quantidade-valor">{quantidadeBebida}</span>
+                      <button
+                        type="button"
+                        onClick={() => alterarQuantidade(1)}
+                        disabled={quantidadeBebida >= MAX_QUANTIDADE_BEBIDA}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
 
-              <div className="bebida-info">
-                O valor da bebida é definido pelo tamanho, e é o mesmo para todos os sabores.
+            {/* TIPO DE ÁGUA */}
+            {bebidaTipo === 'agua' && (
+              <div className="bebida-detalhe">
+                <div className="bebida-tamanhos-grid">
+                  {opcoesPorCategoria('agua').map((opcao) => {
+                    const selecionado = aguaTipo?.nome === opcao.nome
+
+                    return (
+                      <button
+                        type="button"
+                        key={opcao.id}
+                        className={`bebida-tamanho-card ${selecionado ? 'bebida-tamanho-ativo' : ''}`}
+                        onClick={() =>
+                          setAguaTipo({
+                            nome: opcao.nome,
+                            preco: opcao.preco
+                          })
+                        }
+                      >
+                        {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {bebidaDefinida && (
+                  <div className="bebida-quantidade">
+                    <span className="bebida-quantidade-titulo">Quantidade:</span>
+                    <div className="quantidade-stepper">
+                      <button
+                        type="button"
+                        onClick={() => alterarQuantidade(-1)}
+                        disabled={quantidadeBebida <= 1}
+                      >
+                        −
+                      </button>
+                      <span className="quantidade-valor">{quantidadeBebida}</span>
+                      <button
+                        type="button"
+                        onClick={() => alterarQuantidade(1)}
+                        disabled={quantidadeBebida >= MAX_QUANTIDADE_BEBIDA}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
+          </div>
+        </section>
 
-              <p className="bebida-subtitulo">Escolha o sabor:</p>
+        {/* RESUMO DO SEU PEDIDO */}
+        <section className="resumo">
+          <div className="resumo-cabecalho">
+            <IconeRecibo size={18} />
+            <h3>Resumo do seu pedido</h3>
+          </div>
 
-              <div className="bebida-sabores">
-                {opcoesPorCategoria('refrigerante_sabor').map((opcao) => {
-                  const selecionado =
-                    !saborPersonalizadoAtivo && refrigeranteSabor === opcao.nome
+          <div className="resumo-extrato">
+            <div className="resumo-linha">
+              <span className="resumo-linha-titulo">Marmita Tradicional</span>
+              <span className="resumo-linha-valor">
+                R$ {precoMarmita.toFixed(2).replace('.', ',')}
+              </span>
+            </div>
 
-                  return (
-                    <button
-                      type="button"
-                      key={opcao.id}
-                      className={
-                        selecionado
-                          ? 'bebida-sabor-cartao bebida-sabor-ativo'
-                          : 'bebida-sabor-cartao'
-                      }
-                      onClick={() => selecionarSaborDaLista(opcao.nome)}
-                    >
-                      {selecionado && <span className="bebida-check">✓</span>}
-                      <span className="bebida-sabor-icone">
-                        <IconeCopo size={15} />
-                      </span>
-                      {opcao.nome}
-                    </button>
-                  )
-                })}
-
-                {/* OPÇÃO: sabor digitado pelo cliente */}
-                <button
-                  type="button"
-                  className={
-                    saborPersonalizadoAtivo
-                      ? 'bebida-sabor-cartao bebida-sabor-ativo'
-                      : 'bebida-sabor-cartao'
-                  }
-                  onClick={selecionarSaborPersonalizado}
-                >
-                  {saborPersonalizadoAtivo && <span className="bebida-check">✓</span>}
-                  <span className="bebida-sabor-icone">
-                    <IconeEditar size={15} />
-                  </span>
-                  Outro sabor
-                </button>
-              </div>
-
-              {saborPersonalizadoAtivo && (
-                <input
-                  type="text"
-                  className="bebida-sabor-input"
-                  placeholder="Digite o sabor desejado (ex: Guaraná, Sprite Zero...)"
-                  value={refrigeranteSabor}
-                  onChange={(e) => setRefrigeranteSabor(e.target.value)}
-                  maxLength={40}
-                  autoFocus
-                />
+            <div className="resumo-pills">
+              {carne.length > 0 && (
+                <span className="resumo-pill-tag">{carne.join(', ')}</span>
               )}
-
-              {bebidaDefinida && seletorQuantidade()}
-
+              {guarnicao.length > 0 && (
+                <span className="resumo-pill-tag">{guarnicao.join(', ')}</span>
+              )}
+              {carne.length === 0 && guarnicao.length === 0 && (
+                <span className="resumo-pill-tag resumo-pill-pendente">
+                  Nenhum item selecionado
+                </span>
+              )}
             </div>
-          )}
 
-          {/* TIPO DE ÁGUA */}
-          {bebidaTipo === 'agua' && (
-            <div className="bebida-detalhe">
-
-              <div className="bebida-cartoes">
-                {opcoesPorCategoria('agua').map((opcao) => {
-                  const selecionado = aguaTipo?.nome === opcao.nome
-
-                  return (
-                    <button
-                      type="button"
-                      key={opcao.id}
-                      className={
-                        selecionado ? 'bebida-cartao bebida-cartao-ativo' : 'bebida-cartao'
-                      }
-                      onClick={() =>
-                        setAguaTipo({
-                          nome: opcao.nome,
-                          preco: opcao.preco
-                        })
-                      }
-                    >
-                      {selecionado && <span className="bebida-check">✓</span>}
-                      <span className="bebida-cartao-icone">
-                        <IconeAgua size={26} />
-                      </span>
-                      <span className="bebida-cartao-nome">{opcao.nome}</span>
-                      <span className="bebida-cartao-preco">
-                        R$ {Number(opcao.preco).toFixed(2)}
-                      </span>
-                    </button>
-                  )
-                })}
+            {bebidaDefinida && (
+              <div className="resumo-linha resumo-linha-bebida">
+                <span className="resumo-linha-titulo">
+                  Bebida: {textoResumoBebida()}
+                </span>
+                <span className="resumo-linha-valor">
+                  R$ {Number(precoBebida).toFixed(2).replace('.', ',')}
+                </span>
               </div>
+            )}
 
-              {bebidaDefinida && seletorQuantidade()}
+            <div className="resumo-divisor"></div>
 
+            <div className="resumo-linha-total">
+              <span>Total: R$ {Number(precoTotal).toFixed(2).replace('.', ',')}</span>
             </div>
-          )}
+          </div>
 
-        </div>
+          <button
+            className="continuar-btn"
+            disabled={bebidaIncompleta}
+            onClick={() =>
+              continuar({
+                carne: carne.join(', '),
+                guarnicao: guarnicao.join(', '),
+                refrigerante_sabor:
+                  bebidaTipo === 'refrigerante' ? refrigeranteSabor.trim() : '',
+                refrigerante_tamanho:
+                  bebidaTipo === 'refrigerante' && refrigeranteTamanho
+                    ? refrigeranteTamanho.nome
+                    : '',
+                agua_tipo: bebidaTipo === 'agua' && aguaTipo ? aguaTipo.nome : '',
+                bebida_quantidade: bebidaTipo ? quantidadeBebida : 0,
+                preco_marmita: precoMarmita,
+                preco_bebida: precoBebida,
+                preco: precoTotal
+              })
+            }
+          >
+            Continuar Pedido →
+          </button>
 
-      </section>
+          <button
+            type="button"
+            className="limpar-btn"
+            onClick={limparEscolhas}
+          >
+            Limpar escolhas
+          </button>
+        </section>
 
-
-      {/* RESUMO */}
-      <section className="resumo">
-
-        <h3>RESUMO DO SEU PEDIDO</h3>
-
-        <div className="resumo-itens">
-
-          <span>
-            🍗 {carne.length > 0 ? carne.join(', ') : 'Carne não escolhida'}
-          </span>
-
-          <span>
-            🥗 {guarnicao.length > 0 ? guarnicao.join(', ') : 'Guarnição não escolhida'}
-          </span>
-
-          <span className="resumo-item-bebida">
-            <IconeCopo size={14} />
-            {textoResumoBebida()}
-          </span>
-
-        </div>
-
-        <div
-          className="resumo-valores"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '2px',
-            marginTop: '16px',
-            fontSize: '14px',
-            color: '#665b54'
-          }}
-        >
-          <span>Marmita: R$ {precoMarmita.toFixed(2)}</span>
-
-          {precoBebida > 0 && (
-            <span>Bebida: R$ {Number(precoBebida).toFixed(2)}</span>
-          )}
-        </div>
-
-        <p className="resumo-total">
-          Total: R$ {Number(precoTotal).toFixed(2)}
-        </p>
-
-        <button
-          className="continuar-btn"
-          disabled={bebidaIncompleta}
-          onClick={() =>
-            continuar({
-              carne: carne.join(', '),
-              guarnicao: guarnicao.join(', '),
-              refrigerante_sabor:
-                bebidaTipo === 'refrigerante' ? refrigeranteSabor.trim() : '',
-              refrigerante_tamanho:
-                bebidaTipo === 'refrigerante' && refrigeranteTamanho
-                  ? refrigeranteTamanho.nome
-                  : '',
-              agua_tipo: bebidaTipo === 'agua' && aguaTipo ? aguaTipo.nome : '',
-              bebida_quantidade: bebidaTipo ? quantidadeBebida : 0,
-              // Valores separados: o servidor usa pra calcular o que cobrar
-              // (Vivendas paga só a bebida; cliente comum paga tudo)
-              preco_marmita: precoMarmita,
-              preco_bebida: precoBebida,
-              preco: precoTotal
-            })
-          }
-        >
-          CONTINUAR →
-        </button>
-
-        <button
-          className="limpar-btn"
-          onClick={limparEscolhas}
-        >
-          ↻ LIMPAR ESCOLHAS
-        </button>
-
-      </section>
-
-      {/* NAVEGAÇÃO INFERIOR */}
-      <nav className="nav-inferior">
-
-        <button onClick={voltar} className="nav-item">
-          <span>🏠</span>
-          Início
-        </button>
-
-        <button className="nav-item nav-item-ativo">
-          <span>🍱</span>
-          Marmitas
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: pedidos para consumir no local.')}
-        >
-          <span>🏪</span>
-          No Local
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: acompanhamento de pedidos por aqui.')}
-        >
-          <span>📋</span>
-          Pedidos
-        </button>
-
-        <button
-          className="nav-item"
-          onClick={() => alert('Em breve: seu perfil.')}
-        >
-          <span>👤</span>
-          Perfil
-        </button>
-
-      </nav>
+      </main>
 
     </div>
   )

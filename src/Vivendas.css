@@ -1,319 +1,361 @@
-.pedidos-vivendas-page {
+/* ===== PÁGINA VIVENDAS (CHECKOUT CONVÊNIO) — EL SHADDAY DESIGN SYSTEM ===== */
+
+.vivendas-page {
   min-height: 100vh;
-  background: #f7f3ec;
-}
-
-.pedidos-vivendas-header {
-  position: relative;
+  background: #FAF7F2;
+  color: #2E1E1E;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  text-align: center;
+  flex-direction: column;
+  padding-bottom: 60px;
 }
 
-.pedidos-voltar {
-  position: absolute;
-  left: 18px;
-  border: none;
+/* ===== CABEÇALHO ===== */
+.vivendas-header {
+  height: 56px;
   background: transparent;
-  color: #6b1f24;
-  font-size: 30px;
-  cursor: pointer;
-}
-
-.pedidos-vivendas-header h1 {
-  margin: 0;
-  color: #6b1f24;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 26px;
-}
-
-.pedidos-vivendas-header span {
-  color: #8a6d3b;
-  font-size: 11px;
-  letter-spacing: 2px;
-}
-
-.pedidos-vivendas-conteudo {
-  width: min(92%, 700px);
-  margin: 30px auto;
-}
-
-.pedidos-vivendas-conteudo h2 {
-  margin-bottom: 5px;
-  color: #6b1f24;
-  text-align: center;
-  font-family: Georgia, 'Times New Roman', serif;
-}
-
-.pedidos-topo-lista {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
+  padding: 0 32px;
+  box-sizing: border-box;
 }
 
-.pedidos-subtitulo {
-  margin: 0;
-  color: #8a7a6a;
-}
-
-.atualizar-btn {
-  padding: 7px 16px;
-  border: 1px solid #6b1f24;
-  border-radius: 8px;
+.vivendas-voltar-btn {
   background: transparent;
-  color: #6b1f24;
-  font-weight: 600;
-  font-size: 13px;
+  border: none;
+  color: #2E1E1E;
+  font-size: 13.5px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  padding: 6px 0;
+  font-family: inherit;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
-.atualizar-btn:hover {
-  background: #6b1f24;
-  color: white;
+.vivendas-voltar-btn:hover {
+  color: #6E2636;
 }
 
-/* Navegação por dia */
+.vivendas-logo {
+  text-align: center;
+}
 
-.pedidos-dia-nav {
+.vivendas-logo h1 {
+  margin: 0;
+  color: #6E2636;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.vivendas-logo span {
+  color: #8A6D3B;
+  font-size: 10px;
+  letter-spacing: 2px;
+  display: block;
+  margin-top: 1px;
+  font-weight: 600;
+}
+
+.vivendas-header-spacer {
+  width: 60px;
+}
+
+/* ===== CONTEÚDO PRINCIPAL ===== */
+.vivendas-conteudo {
+  width: 100%;
+  max-width: 980px;
+  margin: 16px auto 0;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.vivendas-titulo-bloco {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.vivendas-badge-convenio {
+  display: inline-block;
+  background: #F5EFEA;
+  color: #6E2636;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.vivendas-titulo-bloco h2 {
+  color: #2E1E1E;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  margin: 0 0 6px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.vivendas-titulo-bloco p {
+  color: #5C4A42;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* ===== GRID DE 2 COLUNAS (DESKTOP) ===== */
+.vivendas-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ===== FORMULÁRIO (CARD ESQUERDO) ===== */
+.vivendas-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+.vivendas-campo {
+  margin-bottom: 16px;
+}
+
+.vivendas-campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E1E1E;
+}
+
+.vivendas-campo input,
+.vivendas-campo textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #EAE4D9;
+  border-radius: 10px;
+  background: #FFFFFF;
+  font-size: 16px;
+  font-family: inherit;
+  color: #2E1E1E;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.vivendas-campo input:focus,
+.vivendas-campo textarea:focus {
+  border-color: #6E2636;
+}
+
+.vivendas-campo textarea {
+  min-height: 75px;
+  resize: vertical;
+}
+
+/* Alerta de benefício do convênio */
+.vivendas-alerta-beneficio {
+  background: #E8F5E9;
+  border: 1px solid #C8E6C9;
+  color: #1B5E20;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 16px 0;
+  line-height: 1.4;
+}
+
+.vivendas-alerta-beneficio svg {
+  flex-shrink: 0;
+}
+
+.vivendas-bloco-pagamento {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #EAE4D9;
+}
+
+/* ===== CARD DE RESUMO (DIREITA NO DESKTOP) ===== */
+.vivendas-resumo-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+  position: sticky;
+  top: 20px;
+}
+
+.vivendas-resumo-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  color: #2E1E1E;
+}
+
+.vivendas-resumo-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #F5EFEA;
+  color: #6E2636;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  margin-bottom: 16px;
 }
 
-.pedidos-dia-nav span {
-  min-width: 70px;
-  text-align: center;
+.vivendas-resumo-topo h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.vivendas-resumo-extrato {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vivendas-resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.vivendas-resumo-item-nome {
+  color: #2E1E1E;
+  font-weight: 500;
+}
+
+.vivendas-resumo-item-preco {
+  color: #2E1E1E;
   font-weight: 700;
-  color: #2d211b;
 }
 
-.pedidos-dia-nav button {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid #6b1f24;
-  background: white;
-  color: #6b1f24;
-  font-weight: bold;
+.vivendas-resumo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+
+.vivendas-resumo-tag {
+  background: #F5EFEA;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #6E2636;
+  font-weight: 500;
+}
+
+.vivendas-resumo-linha-cobertura {
+  color: #2E7D32;
+}
+
+.vivendas-cobertura-valor {
+  color: #2E7D32;
+  font-weight: 700;
+}
+
+.vivendas-resumo-divisor {
+  height: 1px;
+  background: #EAE4D9;
+  margin: 12px 0 10px;
+}
+
+.vivendas-resumo-total-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2E1E1E;
+}
+
+.vivendas-resumo-total-valor {
+  font-size: 20px;
+  font-weight: 800;
+  color: #6E2636;
+}
+
+.vivendas-resumo-total-valor.total-gratis {
+  color: #2E7D32;
+}
+
+/* Botão Enviar Pedido */
+.vivendas-finalizar-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 15px;
+  border: none;
+  border-radius: 28px;
+  background: #6E2636;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
 }
 
-.pedidos-dia-nav button:disabled {
-  opacity: 0.3;
+.vivendas-finalizar-btn:hover {
+  background: #551A27;
+}
+
+.vivendas-finalizar-btn:disabled {
+  background: #C4B5A5;
   cursor: not-allowed;
 }
 
-.pedidos-dia-input {
-  border: 1px solid #6b1f24;
-  border-radius: 8px;
-  padding: 5px 8px;
-  font-size: 13px;
-  color: #6b1f24;
-  background: white;
-  cursor: pointer;
-}
-
-/* Abas de status */
-
-.pedidos-abas {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 22px;
-  padding: 4px;
-  background: #ece5d8;
-  border-radius: 10px;
-}
-
-.aba-btn {
-  flex: 1;
-  padding: 9px 10px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  color: #6b1f24;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.aba-ativa {
-  background: #6b1f24;
-  color: white;
-}
-
-/* Lista de pedidos */
-
-.pedido-pendente {
-  padding: 22px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  border-left: 4px solid #c9a45c;
-  background: white;
-  box-shadow: 0 2px 10px rgba(45, 33, 27, 0.06);
-}
-
-.pedido-aguardando {
-  border-left-color: #c9922a;
-}
-
-.pedido-aprovado {
-  border-left-color: #287a45;
-}
-
-.pedido-em_preparo {
-  border-left-color: #8a6d3b;
-}
-
-.pedido-pronto {
-  border-left-color: #1f6b3a;
-}
-
-.pedido-recusado {
-  border-left-color: #8b2525;
-}
-
-.pedido-status {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-}
-
-.pedido-status-aguardando {
-  background: #fdf1d9;
-  color: #8a5a0d;
-}
-
-.pedido-status-aprovado {
-  background: #e2f2e6;
-  color: #1f6b3a;
-}
-
-.pedido-status-em_preparo {
-  background: #f3ead9;
-  color: #6b551f;
-}
-
-.pedido-status-pronto {
-  background: #d9efe0;
-  color: #144d29;
-}
-
-.pedido-status-recusado {
-  background: #fbe6e6;
-  color: #8b2525;
-}
-
-.pedido-topo h3 {
-  margin: 10px 0 18px;
-  color: #2d211b;
-  font-size: 17px;
-}
-
-.pedido-hora {
-  color: #a89684;
-  font-weight: 400;
-  font-size: 14px;
-}
-
-.pedido-dados {
-  padding: 14px 16px;
-  border-radius: 8px;
-  background: #f7f3ec;
-}
-
-.pedido-dados + .pedido-dados {
-  margin-top: 10px;
-}
-
-.pedido-dados p {
-  margin: 6px 0;
-  font-size: 14px;
-}
-
-.pedido-marmita {
-  margin-top: 16px;
-}
-
-.pedido-marmita h4 {
-  margin-bottom: 8px;
-  color: #6b1f24;
+.vivendas-resumo-aviso {
+  margin: 12px 0 0;
   font-size: 12px;
-  letter-spacing: 0.4px;
+  color: #8C7D73;
+  text-align: center;
+  line-height: 1.4;
 }
 
-.pedido-marmita p {
-  margin: 6px 0;
-  font-size: 14px;
-}
-
-.pedido-acoes {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.aprovar-btn,
-.recusar-btn,
-.imprimir-btn,
-.preparo-btn,
-.pronto-btn {
-  flex: 1;
-  padding: 13px;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-
-.aprovar-btn {
-  background: #287a45;
-}
-
-.recusar-btn {
-  background: #8b2525;
-}
-
-.imprimir-btn {
-  background: #2d4a35;
-}
-
-.preparo-btn {
-  background: #8a6d3b;
-}
-
-.pronto-btn {
-  background: #1f6b3a;
-}
-
-.aprovar-btn:hover,
-.recusar-btn:hover,
-.imprimir-btn:hover,
-.preparo-btn:hover,
-.pronto-btn:hover {
-  filter: brightness(1.08);
-}
-
-@media (max-width: 600px) {
-  .pedido-acoes {
-    flex-direction: column;
+/* ===== CELULAR / RESPONSIVO (<= 768px) ===== */
+@media (max-width: 768px) {
+  .vivendas-header {
+    padding: 0 16px;
   }
 
-  .aba-btn {
-    padding: 9px 4px;
-    font-size: 12px;
+  .vivendas-conteudo {
+    max-width: 520px;
+    padding: 0 16px;
+  }
+
+  .vivendas-titulo-bloco h2 {
+    font-size: 26px;
+  }
+
+  .vivendas-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vivendas-card,
+  .vivendas-resumo-card {
+    padding: 20px 18px;
+    border-radius: 14px;
+  }
+
+  .vivendas-resumo-card {
+    position: static;
   }
 }

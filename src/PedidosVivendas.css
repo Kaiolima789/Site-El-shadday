@@ -1,208 +1,362 @@
-.vivendas-page {
+/* ===== PAINEL ADMIN: PEDIDOS RECEBIDOS — EL SHADDAY ===== */
+
+.pedidos-vivendas-page {
   min-height: 100vh;
-  background: #f7f3ec;
-  padding-bottom: 100px;
-}
-
-/* CABEÇALHO */
-
-.vivendas-header {
-  position: relative;
+  background: #FAF7F2;
+  color: #2E1E1E;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  text-align: center;
-  background: #fffdf9;
-  border-bottom: 1px solid #eadfd2;
+  flex-direction: column;
+  padding-bottom: 60px;
 }
 
-.vivendas-voltar {
-  position: absolute;
-  left: 18px;
+.pedidos-vivendas-conteudo {
+  width: 100%;
+  max-width: 760px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.pedidos-filtro-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pedidos-dia-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+
+.pedidos-dia-nav button {
   border: none;
   background: transparent;
-  color: #6b1f24;
-  font-size: 28px;
+  color: #6E2636;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
+  padding: 2px 6px;
 }
 
-.vivendas-header h1 {
-  margin: 0;
-  color: #6b1f24;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 26px;
-  letter-spacing: 1px;
+.pedidos-dia-nav span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2E1E1E;
 }
 
-.vivendas-header span {
-  display: block;
-  color: #8a6d3b;
-  font-size: 11px;
-  letter-spacing: 2px;
-  margin-top: 2px;
+.pedidos-abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-/* CONTEÚDO */
+.aba-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #EAE4D9;
+  background: #FFFFFF;
+  color: #5C4A42;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
 
-.vivendas-conteudo {
-  width: min(92%, 550px);
-  margin: 35px auto 0;
+.aba-btn:hover {
+  border-color: #C4B5A5;
+}
+
+.aba-ativa {
+  background: #6E2636;
+  border-color: #6E2636;
+  color: #FFFFFF;
+}
+
+.atualizar-btn {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5C4A42;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.atualizar-btn:hover {
+  border-color: #6E2636;
+  color: #6E2636;
+}
+
+.pedidos-vazio {
   text-align: center;
+  color: #8C7D73;
+  margin: 40px 0;
 }
 
-.vivendas-icon {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
-  background: #6b1f24;
-  color: white;
-  font-size: 26px;
+.pedido-vazio-card {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.pedido-vazio-card h3 {
+  margin: 0 0 6px;
+  color: #5C4A42;
+}
+
+.pedido-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+.pedido-cabecalho {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.vivendas-conteudo h2 {
-  color: #6b1f24;
-  font-size: 24px;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
+.pedido-id-linha h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #2E1E1E;
+  font-weight: 700;
 }
 
-.vivendas-conteudo > p {
-  color: #665b54;
-  font-size: 14px;
-  margin-bottom: 28px;
+.pedido-hora {
+  font-size: 13px;
+  color: #8C7D73;
+  font-weight: 500;
 }
 
-/* CARD DO FORMULÁRIO */
-
-.vivendas-card {
-  background: white;
-  border-radius: 16px;
-  padding: 28px 24px;
-  text-align: left;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+.pedido-tags {
+  display: flex;
+  gap: 8px;
 }
 
-.vivendas-card label {
-  display: block;
-  color: #2d211b;
-  font-weight: bold;
-  font-size: 14px;
-  margin: 16px 0 6px;
+.pedido-status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-.vivendas-card label:first-child {
-  margin-top: 0;
+.status-aguardando {
+  background: #FFF3DC;
+  color: #B45309;
 }
 
-.vivendas-card input,
-.vivendas-card textarea {
-  width: 100%;
-  padding: 13px 14px;
-  border: 1px solid #e1d3c3;
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: inherit;
-  color: #2d211b;
-  background: #fdf9f3;
+.status-aprovado,
+.status-em_preparo {
+  background: #E8F5E9;
+  color: #2E7D32;
 }
 
-.vivendas-card input:focus,
-.vivendas-card textarea:focus {
-  outline: none;
-  border-color: #6b1f24;
-  background: white;
+.status-pronto {
+  background: #E0F2FE;
+  color: #0369A1;
 }
 
-.vivendas-card textarea {
-  resize: vertical;
-  min-height: 80px;
+.status-recusado {
+  background: #FEE2E2;
+  color: #B91C1C;
 }
 
-/* BOTÃO */
+.pedido-origem-badge {
+  background: #F5EFEA;
+  color: #6E2636;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
 
-.vivendas-continuar {
-  width: 100%;
-  margin-top: 22px;
-  padding: 16px;
-  border: none;
-  border-radius: 10px;
-  background: #6b1f24;
-  color: white;
-  font-weight: bold;
-  font-size: 15px;
-  letter-spacing: 1px;
-  cursor: pointer;
+.pedido-cliente-bloco {
+  background: #FAF7F2;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  font-size: 13.5px;
+}
+
+.cliente-linha-principal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pedido-cliente-bloco p {
+  margin: 4px 0;
+  color: #2E1E1E;
+}
+
+.whatsapp-contato-btn {
+  background: #25D366;
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   transition: background 0.15s ease;
 }
 
-.vivendas-continuar:hover {
-  background: #53171b;
+.whatsapp-contato-btn:hover {
+  background: #1EBE5D;
 }
 
-/* NAVEGAÇÃO INFERIOR (mesma do resto do site) */
-
-.nav-inferior {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fffdf9;
-  border-top: 1px solid #eadfd2;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0 14px;
-  z-index: 10;
+.pedido-itens-bloco {
+  padding: 10px 0;
+  border-top: 1px solid #EAE4D9;
+  border-bottom: 1px solid #EAE4D9;
+  margin-bottom: 12px;
 }
 
-.nav-item {
+.pedido-itens-bloco h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #6E2636;
+  font-weight: 700;
+}
+
+.pedido-itens-bloco p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #2E1E1E;
+}
+
+.pedido-obs {
+  color: #8C7D73;
+  font-style: italic;
+  font-size: 13px !important;
+}
+
+.pedido-cobranca-bloco {
+  background: #EBF3FA;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1E3A8A;
+  margin-bottom: 16px;
+}
+
+.pedido-cobranca-bloco p {
+  margin: 0;
+}
+
+.pedido-troco-info {
+  margin-top: 4px !important;
+  font-weight: 600;
+}
+
+.pedido-acoes-barra {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  border: none;
-  background: transparent;
-  color: #a89684;
-  font-size: 11px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-aprovar,
+.btn-recusar,
+.btn-preparo,
+.btn-pronto,
+.btn-imprimir {
+  padding: 11px 18px;
+  border-radius: 24px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  border: none;
 }
 
-.nav-item span {
-  font-size: 20px;
+.btn-aprovar {
+  background: #2E7D32;
+  color: #FFFFFF;
 }
 
-.nav-item-ativo {
-  color: #6b1f24;
-  position: relative;
+.btn-aprovar:hover {
+  background: #256628;
 }
 
-.nav-item-ativo::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  width: 24px;
-  height: 3px;
-  border-radius: 2px;
-  background: #6b1f24;
+.btn-recusar {
+  background: transparent;
+  border: 1px solid #6E2636;
+  color: #6E2636;
 }
 
-/* CELULAR */
+.btn-recusar:hover {
+  background: #FDF2F4;
+}
+
+.btn-preparo,
+.btn-pronto {
+  background: #6E2636;
+  color: #FFFFFF;
+}
+
+.btn-preparo:hover,
+.btn-pronto:hover {
+  background: #551A27;
+}
+
+.btn-imprimir {
+  background: #FAF7F2;
+  border: 1px solid #EAE4D9;
+  color: #5C4A42;
+  margin-left: auto;
+}
+
+.btn-imprimir:hover {
+  border-color: #6E2636;
+  color: #6E2636;
+}
 
 @media (max-width: 600px) {
-  .vivendas-conteudo {
-    margin-top: 25px;
+  .pedidos-filtro-barra {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .vivendas-conteudo h2 {
-    font-size: 20px;
+  .pedidos-abas {
+    overflow-x: auto;
+    padding-bottom: 4px;
   }
 
-  .vivendas-card {
-    padding: 22px 18px;
+  .aba-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+  }
+
+  .pedido-acoes-barra {
+    flex-direction: column;
+  }
+
+  .btn-imprimir {
+    margin-left: 0;
   }
 }

@@ -1,25 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './AdminCardapio.css'
+
+const PROTEINAS_SUGERIDAS = [
+  'Churrasco',
+  'Frango Grelhado',
+  'Linguiça Artesanal',
+  'Frango Cozido'
+]
 
 const GUARNICOES_FIXAS = [
   'Arroz',
   'Feijão',
   'Feijão Tropeiro',
   'Macarrão',
-  'Legumes',
+  'Leguminosas',
   'Farofa',
   'Salada (Alface e tomate)',
   'Vinagrete',
   'Maionese'
 ]
 
+function dataHojeISO() {
+  const hoje = new Date()
+  const ano = hoje.getFullYear()
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+  const dia = String(hoje.getDate()).padStart(2, '0')
+  return `${ano}-${mes}-${dia}`
+}
+
 function AdminCardapio({ voltar, pedidos }) {
-  const [data, setData] = useState('')
-  const [preco, setPreco] = useState('')
+  const [data, setData] = useState(dataHojeISO())
+  const [preco, setPreco] = useState('18.00')
 
   const [opcoes, setOpcoes] = useState({
-    carne: [],
-    guarnicao: []
+    carne: ['Churrasco', 'Frango Grelhado'],
+    guarnicao: ['Arroz', 'Feijão', 'Farofa', 'Salada (Alface e tomate)']
   })
 
   const [novaOpcao, setNovaOpcao] = useState({
@@ -29,6 +44,10 @@ function AdminCardapio({ voltar, pedidos }) {
 
   const [modoEdicao, setModoEdicao] = useState(false)
   const [mensagem, setMensagem] = useState('')
+
+  useEffect(() => {
+    verificarCardapio(dataHojeISO())
+  }, [])
 
   async function verificarCardapio(dataEscolhida) {
     if (!dataEscolhida) return
@@ -40,8 +59,7 @@ function AdminCardapio({ voltar, pedidos }) {
 
       if (resposta.status === 404) {
         setModoEdicao(false)
-        setMensagem('Nenhum cardápio cadastrado para esta data.')
-        setOpcoes({ carne: [], guarnicao: [] })
+        setMensagem('Novo cardápio para esta data.')
         return
       }
 
@@ -52,7 +70,7 @@ function AdminCardapio({ voltar, pedidos }) {
       const dados = await resposta.json()
       setModoEdicao(true)
       setMensagem('Cardápio encontrado. Você está editando.')
-      setPreco(dados.preco)
+      setPreco(String(dados.preco || '18.00'))
 
       const novasOpcoes = {
         carne: [],
@@ -68,7 +86,7 @@ function AdminCardapio({ voltar, pedidos }) {
       setOpcoes(novasOpcoes)
     } catch (erro) {
       console.error(erro)
-      setMensagem('Não foi possível consultar o cardápio.')
+      setMensagem('Modo offline / Não foi possível carregar do servidor.')
     }
   }
 
@@ -108,8 +126,8 @@ function AdminCardapio({ voltar, pedidos }) {
 
       alert(
         modoEdicao
-          ? 'Cardápio atualizado com sucesso!'
-          : 'Cardápio criado com sucesso!'
+          ? 'Cardápio atualizado e publicado com sucesso!'
+          : 'Cardápio criado e publicado com sucesso!'
       )
 
       setModoEdicao(true)
@@ -121,14 +139,10 @@ function AdminCardapio({ voltar, pedidos }) {
 
   function adicionarOpcao(categoria) {
     const nome = novaOpcao[categoria].trim()
-
     if (!nome) return
 
     if (opcoes[categoria].includes(nome)) {
-      setNovaOpcao({
-        ...novaOpcao,
-        [categoria]: ''
-      })
+      setNovaOpcao({ ...novaOpcao, [categoria]: '' })
       return
     }
 
@@ -143,16 +157,17 @@ function AdminCardapio({ voltar, pedidos }) {
     })
   }
 
-  function removerOpcao(categoria, index) {
-    setOpcoes({
-      ...opcoes,
-      [categoria]: opcoes[categoria].filter(
-        (_, i) => i !== index
-      )
+  function alternarProteina(nome) {
+    setOpcoes((atual) => {
+      const jaSelecionada = atual.carne.includes(nome)
+      return {
+        ...atual,
+        carne: jaSelecionada
+          ? atual.carne.filter((item) => item !== nome)
+          : [...atual.carne, nome]
+      }
     })
   }
-
-  function alternarCarne() {}
 
   function alternarGuarnicao(nome) {
     setOpcoes((atual) => {
@@ -168,193 +183,219 @@ function AdminCardapio({ voltar, pedidos }) {
 
   return (
     <div className="admin-page">
- <button
-      className="admin-voltar"
-      onClick={voltar}
-    >
-      ← Voltar
-    </button>
+
       <header className="admin-header">
-        <div>
-          <span>EL SHADDAY</span>
-          <h1>PAINEL DO RESTAURANTE</h1>
+        <div className="admin-header-esquerda">
+          <h1>EL SHADDAY • PAINEL ADMIN</h1>
+        </div>
+
+        <div className="admin-header-direita">
+          <label className="admin-status-toggle">
+            <input type="checkbox" defaultChecked />
+            <span className="toggle-switch"></span>
+            <span className="toggle-texto">Restaurante Aberto</span>
+          </label>
+
+          <button onClick={voltar} className="admin-sair-btn">
+            Ver site
+          </button>
         </div>
       </header>
-      
-<div className="admin-menu">
 
-  <button
-    className="admin-menu-btn"
-    onClick={() => {
-      document.querySelector('.admin-card').scrollIntoView({
-        behavior: 'smooth'
-      })
-    }}
-  >
-    🍽️ GERENCIAR CARDÁPIO
-  </button>
+      <div className="admin-abas-nav">
+        <button className="admin-aba-btn admin-aba-ativa">
+          Gerenciar Cardápio
+        </button>
 
-  <button
-    className="admin-menu-btn"
-    onClick={pedidos}
-  >
-    📋 PEDIDOS RECEBIDOS
-  </button>
+        <button className="admin-aba-btn" onClick={pedidos}>
+          Pedidos Recebidos
+        </button>
+      </div>
 
-</div>
       <main className="admin-content">
 
         <section className="admin-card">
 
-          <h2>📋 Criar cardápio</h2>
+          <div className="admin-card-cabecalho">
+            <h2>Criar Cardápio do Dia</h2>
+            <p className="admin-subtitulo">
+              Prepare o cardápio que estará disponível para os clientes hoje.
+            </p>
+          </div>
 
-          <p className="admin-subtitulo">
-            Prepare o cardápio que estará disponível para os clientes.
-          </p>
+          <div className="admin-campos-linha">
+            <div className="campo">
+              <label>Data do Cardápio</label>
+              <input
+                type="date"
+                value={data}
+                onChange={(e) => {
+                  const novaData = e.target.value
+                  setData(novaData)
+                  verificarCardapio(novaData)
+                }}
+              />
+            </div>
 
-          <div className="campo">
-            <label>Data do cardápio</label>
+            <div className="campo">
+              <label>Preço da marmita (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="18.00"
+                value={preco}
+                onChange={(e) => setPreco(e.target.value)}
+              />
+            </div>
+          </div>
 
-            <input
-              type="date"
-              value={data}
-              onChange={(e) => {
-                const novaData = e.target.value
-                setData(novaData)
-                verificarCardapio(novaData)
-              }}
-            />
+          {mensagem && <p className="mensagem-admin">{mensagem}</p>}
 
-            {mensagem && (
-              <p className="mensagem-admin">
-                {mensagem}
-              </p>
+          <div className="admin-divisor"></div>
+
+          {/* PROTEÍNAS DO DIA */}
+          <div className="categoria-admin">
+            <h3>Proteínas do Dia</h3>
+            <p className="categoria-info">
+              Selecione as opções de carne disponíveis para hoje:
+            </p>
+
+            <div className="chips-grid">
+              {PROTEINAS_SUGERIDAS.map((nome) => {
+                const ativa = opcoes.carne.includes(nome)
+                return (
+                  <button
+                    type="button"
+                    key={nome}
+                    className={`chip-btn ${ativa ? 'chip-btn-ativo' : ''}`}
+                    onClick={() => alternarProteina(nome)}
+                  >
+                    {ativa ? '✓ ' : '+ '}
+                    {nome}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="adicionar-opcao">
+              <input
+                type="text"
+                placeholder="Adicionar carne"
+                value={novaOpcao.carne}
+                onChange={(e) =>
+                  setNovaOpcao({ ...novaOpcao, carne: e.target.value })
+                }
+                onKeyDown={(e) => e.key === 'Enter' && adicionarOpcao('carne')}
+              />
+              <button
+                type="button"
+                className="adicionar-btn"
+                onClick={() => adicionarOpcao('carne')}
+              >
+                +
+              </button>
+            </div>
+
+            {opcoes.carne.filter((c) => !PROTEINAS_SUGERIDAS.includes(c)).length > 0 && (
+              <div className="lista-opcoes-extras">
+                {opcoes.carne
+                  .filter((c) => !PROTEINAS_SUGERIDAS.includes(c))
+                  .map((opcao, index) => (
+                    <div className="opcao-admin-extra" key={index}>
+                      <span>✓ {opcao}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpcoes({
+                            ...opcoes,
+                            carne: opcoes.carne.filter((item) => item !== opcao)
+                          })
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+              </div>
             )}
           </div>
 
-          <div className="campo">
-            <label>Preço da marmita</label>
+          <div className="admin-divisor"></div>
 
-            <input
-              type="number"
-              step="0.01"
-              placeholder="18.00"
-              value={preco}
-              onChange={(e) => setPreco(e.target.value)}
-            />
-          </div>
+          {/* GUARNIÇÕES DO DIA */}
+          <div className="categoria-admin">
+            <h3>Guarnições do Dia</h3>
+            <p className="categoria-info">
+              Toque para ativar ou desativar as opções do dia:
+            </p>
 
-          <div className="categorias-admin">
-
-            {/* CARNE */}
-            <div className="categoria-admin">
-              <h3>🍗 CARNE</h3>
-              <p className="categoria-info">O cliente poderá escolher até 2 tipos.</p>
-              <div className="adicionar-opcao">
-                <input
-                  type="text"
-                  placeholder="Adicionar carne"
-                  value={novaOpcao.carne}
-                  onChange={(e) =>
-                    setNovaOpcao({
-                      ...novaOpcao,
-                      carne: e.target.value
-                    })
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => adicionarOpcao('carne')}
-                >
-                  +
-                </button>
-              </div>
-              <div className="lista-opcoes">
-                {opcoes.carne.map((opcao, index) => (
-                  <div className="opcao-admin" key={index}>
-                    <span>✓ {opcao}</span>
-                    <button
-                      type="button"
-                      onClick={() => removerOpcao('carne', index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div className="chips-grid">
+              {GUARNICOES_FIXAS.map((nome) => {
+                const ativa = opcoes.guarnicao.includes(nome)
+                return (
+                  <button
+                    type="button"
+                    key={nome}
+                    className={`chip-btn ${ativa ? 'chip-btn-ativo' : ''}`}
+                    onClick={() => alternarGuarnicao(nome)}
+                  >
+                    {ativa ? '✓ ' : '+ '}
+                    {nome}
+                  </button>
+                )
+              })}
             </div>
 
-            {/* GUARNIÇÕES */}
-            <div className="categoria-admin">
-              <h3>🥗 GUARNIÇÕES</h3>
-              <p className="categoria-info">
-                Toque para ligar/desligar as opções do dia. Dá pra adicionar outras que não estão na lista.
-              </p>
-
-              <div className="guarnicao-fixa-lista">
-                {GUARNICOES_FIXAS.map((nome) => {
-                  const selecionada = opcoes.guarnicao.includes(nome)
-                  return (
-                    <button
-                      type="button"
-                      key={nome}
-                      className={
-                        selecionada
-                          ? 'guarnicao-chip guarnicao-chip-ativa'
-                          : 'guarnicao-chip'
-                      }
-                      onClick={() => alternarGuarnicao(nome)}
-                    >
-                      {selecionada ? '✓ ' : '+ '}
-                      {nome}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div className="adicionar-opcao adicionar-opcao-guarnicao">
-                <input
-                  type="text"
-                  placeholder="Adicionar outra guarnição"
-                  value={novaOpcao.guarnicao}
-                  onChange={(e) =>
-                    setNovaOpcao({
-                      ...novaOpcao,
-                      guarnicao: e.target.value
-                    })
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => adicionarOpcao('guarnicao')}
-                >
-                  +
-                </button>
-              </div>
-
-              <div className="lista-opcoes">
-                {opcoes.guarnicao.map((opcao, index) => (
-                  <div className="opcao-admin" key={index}>
-                    <span>✓ {opcao}</span>
-                    <button
-                      type="button"
-                      onClick={() => removerOpcao('guarnicao', index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div className="adicionar-opcao">
+              <input
+                type="text"
+                placeholder="Adicionar outra guarnição"
+                value={novaOpcao.guarnicao}
+                onChange={(e) =>
+                  setNovaOpcao({ ...novaOpcao, guarnicao: e.target.value })
+                }
+                onKeyDown={(e) => e.key === 'Enter' && adicionarOpcao('guarnicao')}
+              />
+              <button
+                type="button"
+                className="adicionar-btn"
+                onClick={() => adicionarOpcao('guarnicao')}
+              >
+                +
+              </button>
             </div>
 
+            {opcoes.guarnicao.filter((g) => !GUARNICOES_FIXAS.includes(g)).length > 0 && (
+              <div className="lista-opcoes-extras">
+                {opcoes.guarnicao
+                  .filter((g) => !GUARNICOES_FIXAS.includes(g))
+                  .map((opcao, index) => (
+                    <div className="opcao-admin-extra" key={index}>
+                      <span>✓ {opcao}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpcoes({
+                            ...opcoes,
+                            guarnicao: opcoes.guarnicao.filter((item) => item !== opcao)
+                          })
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           <button
-  className="salvar-cardapio-btn"
-  onClick={salvarCardapio}
->
-  SALVAR CARDÁPIO
-</button>
+            type="button"
+            className="salvar-cardapio-btn"
+            onClick={salvarCardapio}
+          >
+            SALVAR E PUBLICAR CARDÁPIO →
+          </button>
 
         </section>
 

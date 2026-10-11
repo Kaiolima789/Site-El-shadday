@@ -1,155 +1,240 @@
+/* ===== PÁGINA ACOMPANHAMENTO DO PEDIDO — EL SHADDAY DESIGN SYSTEM ===== */
+
 .acompanhar-page {
   min-height: 100vh;
-  background: #f7f3ec;
+  background: #FAF7F2;
+  color: #2E1E1E;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 60px;
 }
 
+/* ===== CABEÇALHO ===== */
 .acompanhar-header {
-  padding: 24px 0 8px;
+  padding: 32px 0 16px;
   text-align: center;
 }
 
 .acompanhar-header h1 {
   margin: 0;
-  color: #6b1f24;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 26px;
+  color: #6E2636;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
-.acompanhar-header span {
-  color: #8a6d3b;
-  font-size: 11px;
-  letter-spacing: 2px;
-}
-
+/* ===== CONTAINER CENTRAL ===== */
 .acompanhar-conteudo {
-  width: min(92%, 480px);
-  margin: 20px auto 40px;
-  padding: 30px 24px;
+  width: min(92%, 440px);
+  margin: 10px auto 40px;
+  padding: 32px 28px 24px;
   border-radius: 16px;
-  background: white;
-  box-shadow: 0 4px 18px rgba(45, 33, 27, 0.08);
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   text-align: center;
-}
-
-.acompanhar-icon-grande {
-  font-size: 46px;
-  margin-bottom: 8px;
-}
-
-.acompanhar-conteudo h2 {
-  margin: 4px 0 4px;
-  color: #2d211b;
+  box-sizing: border-box;
 }
 
 .acompanhar-numero {
-  color: #8a7a6a;
-  margin-bottom: 26px;
-  font-size: 14px;
-}
-
-.acompanhar-aviso {
-  padding: 12px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background: #fdf1d9;
-  color: #8a5a0d;
+  color: #5C4A42;
   font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
 }
 
-/* Linha do tempo */
+.acompanhar-conteudo h2 {
+  color: #2E1E1E;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  letter-spacing: -0.5px;
+}
 
-.acompanhar-linha {
+.acompanhar-previsao-pill {
+  display: inline-block;
+  background: #FAF7F2;
+  color: #2E1E1E;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 28px;
+}
+
+/* ===== DOT STEPPER (LINHA DO TEMPO) ===== */
+.acompanhar-stepper {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 22px;
+  max-width: 250px;
+  margin: 0 auto 28px;
+  position: relative;
   text-align: left;
-  gap: 0;
-  margin: 0 auto;
-  max-width: 280px;
 }
 
-.acompanhar-etapa {
+.acompanhar-passo {
   position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding-bottom: 26px;
 }
 
-.acompanhar-etapa:last-child {
-  padding-bottom: 0;
-}
-
-.acompanhar-bolinha {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #ece5d8;
-  color: #a89684;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
+.stepper-linha {
+  position: absolute;
+  left: 7px;
+  top: 16px;
+  bottom: -22px;
+  width: 1.5px;
+  background: #EAE4D9;
   z-index: 1;
 }
 
-.acompanhar-bolinha-ativa {
-  background: #6b1f24;
-  color: white;
+.stepper-linha-completa {
+  background: #C4B5A5;
 }
 
-.acompanhar-etapa span {
+.stepper-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dot-concluido {
+  background: #F5EFEA;
+  border: 1.5px solid #6E2636;
+  color: #6E2636;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.dot-ativo {
+  background: #6E2636;
+  box-shadow: 0 0 0 4px #F5EFEA;
+}
+
+.dot-pendente {
+  background: #EAE4D9;
+}
+
+.stepper-texto {
   font-size: 14px;
-  color: #a89684;
 }
 
-.acompanhar-label-ativa {
-  color: #2d211b;
-  font-weight: 600;
-}
-
-.acompanhar-conector {
-  position: absolute;
-  left: 17px;
-  top: 34px;
-  width: 2px;
-  height: 26px;
-  background: #ece5d8;
-}
-
-.acompanhar-conector-ativo {
-  background: #6b1f24;
-}
-
-.acompanhar-pronto-msg {
-  margin-top: 24px;
+.texto-ativo {
+  color: #2E1E1E;
   font-weight: 700;
-  color: #1f6b3a;
 }
 
-/* Caso recusado */
+.texto-concluido {
+  color: #5C4A42;
+}
 
-.acompanhar-recusado .acompanhar-icon-grande {
-  color: #8b2525;
+.texto-pendente {
+  color: #A89684;
+}
+
+/* ===== INFO BOX (TOTAL, PAGAMENTO, ENDEREÇO) ===== */
+.acompanhar-info-box {
+  background: #FAF7F2;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2E1E1E;
+}
+
+.info-secundario {
+  font-size: 12.5px;
+  color: #5C4A42;
+  line-height: 1.4;
+}
+
+/* ===== BOTÃO WHATSAPP ===== */
+.acompanhar-whatsapp-btn {
+  width: 100%;
+  background: #25D366;
+  color: #FFFFFF;
+  border-radius: 28px;
+  padding: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  box-sizing: border-box;
+}
+
+.acompanhar-whatsapp-btn:hover {
+  background: #1EBE5D;
+}
+
+/* ===== LINK VOLTAR AO INÍCIO ===== */
+.acompanhar-voltar-link {
+  margin-top: 16px;
+  background: transparent;
+  border: none;
+  color: #5C4A42;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px;
+  transition: color 0.15s ease;
+}
+
+.acompanhar-voltar-link:hover {
+  color: #6E2636;
+  text-decoration: underline;
+}
+
+/* ===== CASO RECUSADO ===== */
+.acompanhar-recusado h2 {
+  color: #6E2636;
 }
 
 .acompanhar-recusado p {
-  color: #8a7a6a;
+  color: #5C4A42;
   font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
 }
 
-.acompanhar-voltar-btn {
-  margin-top: 28px;
-  padding: 12px 20px;
-  border: none;
+.acompanhar-aviso {
+  padding: 10px;
+  margin-bottom: 14px;
   border-radius: 8px;
-  background: #6b1f24;
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
+  background: #FAF7F2;
+  color: #5C4A42;
+  font-size: 12px;
+}
+
+/* ===== CELULAR (RESPONSIVO <= 600px) ===== */
+@media (max-width: 600px) {
+  .acompanhar-conteudo {
+    width: calc(100% - 32px);
+    padding: 24px 20px;
+  }
+
+  .acompanhar-conteudo h2 {
+    font-size: 24px;
+  }
 }

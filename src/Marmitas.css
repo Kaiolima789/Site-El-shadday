@@ -1,215 +1,236 @@
-/* ===== PÁGINA MARMITAS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Poppins:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* ===== PÁGINA MONTE SUA MARMITA — EL SHADDAY DESIGN SYSTEM ===== */
 
 .marmitas-page {
   min-height: 100vh;
-  background: #f7f3ec;
-  color: #2d211b;
-  padding-bottom: 100px;
+  background: #FAF7F2;
+  color: #2E1E1E;
+  font-family: 'Poppins', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-bottom: 60px;
 }
 
+.marmitas-carregando,
+.marmitas-erro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
 
-/* ===== CABEÇALHO ===== */
+.voltar-erro-btn {
+  margin-top: 20px;
+  background: #6E2636;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
 
+/* ===== CABEÇALHO COM SETA DE VOLTAR ===== */
 .marmitas-header {
-  height: 90px;
-  background: #fffdf9;
-
+  height: 60px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  padding: 0 25px;
-
-  border-bottom: 1px solid #eadfd2;
+  padding: 0 32px;
+  box-sizing: border-box;
 }
 
-.voltar-btn,
-.carrinho-btn {
-  border: none;
-  background: transparent;
-
-  color: #6b1f24;
-
-  font-size: 30px;
-  cursor: pointer;
-}
-
-.carrinho-btn {
-  font-size: 25px;
-  position: relative;
-}
-
-.carrinho-badge {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-
-  background: #8a6d3b;
-  color: white;
-
-  font-size: 11px;
-  font-weight: bold;
-
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-
-  display: flex;
+.marmitas-voltar-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #2E1E1E;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color 0.15s ease;
+  font-family: inherit;
 }
 
-.marmitas-logo {
-  text-align: center;
+.marmitas-voltar-btn:hover {
+  color: #6E2636;
+}
+
+.marmitas-voltar-btn svg {
+  color: inherit;
 }
 
 .marmitas-logo h1 {
-  color: #6b1f24;
-
-  font-family: Georgia, 'Times New Roman', serif;
-
-  font-size: 28px;
-  letter-spacing: 1px;
+  color: #6E2636;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  letter-spacing: 0.5px;
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
 }
 
-.marmitas-logo span {
-  color: #8a6d3b;
-
-  font-size: 11px;
-  letter-spacing: 3px;
+.marmitas-header-dir {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 60px;
 }
 
+.admin-link {
+  color: #5C4A42;
+  font-size: 13px;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
 
-/* ===== TÍTULO ===== */
+.admin-link:hover {
+  color: #6E2636;
+}
 
+/* ===== TÍTULO DA PÁGINA ===== */
 .titulo-marmita {
   text-align: center;
-
-  padding: 45px 20px 30px;
+  padding: 24px 20px 28px;
 }
 
 .titulo-marmita h2 {
-  color: #6b1f24;
-
-  font-size: 32px;
-  letter-spacing: 1px;
-
-  margin-bottom: 8px;
+  color: #2E1E1E;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  margin: 0 0 6px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .titulo-marmita p {
-  color: #665b54;
-
-  font-size: 17px;
+  color: #5C4A42;
+  font-size: 14px;
+  margin: 0;
 }
 
-
-/* ===== ESCOLHAS ===== */
-
-.escolha {
-  width: min(900px, 92%);
-
-  margin: 0 auto 18px;
-
-  background: #fff;
-
-  border-radius: 18px;
-
-  padding: 25px;
-
+/* ===== CONTAINER CENTRAL ===== */
+.marmitas-container {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-
-  gap: 20px;
-
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
-.escolha-foto {
-  width: 90px;
-  height: 90px;
+/* ===== CARDS DE ETAPA (ESCOLHAS) ===== */
+.escolha {
+  width: 100%;
+  max-width: 580px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px 28px;
+  border: 1px solid #EAE4D9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
 
-  object-fit: cover;
-
-  border-radius: 14px;
-
-  flex-shrink: 0;
-
-  margin-left: auto;
+.escolha-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .escolha-icon {
-  width: 58px;
-  height: 58px;
-
-  flex-shrink: 0;
-
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-
-  background: #6b1f24;
-
-  color: #fff;
-
+  background: #F5EFEA;
+  color: #6E2636;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
 
-  font-size: 27px;
+.escolha-cabecalho h3 {
+  color: #2E1E1E;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
 }
 
 .escolha-conteudo {
-  flex: 1;
+  width: 100%;
 }
 
-.escolha-conteudo h3 {
-  color: #6b1f24;
-
-  font-size: 18px;
-
-  margin-bottom: 17px;
+/* Lista vertical (Proteínas) */
+.opcoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.escolha-conteudo label {
-  display: block;
+/* Grid de 2 colunas (Guarnições) */
+.opcoes-grid-guarnicoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+}
 
-  font-size: 16px;
-
-  margin: 13px 0;
-
+/* Item de checkbox */
+.opcao-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
+  font-size: 14px;
+  color: #2E1E1E;
+  user-select: none;
 }
 
-.escolha-conteudo input[type='checkbox'] {
+.opcao-item-selecionada {
+  color: #2E1E1E;
+  font-weight: 500;
+}
+
+.opcao-item input[type='checkbox'] {
   appearance: none;
-
-  width: 20px;
-  height: 20px;
-
-  border: 2px solid #b99b7b;
-
-  border-radius: 5px;
-
-  margin-right: 10px;
-
-  vertical-align: middle;
-
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #C4B5A5;
+  border-radius: 4px;
+  margin: 0;
   position: relative;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  background: #FFFFFF;
 }
 
-.escolha-conteudo input[type='checkbox']:checked {
-  border-color: #6b1f24;
-  background: #6b1f24;
+.opcao-item input[type='checkbox']:checked {
+  border-color: #6E2636;
+  background: #6E2636;
 }
 
-.escolha-conteudo input[type='checkbox']:checked::after {
+.opcao-item input[type='checkbox']:checked::after {
   content: '✓';
   position: absolute;
   top: -2px;
   left: 3px;
-  color: white;
-  font-size: 13px;
+  color: #FFFFFF;
+  font-size: 12px;
   font-weight: bold;
 }
 
@@ -222,614 +243,338 @@
   cursor: not-allowed;
 }
 
-
-/* ===== BEBIDA — botões de tipo ===== */
-
-.escolha-bebida {
-  width: min(900px, 96%);
-}
-
-.bebida-legenda {
-  color: #665b54;
-
-  font-size: 14px;
-
-  margin: -8px 0 14px;
-}
-
+/* ===== BEBIDA ===== */
 .bebida-tipo-botoes {
   display: flex;
-  flex-wrap: wrap;
-
-  gap: 10px;
-
-  margin-bottom: 5px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .bebida-tipo-botoes button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-
-  border: 1px solid #b99b7b;
-
-  background: #fff;
-
-  color: #6b1f24;
-
-  border-radius: 30px;
-
-  padding: 10px 18px;
-
-  font-size: 14px;
-  font-weight: 700;
-
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #EAE4D9;
+  background: #FFFFFF;
+  color: #5C4A42;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.15s ease;
 }
 
 .bebida-tipo-botoes button:hover {
-  background: #f1e7da;
+  border-color: #C4B5A5;
 }
 
-.bebida-tipo-ativo {
-  background: #6b1f24 !important;
-  color: white !important;
-  border-color: #6b1f24 !important;
-}
-
-.bebida-tipo-icone {
-  display: inline-flex;
-  line-height: 0;
+.bebida-tipo-botoes button.bebida-tipo-ativo {
+  background: #6E2636;
+  color: #FFFFFF;
+  border-color: #6E2636;
 }
 
 .bebida-detalhe {
-  margin-top: 18px;
-
-  padding-top: 16px;
-
-  border-top: 1px dashed #eadfd2;
-}
-
-.bebida-subtitulo {
-  color: #2d211b;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  margin: 14px 0 10px;
-}
-
-
-/* ===== BEBIDA — cards de tamanho / água ===== */
-
-.bebida-cartoes {
-  display: flex;
-  flex-wrap: wrap;
-
-  gap: 12px;
-}
-
-.bebida-cartao {
-  position: relative;
-
-  flex: 1 1 130px;
-  min-width: 110px;
-
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-
-  gap: 6px;
-
-  background: #fff;
-
-  border: 1.5px solid #e1d3c3;
-
-  border-radius: 14px;
-
-  padding: 16px 10px;
-
-  cursor: pointer;
-
-  transition: background 0.15s, border-color 0.15s;
+  gap: 14px;
 }
 
-.bebida-cartao:hover {
-  border-color: #b99b7b;
-}
-
-.bebida-cartao-ativo {
-  background: #6b1f24;
-  border-color: #6b1f24;
-}
-
-.bebida-cartao-icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #6b1f24;
-
-  line-height: 0;
-}
-
-.bebida-cartao-ativo .bebida-cartao-icone {
-  color: #fff;
-}
-
-.bebida-cartao-nome {
-  font-size: 14px;
-  font-weight: 600;
-
-  color: #2d211b;
-}
-
-.bebida-cartao-preco {
-  font-size: 13px;
-  font-weight: 700;
-
-  color: #8a6d3b;
-}
-
-.bebida-cartao-ativo .bebida-cartao-nome,
-.bebida-cartao-ativo .bebida-cartao-preco {
-  color: #fff;
-}
-
-.bebida-check {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-
-  width: 22px;
-  height: 22px;
-
-  background: #fff;
-  color: #6b1f24;
-
-  border: 2px solid #6b1f24;
-  border-radius: 50%;
-
-  font-size: 12px;
-  font-weight: bold;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-/* ===== BEBIDA — aviso informativo ===== */
-
-.bebida-info {
-  background: #fdf3e7;
-
-  border: 1px solid #ecd9bd;
-
-  border-radius: 10px;
-
-  padding: 10px 14px;
-
-  font-size: 12.5px;
-
-  color: #6b5a44;
-
-  margin: 14px 0 4px;
-}
-
-
-/* ===== BEBIDA — sabores ===== */
-
-.bebida-sabores {
-  display: flex;
-  flex-wrap: wrap;
-
+/* Tamanhos de refrigerante */
+.bebida-tamanhos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-.bebida-sabor-cartao {
-  position: relative;
-
-  display: flex;
-  align-items: center;
-
-  gap: 8px;
-
-  flex: 1 1 150px;
-
-  background: #fff;
-
-  border: 1.5px solid #e1d3c3;
-
-  border-radius: 12px;
-
-  padding: 12px 14px;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  color: #2d211b;
-
+.bebida-tamanho-card {
+  background: #FFFFFF;
+  border: 1px solid #EAE4D9;
+  border-radius: 8px;
+  padding: 12px 6px;
+  font-size: 13px;
+  color: #2E1E1E;
   cursor: pointer;
-
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  text-align: center;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
-.bebida-sabor-cartao:hover {
-  border-color: #b99b7b;
+.bebida-tamanho-card:hover {
+  border-color: #C4B5A5;
 }
 
-.bebida-sabor-ativo {
-  background: #6b1f24;
-  border-color: #6b1f24;
-  color: #fff;
+.bebida-tamanho-card.bebida-tamanho-ativo {
+  background: #F5EFEA;
+  border: 1.5px solid #6E2636;
+  color: #6E2636;
+  font-weight: 600;
 }
 
-.bebida-sabor-icone {
-  display: inline-flex;
-  line-height: 0;
+/* Sabores de refrigerante */
+.bebida-sabores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bebida-sabor-chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid #EAE4D9;
+  background: #FFFFFF;
+  color: #2E1E1E;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.bebida-sabor-chip:hover {
+  border-color: #6E2636;
+}
+
+.bebida-sabor-chip.bebida-sabor-ativo {
+  background: #FFFDFB;
+  border: 1.5px solid #6E2636;
+  color: #6E2636;
+  font-weight: 600;
+}
+
+.bebida-sabor-custom {
+  border-style: dashed;
+  color: #5C4A42;
 }
 
 .bebida-sabor-input {
   width: 100%;
-
-  margin-top: 10px;
-
-  padding: 12px 14px;
-
-  border: 1.5px solid #b99b7b;
-
-  border-radius: 10px;
-
-  font-size: 14px;
-  font-family: inherit;
-
-  color: #2d211b;
-
-  background: #fff;
-}
-
-.bebida-sabor-input:focus {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #6E2636;
+  font-size: 16px; /* Evita zoom no iPhone */
+  box-sizing: border-box;
   outline: none;
-  border-color: #6b1f24;
+  background: #FFFFFF;
 }
 
-
-/* ===== BEBIDA — quantidade ===== */
-
+/* Quantidade */
 .bebida-quantidade {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-
-  gap: 14px;
-
-  margin-top: 16px;
-
-  padding-top: 14px;
-
-  border-top: 1px dashed #eadfd2;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
 }
 
 .bebida-quantidade-titulo {
-  margin: 0;
+  font-size: 13px;
+  color: #5C4A42;
 }
 
 .quantidade-stepper {
   display: flex;
   align-items: center;
-
-  border: 1.5px solid #b99b7b;
-
-  border-radius: 30px;
-
+  border: 1px solid #EAE4D9;
+  border-radius: 6px;
+  background: #FFFFFF;
   overflow: hidden;
 }
 
 .quantidade-stepper button {
-  width: 34px;
-  height: 34px;
-
   border: none;
-
-  background: #fff;
-
-  color: #6b1f24;
-
-  font-size: 18px;
-  font-weight: 700;
-
+  background: transparent;
+  width: 30px;
+  height: 28px;
+  font-size: 16px;
   cursor: pointer;
-}
-
-.quantidade-stepper button:hover:not(:disabled) {
-  background: #f1e7da;
+  color: #2E1E1E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .quantidade-stepper button:disabled {
-  color: #cdb89e;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .quantidade-valor {
-  min-width: 28px;
-
+  min-width: 24px;
   text-align: center;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  color: #2d211b;
-}
-
-.bebida-quantidade-subtotal {
-  margin-left: auto;
-
-  font-size: 13.5px;
-  font-weight: 700;
-
-  color: #8a6d3b;
-}
-
-
-/* ===== RESUMO ===== */
-
-.resumo {
-  width: min(900px, 92%);
-
-  margin: 30px auto 0;
-
-  padding: 28px;
-
-  border: 1px solid #cdb89e;
-
-  border-radius: 18px;
-
-  background: #fdf9f3;
-}
-
-.resumo h3 {
-  text-align: center;
-
-  color: #6b1f24;
-
-  font-size: 18px;
-
-  margin-bottom: 20px;
-}
-
-.resumo-itens {
-  display: flex;
-  flex-wrap: wrap;
-
-  justify-content: center;
-
-  gap: 10px;
-}
-
-.resumo-itens span {
-  background: #fff;
-
-  border: 1px solid #e1d3c3;
-
-  border-radius: 30px;
-
-  padding: 10px 14px;
-
+  font-weight: 600;
   font-size: 13px;
 }
 
-.resumo-item-bebida {
-  display: inline-flex;
+/* ===== RESUMO DO SEU PEDIDO ===== */
+.resumo {
+  width: 100%;
+  max-width: 580px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px 28px;
+  border: 1px solid #EAE4D9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+.resumo-cabecalho {
+  display: flex;
   align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #2E1E1E;
+}
+
+.resumo-cabecalho h3 {
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.resumo-extrato {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
-
-  color: #6b1f24;
 }
 
-.resumo-total {
-  text-align: center;
-
-  color: #6b1f24;
-
-  font-size: 20px;
-  font-weight: 800;
-
-  margin-top: 18px;
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
+.resumo-linha-titulo {
+  color: #2E1E1E;
+  font-weight: 500;
+}
+
+.resumo-linha-valor {
+  color: #2E1E1E;
+  font-weight: 700;
+}
+
+.resumo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+
+.resumo-pill-tag {
+  background: #F5EFEA;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #6E2636;
+  font-weight: 500;
+}
+
+.resumo-pill-pendente {
+  color: #A89684;
+  background: #FAF7F2;
+  border: 1px dashed #EAE4D9;
+}
+
+.resumo-linha-bebida {
+  margin-top: 6px;
+}
+
+.resumo-divisor {
+  height: 1px;
+  background: #EAE4D9;
+  margin: 12px 0 10px;
+}
+
+.resumo-linha-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2E1E1E;
+  margin-bottom: 6px;
+}
 
 /* ===== BOTÕES ===== */
-
-.continuar-btn,
-.limpar-btn {
-  width: 100%;
-
-  border-radius: 10px;
-
-  padding: 16px;
-
-  font-size: 15px;
-
-  font-weight: bold;
-
-  letter-spacing: 1px;
-
-  cursor: pointer;
-}
-
 .continuar-btn {
-  margin-top: 25px;
-
-  background: #6b1f24;
-
-  color: white;
-
+  width: 100%;
+  background: #6E2636;
+  color: #FFFFFF;
   border: none;
+  border-radius: 28px;
+  padding: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: background 0.15s ease;
 }
 
 .continuar-btn:hover {
-  background: #53171b;
+  background: #551A27;
 }
 
 .continuar-btn:disabled {
-  background: #cdb89e;
+  background: #C4B5A5;
   cursor: not-allowed;
 }
 
 .limpar-btn {
-  margin-top: 10px;
-
+  width: 100%;
   background: transparent;
-
-  color: #6b1f24;
-
-  border: 1px solid #b99b7b;
+  border: none;
+  color: #5C4A42;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  padding: 6px;
+  transition: color 0.15s ease;
 }
 
 .limpar-btn:hover {
-  background: #f1e7da;
+  color: #6E2636;
+  text-decoration: underline;
 }
 
-
-/* ===== NAVEGAÇÃO INFERIOR ===== */
-
-.nav-inferior {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
-  background: #fffdf9;
-  border-top: 1px solid #eadfd2;
-
-  display: flex;
-  justify-content: space-around;
-
-  padding: 10px 0 14px;
-
-  z-index: 10;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-
-  border: none;
-  background: transparent;
-
-  color: #a89684;
-  font-size: 11px;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.nav-item span {
-  font-size: 20px;
-}
-
-.nav-item-ativo {
-  color: #6b1f24;
-  position: relative;
-}
-
-.nav-item-ativo::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  width: 24px;
-  height: 3px;
-  border-radius: 2px;
-  background: #6b1f24;
-}
-
-
-/* ===== CELULAR ===== */
-
+/* ===== RESPONSIVIDADE CELULAR (<= 600px) ===== */
 @media (max-width: 600px) {
-
   .marmitas-header {
-    height: 75px;
-
-    padding: 0 15px;
-  }
-
-  .marmitas-logo h1 {
-    font-size: 22px;
-  }
-
-  .marmitas-logo span {
-    font-size: 9px;
+    padding: 0 16px;
   }
 
   .titulo-marmita {
-    padding-top: 35px;
+    padding: 20px 16px 20px;
   }
 
   .titulo-marmita h2 {
-    font-size: 25px;
+    font-size: 26px;
   }
 
-  .escolha {
-    padding: 20px;
-
-    gap: 14px;
-  }
-
-  .escolha-icon {
-    width: 48px;
-    height: 48px;
-
-    font-size: 22px;
-  }
-
-  .escolha-foto {
-    width: 64px;
-    height: 64px;
-  }
-
-  .escolha-conteudo h3 {
-    font-size: 16px;
-  }
-
-  .escolha-conteudo label {
-    font-size: 15px;
-  }
-
+  .escolha,
   .resumo {
-    padding: 20px;
+    padding: 20px 18px;
+    border-radius: 14px;
   }
 
-  .bebida-tipo-botoes button {
-    flex: 1;
-    justify-content: center;
+  .opcoes-grid-guarnicoes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 12px;
   }
 
-  .bebida-cartao {
-    flex: 1 1 30%;
-
-    padding: 12px 6px;
+  .opcao-item {
+    font-size: 13.5px;
   }
 
-  .bebida-cartao-nome {
-    font-size: 12.5px;
+  .bebida-tamanhos-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
-  .bebida-cartao-preco {
-    font-size: 12px;
+  .bebida-tamanho-card {
+    font-size: 11.5px;
+    padding: 10px 4px;
   }
 
-  .bebida-sabor-cartao {
-    flex: 1 1 45%;
-
-    font-size: 13px;
-
-    padding: 10px 10px;
+  .bebida-sabor-chip {
+    font-size: 11.5px;
+    padding: 6px 10px;
   }
-
 }
