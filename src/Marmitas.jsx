@@ -162,8 +162,8 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
   // Lista de bebidas adicionadas
   const [bebidas, setBebidas] = useState([])
 
-  // Formulário de adição de bebidas
-  const [abaBebida, setAbaBebida] = useState('refrigerante') // 'refrigerante' | 'agua'
+  // Seletor de abas: começa em 'nenhuma' (Sem bebida)
+  const [abaBebida, setAbaBebida] = useState('nenhuma') // 'nenhuma' | 'refrigerante' | 'agua'
   const [refriTamanhoSel, setRefriTamanhoSel] = useState(REFRIGERANTE_TAMANHOS_PADRAO[1]) // Padrão 600 ml
   const [refriSaborSel, setRefriSaborSel] = useState('Fanta Laranja')
   const [saborCustomAtivo, setSaborCustomAtivo] = useState(false)
@@ -234,8 +234,8 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
   }
 
   function opcoesPorCategoria(categoria) {
-    const doCardapio = cardapio
-      ? cardapio.opcoes.filter((opcao) => opcao.categoria === categoria)
+    const doCardapio = (cardapio && Array.isArray(cardapio.opcoes))
+      ? cardapio.opcoes.filter((opcao) => opcao && opcao.categoria === categoria)
       : []
 
     if (doCardapio.length > 0) return doCardapio
@@ -251,6 +251,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     setCarne([])
     setGuarnicao([])
     setBebidas([])
+    setAbaBebida('nenhuma')
     setSaborCustomAtivo(false)
     setSaborCustomTexto('')
   }
@@ -532,8 +533,19 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
           <div className="escolha-conteudo">
 
-            {/* SELETOR DE ABA: REFRIGERANTE OU ÁGUA */}
+            {/* SELETOR DE ABA: SEM BEBIDA, REFRIGERANTE OU ÁGUA */}
             <div className="bebida-abas">
+              <button
+                type="button"
+                className={`bebida-aba-btn ${abaBebida === 'nenhuma' ? 'bebida-aba-ativa' : ''}`}
+                onClick={() => {
+                  setAbaBebida('nenhuma')
+                  setBebidas([])
+                }}
+              >
+                Sem bebida
+              </button>
+
               <button
                 type="button"
                 className={`bebida-aba-btn ${abaBebida === 'refrigerante' ? 'bebida-aba-ativa' : ''}`}
@@ -550,6 +562,14 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                 Água
               </button>
             </div>
+
+            {/* PAINEL SEM BEBIDA */}
+            {abaBebida === 'nenhuma' && (
+              <div className="bebida-sem-escolha-bloco">
+                <p>✓ Nenhuma bebida selecionada para este pedido.</p>
+                <span>Caso deseje adicionar, clique nas abas <strong>Refrigerante</strong> ou <strong>Água</strong> acima.</span>
+              </div>
+            )}
 
             {/* PAINEL REFRIGERANTE */}
             {abaBebida === 'refrigerante' && (
@@ -705,11 +725,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="bebidas-vazio-aviso">
-                <span>Nenhuma bebida adicionada no momento.</span>
-              </div>
-            )}
+            ) : null}
 
           </div>
         </section>
@@ -742,6 +758,14 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                 </span>
               )}
             </div>
+
+            {/* SE NÃO HOUVER BEBIDA, EXIBE O R$ 0,00 */}
+            {bebidas.length === 0 && (
+              <div className="resumo-linha resumo-linha-bebida">
+                <span className="resumo-linha-titulo">Bebida: Sem bebida</span>
+                <span className="resumo-linha-valor">R$ 0,00</span>
+              </div>
+            )}
 
             {/* LISTA DE TODAS AS BEBIDAS ADICIONADAS */}
             {bebidas.length > 0 && (

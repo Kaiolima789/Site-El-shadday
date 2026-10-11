@@ -17,7 +17,7 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
@@ -117,11 +117,10 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
   }
 
   function detalheBebidaResumo() {
-    if (!pedido?.refrigerante_sabor && !pedido?.agua_tipo) return null
-    if (pedido.refrigerante_sabor) {
-      return `${pedido.refrigerante_tamanho || 'Lata'} • ${pedido.refrigerante_sabor}`
-    }
-    return pedido.agua_tipo
+    const partes = []
+    if (pedido?.refrigerante_sabor) partes.push(pedido.refrigerante_sabor)
+    if (pedido?.agua_tipo) partes.push(pedido.agua_tipo)
+    return partes.length > 0 ? partes.join(' + ') : null
   }
 
   return (

@@ -671,3 +671,25 @@
     padding: 6px 10px;
   }
 }
+/* Bloco quando 'Sem bebida' está selecionado */
+.bebida-sem-escolha-bloco {
+  background: #FAF7F2;
+  border: 1px dashed #D6CBC1;
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: center;
+  color: #5C4A42;
+  font-size: 13.5px;
+  margin-top: 4px;
+}
+
+.bebida-sem-escolha-bloco p {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: #2E1E1E;
+}
+
+.bebida-sem-escolha-bloco span {
+  font-size: 12.5px;
+  color: #7A6961;
+}
