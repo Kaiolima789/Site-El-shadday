@@ -2,6 +2,10 @@ import { useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 
+const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : 'https://site-el-shadday.onrender.com'
+
 // Regiões de entrega e taxas diferenciadas
 const REGIOES_ENTREGA = [
   { id: 'sm_sul', nome: 'Santa Maria Sul', taxa: 3.0 },
@@ -127,7 +131,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
     }
 
     try {
-      const resposta = await fetch('http://localhost:3000/pedidos', {
+      const resposta = await fetch(`${API_URL}/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -123,7 +123,7 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
@@ -433,17 +433,35 @@ function Marmitas({ voltar, continuar }) {
           className="marmitas-voltar-btn"
           onClick={voltar}
           title="Voltar para a página inicial"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: '#FFFFFF',
+            border: '1.5px solid #D4C9BC',
+            borderRadius: '20px',
+            padding: '6px 14px',
+            color: '#2E1E1E',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)'
+          }}
         >
           <IconeVoltar size={18} />
           <span>Voltar</span>
         </button>
 
-        <div className="marmitas-logo">
-          <h1>EL SHADDAY</h1>
-          <span>— RESTAURANTE —</span>
+        <div className="marmitas-logo" style={{ textAlign: 'center' }}>
+          <h1 style={{ margin: 0, color: '#6E2636', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '13px', letterSpacing: '0.5px', fontWeight: 700 }}>
+            EL SHADDAY
+          </h1>
+          <span style={{ color: '#8A6D3B', fontSize: '10px', letterSpacing: '2px', display: 'block', marginTop: '1px', fontWeight: 600 }}>
+            — RESTAURANTE —
+          </span>
         </div>
 
-        <div className="marmitas-header-dir"></div>
+        <div className="marmitas-header-dir" style={{ width: '80px' }}></div>
       </header>
 
       {/* TÍTULO PRINCIPAL */}
