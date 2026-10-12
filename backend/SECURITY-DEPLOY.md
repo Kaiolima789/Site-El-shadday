@@ -6,6 +6,10 @@ Set `ADMIN_PASSWORD` as a private environment variable on the Render API service
 
 The production frontend origin is allowed by default. If the site uses another domain or a Vercel preview URL, add it to `ALLOWED_ORIGINS` as a comma-separated list. CORS is an additional browser restriction; API authorization remains the actual access control.
 
+## Render health check
+
+In the Render API service settings, set the health check path to `/health`. This endpoint verifies both that the API is responding and that SQLite can execute a query. It does not expose database contents.
+
 ## Database persistence
 
 Set `DATABASE_PATH` to `elshadday.db` inside the persistent disk mount configured for the Render service. First back up and copy the existing database to that path; pointing the API at a new empty file makes existing orders and menus appear missing. A file stored outside a persistent mount may be lost when the service is replaced. Keep a separate backup and test restoring it before relying on the database for long-term order history.

@@ -146,6 +146,16 @@ app.get('/', (req, res) => {
   })
 })
 
+app.get('/health', (req, res) => {
+  try {
+    db.prepare('SELECT 1').get()
+    return res.json({ status: 'ok', database: 'ok' })
+  } catch (erro) {
+    console.error('Verificação do banco falhou:', erro)
+    return res.status(503).json({ status: 'error', database: 'unavailable' })
+  }
+})
+
 function validarCardapio(body) {
   const data = typeof body?.data === 'string' ? body.data : ''
   const dataValida = /^\d{4}-\d{2}-\d{2}$/.test(data) &&
@@ -603,6 +613,32 @@ process.on('unhandledRejection', (razao) => {
 const server = app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${server.address().port}`)
 })
+
+let encerrando = false
+function encerrarServidor(sinal) {
+  if (encerrando) return
+  encerrando = true
+  console.log(`Recebido ${sinal}; encerrando servidor com seguranca.`)
+
+  const limiteEncerramento = setTimeout(() => {
+    console.error('Tempo limite de encerramento excedido.')
+    process.exit(1)
+  }, 10000)
+  limiteEncerramento.unref()
+
+  server.close((erro) => {
+    if (erro) {
+      console.error('Erro ao encerrar servidor:', erro)
+      process.exit(1)
+    }
+    db.close()
+    console.log('Servidor e banco de dados encerrados.')
+    process.exit(0)
+  })
+}
+
+process.on('SIGTERM', () => encerrarServidor('SIGTERM'))
+process.on('SIGINT', () => encerrarServidor('SIGINT'))
 
 server.on('close', () => {
   console.log('Servidor foi fechado!')

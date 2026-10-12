@@ -68,10 +68,22 @@ before(async () => {
 after(async () => {
   if (database?.open) database.close()
   if (child && child.exitCode === null) {
-    child.kill()
-    await new Promise((resolve) => child.once('exit', resolve))
+    if (process.platform === 'win32') {
+      child.kill()
+      await new Promise((resolve) => child.once('exit', resolve))
+    } else {
+      child.kill('SIGTERM')
+      await new Promise((resolve) => child.once('close', resolve))
+      assert.match(stdout, /Servidor e banco de dados encerrados\./)
+    }
   }
   if (tempDir) fs.rmSync(tempDir, { recursive: true, force: true })
+})
+
+test('health check confirma que a API consegue consultar o banco', async () => {
+  const resposta = await chamar('/health')
+  assert.equal(resposta.status, 200)
+  assert.deepEqual(await resposta.json(), { status: 'ok', database: 'ok' })
 })
 
 test('recusa origem desconhecida e rotas administrativas sem sessao', async () => {
