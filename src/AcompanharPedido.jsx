@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import './AcompanharPedido.css'
 import { rotuloPagamento } from './formasPagamento'
+import { API_URL } from './config'
 
 // Etapas do fluxo de entrega para a linha do tempo (dot stepper vertical Figma)
 const ETAPAS = [
@@ -109,7 +110,7 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
       : 'denied'
   )
 
-  const statusAnteriorRef = useRef(pedidoInicial?.status || null)
+  const statusAnteriorRef = useRef(pedidoInicial?.status || (pedidoInicial?.id ? 'aguardando' : null))
 
   // Recupera pedido salvo no navegador em caso de recarregamento
   const pedidoSalvo = (typeof window !== 'undefined' && localStorage.getItem('ultimo_pedido'))
@@ -145,7 +146,7 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
 
   async function buscarPedido() {
     try {
-      const resposta = await fetch(`http://localhost:3000/pedidos/${pedidoId}`)
+      const resposta = await fetch(`${API_URL}/pedidos/${pedidoId}`)
       if (!resposta.ok) {
         throw new Error('Pedido não encontrado')
       }

@@ -191,7 +191,11 @@ function PedidosVivendas({ voltar }) {
         alert(dados.erro || 'Erro ao aprovar pedido.')
         return
       }
-      imprimirPedido({ ...pedido, status: 'aprovado' })
+      imprimirPedido({ ...pedido, status: 'em_preparo' })
+      setPedidos((atuais) => atuais.map((item) =>
+        item.id === pedido.id ? { ...item, status: 'em_preparo' } : item
+      ))
+      setFiltro('em_preparo')
       carregarPedidos(false)
     } catch (erro) {
       console.error(erro)

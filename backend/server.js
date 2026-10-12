@@ -398,8 +398,8 @@ app.put('/pedidos/:id/aprovar', (req, res) => {
   try {
     const resultado = db.prepare(`
       UPDATE pedidos
-      SET status = 'aprovado'
-      WHERE id = ?
+      SET status = 'em_preparo'
+      WHERE id = ? AND status = 'aguardando'
     `).run(req.params.id)
 
     if (resultado.changes === 0) {
@@ -409,7 +409,7 @@ app.put('/pedidos/:id/aprovar', (req, res) => {
     }
 
     res.json({
-      mensagem: 'Pedido aprovado com sucesso!'
+      mensagem: 'Pedido aprovado e enviado para preparo!'
     })
 
   } catch (erro) {
