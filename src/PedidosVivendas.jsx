@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import './PedidosVivendas.css'
 import { rotuloPagamento, textoTroco } from './formasPagamento'
 
+const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : 'https://site-el-shadday.onrender.com'
+
 function formatarHora(criadoEm) {
   if (!criadoEm) return ''
   const dataUtc = new Date(criadoEm.replace(' ', 'T') + 'Z')
@@ -154,7 +158,7 @@ function PedidosVivendas({ voltar }) {
 
   async function carregarPedidos(mostrarErro = true) {
     try {
-      const resposta = await fetch('http://localhost:3000/pedidos')
+      const resposta = await fetch(`${API_URL}/pedidos`)
       if (!resposta.ok) {
         throw new Error('Erro ao buscar pedidos')
       }
@@ -181,7 +185,7 @@ function PedidosVivendas({ voltar }) {
   async function aprovarPedido(pedido) {
     try {
       const resposta = await fetch(
-        `http://localhost:3000/pedidos/${pedido.id}/aprovar`,
+        `${API_URL}/pedidos/${pedido.id}/aprovar`,
         { method: 'PUT' }
       )
       const dados = await resposta.json()
@@ -200,7 +204,7 @@ function PedidosVivendas({ voltar }) {
   async function recusarPedido(id) {
     try {
       const resposta = await fetch(
-        `http://localhost:3000/pedidos/${id}/recusar`,
+        `${API_URL}/pedidos/${id}/recusar`,
         { method: 'PUT' }
       )
       const dados = await resposta.json()
@@ -218,7 +222,7 @@ function PedidosVivendas({ voltar }) {
   async function marcarEmPreparo(id) {
     try {
       const resposta = await fetch(
-        `http://localhost:3000/pedidos/${id}/preparo`,
+        `${API_URL}/pedidos/${id}/preparo`,
         { method: 'PUT' }
       )
       const dados = await resposta.json()
@@ -236,7 +240,7 @@ function PedidosVivendas({ voltar }) {
   async function marcarPronto(id) {
     try {
       const resposta = await fetch(
-        `http://localhost:3000/pedidos/${id}/pronto`,
+        `${API_URL}/pedidos/${id}/pronto`,
         { method: 'PUT' }
       )
       const dados = await resposta.json()
