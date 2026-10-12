@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react'
 import './PedidosVivendas.css'
 import { rotuloPagamento, textoTroco } from './formasPagamento'
 
-const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000'
-  : 'https://site-el-shadday.onrender.com'
+const API_URL = 'https://site-el-shadday.onrender.com'
 
 function formatarHora(criadoEm) {
   if (!criadoEm) return ''
@@ -379,22 +377,25 @@ function PedidosVivendas({ voltar }) {
     }, 350)
   }
 
-  const pedidosDoDia = pedidos.filter(
-    (pedido) => dataLocalDoPedido(pedido.criado_em) === dataSelecionada
-  )
-
-  const pedidosFiltrados = pedidosDoDia.filter((pedido) => {
+  // Pedidos que exigem ação da cozinha (aguardando ou em preparo) NUNCA ficam ocultos por data
+  const pedidosFiltrados = pedidos.filter((pedido) => {
+    if (filtro === 'aguardando') {
+      return pedido.status === 'aguardando'
+    }
     if (filtro === 'em_preparo') {
       return pedido.status === 'em_preparo' || pedido.status === 'aprovado'
     }
-    return pedido.status === filtro
+    // Histórico (prontos e recusados) filtra pelo dia selecionado
+    const dataPedido = dataLocalDoPedido(pedido.criado_em)
+    const mesmoDia = dataPedido === dataSelecionada || !dataPedido
+    return mesmoDia && pedido.status === filtro
   })
 
   const contagem = {
-    aguardando: pedidosDoDia.filter((p) => p.status === 'aguardando').length,
-    em_preparo: pedidosDoDia.filter((p) => p.status === 'em_preparo' || p.status === 'aprovado').length,
-    pronto: pedidosDoDia.filter((p) => p.status === 'pronto').length,
-    recusado: pedidosDoDia.filter((p) => p.status === 'recusado').length
+    aguardando: pedidos.filter((p) => p.status === 'aguardando').length,
+    em_preparo: pedidos.filter((p) => p.status === 'em_preparo' || p.status === 'aprovado').length,
+    pronto: pedidos.filter((p) => p.status === 'pronto' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length,
+    recusado: pedidos.filter((p) => p.status === 'recusado' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length
   }
 
   return (
