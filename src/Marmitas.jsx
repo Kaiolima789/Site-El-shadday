@@ -1,3 +1,4 @@
+import { API_URL } from './config'
 import { useEffect, useState } from 'react'
 import './Marmitas.css'
 
@@ -119,7 +120,7 @@ function IconeRecibo({ size = 18 }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
       <path d="M8 7h8" />
       <path d="M8 11h8" />
       <path d="M8 15h5" />
@@ -155,20 +156,20 @@ function dataHojeLocal() {
   return `${ano}-${mes}-${dia}`
 }
 
-function Marmitas({ voltar, continuar, irParaAdmin }) {
+function Marmitas({ voltar, continuar }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
 
-  // Lista de bebidas adicionadas
+  // ===== SISTEMA MULTI-BEBIDAS =====
   const [bebidas, setBebidas] = useState([])
 
-  // Seletor de abas: começa em 'nenhuma' (Sem bebida)
+  // Formulário do seletor
   const [abaBebida, setAbaBebida] = useState('nenhuma') // 'nenhuma' | 'refrigerante' | 'agua'
-  const [refriTamanhoNome, setRefriTamanhoNome] = useState('600 ml')
+  const [refriTamanhoSel, setRefriTamanhoSel] = useState(REFRIGERANTE_TAMANHOS_PADRAO[1]) // padrão 600ml
   const [refriSaborSel, setRefriSaborSel] = useState('Fanta Laranja')
   const [saborCustomAtivo, setSaborCustomAtivo] = useState(false)
   const [saborCustomTexto, setSaborCustomTexto] = useState('')
-  const [aguaNome, setAguaNome] = useState('Água sem gás')
+  const [aguaSel, setAguaSel] = useState(AGUA_TIPOS_PADRAO[0])
 
   const [cardapio, setCardapio] = useState(null)
   const [carregando, setCarregando] = useState(true)
@@ -181,7 +182,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         setErro('')
 
         const dataHoje = dataHojeLocal()
-        const resposta = await fetch(`http://localhost:3000/cardapios/${dataHoje}`)
+        const resposta = await fetch(`${API_URL}/cardapios/${dataHoje}`)
 
         if (!resposta.ok) {
           throw new Error('Nenhum cardápio disponível para hoje.')
@@ -189,9 +190,9 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
         const dados = await resposta.json()
         setCardapio(dados)
-      } catch (err) {
-        console.error(err)
-        setErro(err.message)
+      } catch (erro) {
+        console.error(erro)
+        setErro(erro.message)
       } finally {
         setCarregando(false)
       }
@@ -201,12 +202,12 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
     const intervalo = setInterval(async () => {
       try {
-        const resposta = await fetch(`http://localhost:3000/cardapios/${dataHojeLocal()}`)
+        const resposta = await fetch(`${API_URL}/cardapios/${dataHojeLocal()}`)
         if (resposta.ok) {
           setCardapio(await resposta.json())
         }
       } catch (e) {
-        // falha silenciosa em background
+        // falha silenciosa em segundo plano
       }
     }, 15000)
 
@@ -227,7 +228,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         <h2>Cardápio indisponível</h2>
         <p>{erro}</p>
         <button onClick={voltar} className="voltar-erro-btn">
-          ← Voltar para a página inicial
+          ← Voltar para a tela inicial
         </button>
       </div>
     )
@@ -277,18 +278,17 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     )
   }
 
-  // ===== RESOLUÇÃO DINÂMICA DE TAMANHO E PREÇO =====
+  // ===== ADICIONAR REFRIGERANTE =====
   const listaTamanhos = opcoesPorCategoria('refrigerante_tamanho')
   const refriTamanhoAtual = listaTamanhos.find(
-    (t) => String(t.nome).trim().toLowerCase() === String(refriTamanhoNome).trim().toLowerCase()
+    (t) => String(t.nome).trim().toLowerCase() === String(refriTamanhoSel?.nome || refriTamanhoSel).trim().toLowerCase()
   ) || listaTamanhos[1] || REFRIGERANTE_TAMANHOS_PADRAO[1]
 
   const listaAguas = opcoesPorCategoria('agua')
   const aguaAtual = listaAguas.find(
-    (a) => String(a.nome).trim().toLowerCase() === String(aguaNome).trim().toLowerCase()
+    (a) => String(a.nome).trim().toLowerCase() === String(aguaSel?.nome || aguaSel).trim().toLowerCase()
   ) || listaAguas[0] || AGUA_TIPOS_PADRAO[0]
 
-  // ===== ADICIONAR REFRIGERANTE =====
   function adicionarRefrigerante() {
     const saborFinal = saborCustomAtivo ? saborCustomTexto.trim() : refriSaborSel
 
@@ -376,11 +376,8 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
     setBebidas((atuais) => atuais.filter((b) => b.id !== id))
   }
 
-  // ===== CÁLCULOS MATEMÁTICOS CORRETOS E REATIVOS =====
-  const precoMarmita = (cardapio && cardapio.preco !== undefined && cardapio.preco !== null)
-    ? Number(cardapio.preco)
-    : 10.0
-
+  // ===== CÁLCULOS MATEMÁTICOS =====
+  const precoMarmita = (cardapio && cardapio.preco !== undefined && cardapio.preco !== null) ? Number(cardapio.preco) : 10.0
   const totalBebidas = bebidas.reduce(
     (acc, item) => acc + Number(item.preco) * Number(item.quantidade),
     0
@@ -388,6 +385,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
   const totalGeral = precoMarmita + totalBebidas
   const totalBebidasQtd = bebidas.reduce((acc, item) => acc + item.quantidade, 0)
 
+  // Validação de continuação
   function tentarContinuar() {
     if (carne.length === 0) {
       alert('Por favor, selecione pelo menos uma opção de proteína para sua marmita.')
@@ -438,20 +436,11 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
         </button>
 
         <div className="marmitas-logo">
-          <h1>EL SHADDAY - RESTAURANTE</h1>
+          <h1>EL SHADDAY</h1>
+          <span>— RESTAURANTE —</span>
         </div>
 
-        <div className="marmitas-header-dir">
-          {irParaAdmin ? (
-            <button onClick={irParaAdmin} className="admin-link">
-              Admin
-            </button>
-          ) : (
-            <a href="#admin" onClick={(e) => { e.preventDefault(); if (voltar) voltar(); }} className="admin-link">
-              Admin
-            </a>
-          )}
-        </div>
+        <div className="marmitas-header-dir"></div>
       </header>
 
       {/* TÍTULO PRINCIPAL */}
@@ -539,7 +528,6 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
           <div className="escolha-conteudo">
 
-            {/* SELETOR DE ABA: SEM BEBIDA, REFRIGERANTE OU ÁGUA */}
             <div className="bebida-abas">
               <button
                 type="button"
@@ -573,7 +561,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
             {abaBebida === 'nenhuma' && (
               <div className="bebida-sem-escolha-bloco">
                 <p>✓ Nenhuma bebida selecionada para este pedido.</p>
-                <span>Caso deseje adicionar, clique nas abas <strong>Refrigerante</strong> ou <strong>Água</strong> acima.</span>
+                <span>Caso deseje adicionar, clique em <strong>Refrigerante</strong> ou <strong>Água</strong> acima.</span>
               </div>
             )}
 
@@ -590,7 +578,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                         type="button"
                         key={opcao.id || opcao.nome}
                         className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() => setRefriTamanhoNome(opcao.nome)}
+                        onClick={() => setRefriTamanhoSel(opcao)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -642,7 +630,6 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   />
                 )}
 
-                {/* BOTÃO COM PREÇO 100% DINÂMICO CONFORME O TAMANHO SELECIONADO */}
                 <button
                   type="button"
                   className="adicionar-bebida-btn"
@@ -666,7 +653,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                         type="button"
                         key={opcao.id || opcao.nome}
                         className={`bebida-tamanho-card ${ativo ? 'bebida-tamanho-ativo' : ''}`}
-                        onClick={() => setAguaNome(opcao.nome)}
+                        onClick={() => setAguaSel(opcao)}
                       >
                         {opcao.nome} • R$ {Number(opcao.preco).toFixed(2).replace('.', ',')}
                       </button>
@@ -674,7 +661,6 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   })}
                 </div>
 
-                {/* BOTÃO COM PREÇO DINÂMICO CONFORME O TIPO DE ÁGUA */}
                 <button
                   type="button"
                   className="adicionar-bebida-btn"
@@ -685,7 +671,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               </div>
             )}
 
-            {/* LISTA DE BEBIDAS ADICIONADAS COM QUANTIDADE E EXCLUSÃO INDIVIDUAL */}
+            {/* LISTA DE BEBIDAS ADICIONADAS */}
             {bebidas.length > 0 ? (
               <div className="bebidas-selecionadas-bloco">
                 <h4 className="bebidas-selecionadas-titulo">Bebidas no seu pedido:</h4>
@@ -733,7 +719,11 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
                   ))}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="bebidas-vazio-aviso">
+                <span>Nenhuma bebida adicionada no momento.</span>
+              </div>
+            )}
 
           </div>
         </section>
@@ -767,7 +757,7 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               )}
             </div>
 
-            {/* SE NÃO HOUVER BEBIDA, EXIBE O R$ 0,00 */}
+            {/* LISTA DE TODAS AS BEBIDAS ADICIONADAS */}
             {bebidas.length === 0 && (
               <div className="resumo-linha resumo-linha-bebida">
                 <span className="resumo-linha-titulo">Bebida: Sem bebida</span>
@@ -775,7 +765,6 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
               </div>
             )}
 
-            {/* LISTA DE TODAS AS BEBIDAS ADICIONADAS */}
             {bebidas.length > 0 && (
               <div className="resumo-bebidas-lista">
                 {bebidas.map((b) => (
@@ -793,7 +782,6 @@ function Marmitas({ voltar, continuar, irParaAdmin }) {
 
             <div className="resumo-divisor"></div>
 
-            {/* TOTAL CORRETAMENTE CALCULADO: MARMITA + BEBIDAS */}
             <div className="resumo-linha-total">
               <span>Total: R$ {totalGeral.toFixed(2).replace('.', ',')}</span>
             </div>
