@@ -2,7 +2,9 @@ import { useState } from 'react'
 import './Vivendas.css'
 import FormaPagamento from './FormaPagamento'
 
-const API_URL = 'https://site-el-shadday.onrender.com'
+const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : 'https://site-el-shadday.onrender.com'
 
 function IconeVoltar({ size = 16 }) {
   return (
