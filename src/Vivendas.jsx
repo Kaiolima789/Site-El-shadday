@@ -2,6 +2,8 @@ import { useState } from 'react'
 import './Vivendas.css'
 import FormaPagamento from './FormaPagamento'
 
+const API_URL = 'https://site-el-shadday.onrender.com'
+
 function IconeVoltar({ size = 16 }) {
   return (
     <svg
@@ -130,7 +132,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
     }
 
     try {
-      const resposta = await fetch('http://localhost:3000/pedidos', {
+      const resposta = await fetch(`${API_URL}/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -179,9 +181,13 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
           <span>Voltar</span>
         </button>
 
-        <div className="vivendas-logo">
-          <h1>EL SHADDAY</h1>
-          <span>— RESTAURANTE —</span>
+        <div className="vivendas-logo" style={{ textAlign: 'center' }}>
+          <h1 style={{ margin: 0, color: '#6E2636', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '13px', letterSpacing: '0.5px', fontWeight: 700 }}>
+            EL SHADDAY
+          </h1>
+          <span style={{ color: '#8A6D3B', fontSize: '10px', letterSpacing: '2px', display: 'block', marginTop: '1px', fontWeight: 600 }}>
+            — RESTAURANTE —
+          </span>
         </div>
 
         <div className="vivendas-header-spacer"></div>
@@ -235,8 +241,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
               <IconeCheckCirculo size={18} />
               <span>
                 {temCobranca
-                  ? `Marmita e entrega cobertas pelo convênio. Bebida a pagar na entrega: R$ ${valorBebida.toFixed(2).replace('.', ',')}.`
-                  : 'Marmita e entrega 100% cobertas pelo convênio. Nada a pagar na entrega.'}
+                  ? `Marmita coberta pelo código Vivendas. Bebida a pagar na entrega: R$ ${valorBebida.toFixed(2).replace('.', ',')}.`
+                  : 'Marmita paga pelo código Vivendas. Nada a pagar na entrega.'}
               </span>
             </div>
 
@@ -338,8 +344,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
 
             <p className="vivendas-resumo-aviso">
               {temCobranca
-                ? 'Marmita e entrega faturadas pelo convênio. Bebida cobrada na entrega.'
-                : 'Marmita e entrega 100% faturadas pelo convênio. Nada a pagar na entrega.'}
+                ? 'Marmita faturada pelo convênio. Valor da bebida cobrado na entrega.'
+                : 'Marmita faturada pelo convênio. Nada a pagar na entrega.'}
             </p>
 
           </aside>
