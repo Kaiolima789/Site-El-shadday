@@ -1,28 +1,41 @@
 import { useState } from 'react'
 import './LoginAdmin.css'
+import { API_URL } from './config'
 
 function LoginAdmin({ voltar, onLoginSucesso }) {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
   const [mostrarSenha, setMostrarSenha] = useState(false)
 
-  // Senha padrão inicial do dono (altere para a senha que desejar)
-  const SENHA_MESTRA = 'admin123'
+  const [carregando, setCarregando] = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setErro('')
-
-    if (!senha.trim()) {
+    if (!senha) {
       setErro('Digite a senha de administrador.')
       return
     }
 
-    if (senha.trim() === SENHA_MESTRA) {
-      localStorage.setItem('elshadday_admin_autenticado', 'true')
-      onLoginSucesso()
-    } else {
-      setErro('Senha incorreta. Acesso restrito ao dono.')
+    setCarregando(true)
+    try {
+      const resposta = await fetch(`${API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha })
+      })
+      const dados = await resposta.json().catch(() => ({}))
+      if (!resposta.ok) {
+        setErro(dados.erro || 'N\u00e3o foi poss\u00edvel entrar no painel.')
+        return
+      }
+      sessionStorage.setItem('elshadday_admin_token', dados.token)
+      onLoginSucesso(dados.token)
+    } catch (erroRequisicao) {
+      console.error(erroRequisicao)
+      setErro('N\u00e3o foi poss\u00edvel conectar ao servidor. Tente novamente.')
+    } finally {
+      setCarregando(false)
     }
   }
 
@@ -64,8 +77,8 @@ function LoginAdmin({ voltar, onLoginSucesso }) {
             </div>
           </div>
 
-          <button type="submit" className="login-admin-btn-entrar">
-            Entrar no Painel →
+          <button type="submit" className="login-admin-btn-entrar" disabled={carregando}>
+            {carregando ? 'Verificando...' : 'Entrar no Painel \u2192'}
           </button>
         </form>
 

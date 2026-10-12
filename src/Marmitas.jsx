@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react'
 import './Marmitas.css'
-
-const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000'
-  : 'https://site-el-shadday.onrender.com'
+import { API_URL } from './config'
 
 const MAX_CARNES = 2
 const MAX_QUANTIDADE_BEBIDA = 10

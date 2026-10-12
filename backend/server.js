@@ -1,12 +1,114 @@
 const express = require('express')
 const cors = require('cors')
+const crypto = require('node:crypto')
 const db = require('./database')
 
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
+app.set('trust proxy', 1)
 
-app.use(cors())
-app.use(express.json())
+const allowedOrigins = new Set([
+  'https://site-el-shadday.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  ...(process.env.ALLOWED_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean)
+])
+
+app.use(cors({
+  exposedHeaders: ['X-Has-More', 'X-Next-Cursor'],
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true)
+    return callback(new Error('Origem não autorizada pelo CORS.'))
+  }
+}))
+app.use(express.json({ limit: '32kb' }))
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'no-referrer')
+  res.setHeader('Cache-Control', 'no-store')
+  next()
+})
+
+const sessoesAdmin = new Map()
+const tentativasLogin = new Map()
+const tentativasPedidos = new Map()
+const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000
+
+function limitarLogin(req, res, next) {
+  const agora = Date.now()
+  const chave = req.ip || req.socket.remoteAddress || 'desconhecido'
+  const estado = tentativasLogin.get(chave) || { quantidade: 0, inicio: agora }
+  if (agora - estado.inicio > 15 * 60 * 1000) {
+    estado.quantidade = 0
+    estado.inicio = agora
+  }
+  if (estado.quantidade >= 8) {
+    res.setHeader('Retry-After', '900')
+    return res.status(429).json({ erro: 'Muitas tentativas. Tente novamente em 15 minutos.' })
+  }
+  estado.quantidade += 1
+  tentativasLogin.set(chave, estado)
+  next()
+}
+
+function limitarPedidos(req, res, next) {
+  const agora = Date.now()
+  const chave = req.ip || req.socket.remoteAddress || 'desconhecido'
+  const estado = tentativasPedidos.get(chave) || { quantidade: 0, inicio: agora }
+  if (agora - estado.inicio > 60 * 1000) {
+    estado.quantidade = 0
+    estado.inicio = agora
+  }
+  if (estado.quantidade >= 30) {
+    res.setHeader('Retry-After', '60')
+    return res.status(429).json({ erro: 'Muitos pedidos enviados deste dispositivo. Aguarde um minuto e tente novamente.' })
+  }
+  estado.quantidade += 1
+  tentativasPedidos.set(chave, estado)
+  next()
+}
+
+function exigirAdmin(req, res, next) {
+  const token = req.get('Authorization')?.match(/^Bearer\s+(.+)$/i)?.[1]
+  const expiraEm = token && sessoesAdmin.get(token)
+  if (!expiraEm || expiraEm <= Date.now()) {
+    if (token) sessoesAdmin.delete(token)
+    return res.status(401).json({ erro: 'Sessão administrativa expirada. Entre novamente.' })
+  }
+  next()
+}
+
+app.post('/admin/login', limitarLogin, (req, res) => {
+  const senhaConfigurada = process.env.ADMIN_PASSWORD
+  if (!senhaConfigurada) {
+    return res.status(503).json({ erro: 'A senha administrativa ainda não foi configurada no servidor.' })
+  }
+  if (senhaConfigurada.length < 16) {
+    return res.status(503).json({ erro: 'Configure uma senha administrativa com pelo menos 16 caracteres.' })
+  }
+
+  const senhaEnviada = typeof req.body?.senha === 'string' ? req.body.senha : ''
+  const hashConfigurado = crypto.createHash('sha256').update(senhaConfigurada).digest()
+  const hashEnviado = crypto.createHash('sha256').update(senhaEnviada).digest()
+  if (!crypto.timingSafeEqual(hashConfigurado, hashEnviado)) {
+    return res.status(401).json({ erro: 'Senha incorreta.' })
+  }
+
+  tentativasLogin.delete(req.ip || req.socket.remoteAddress || 'desconhecido')
+  for (const [sessao, expiraEm] of sessoesAdmin) {
+    if (expiraEm <= Date.now()) sessoesAdmin.delete(sessao)
+  }
+  const token = crypto.randomBytes(32).toString('hex')
+  sessoesAdmin.set(token, Date.now() + DURACAO_SESSAO_MS)
+  res.json({ token, expiraEm: DURACAO_SESSAO_MS })
+})
+
+app.post('/admin/logout', exigirAdmin, (req, res) => {
+  const token = req.get('Authorization').replace(/^Bearer\s+/i, '')
+  sessoesAdmin.delete(token)
+  res.status(204).end()
+})
 
 // ===== MIGRAÇÃO: colunas do cliente comum (roda sozinha, só adiciona se faltar) =====
 const colunasPedidos = db
@@ -44,57 +146,75 @@ app.get('/', (req, res) => {
   })
 })
 
-app.post('/cardapios', (req, res) => {
-  const { data, preco, opcoes } = req.body
+function validarCardapio(body) {
+  const data = typeof body?.data === 'string' ? body.data : ''
+  const dataValida = /^\d{4}-\d{2}-\d{2}$/.test(data) &&
+    !Number.isNaN(Date.parse(`${data}T00:00:00Z`)) &&
+    new Date(`${data}T00:00:00Z`).toISOString().slice(0, 10) === data
+  const preco = Number(body?.preco)
+  const opcoesRecebidas = body?.opcoes
 
-  if (!data || !preco || !Array.isArray(opcoes)) {
-    return res.status(400).json({
-      erro: 'Data, preço e opções são obrigatórios.'
-    })
+  if (!dataValida) return { erro: 'Informe uma data válida para o cardápio.' }
+  if (!Number.isFinite(preco) || preco <= 0 || preco > 1000) {
+    return { erro: 'O preço deve ser maior que zero e menor ou igual a R$ 1.000,00.' }
+  }
+  if (!Array.isArray(opcoesRecebidas) || opcoesRecebidas.length < 1 || opcoesRecebidas.length > 40) {
+    return { erro: 'Informe entre 1 e 40 opções para o cardápio.' }
   }
 
-  try {
-    const criarCardapio = db.prepare(`
-      INSERT INTO cardapios (data, preco)
-      VALUES (?, ?)
-    `)
-
-    const resultado = criarCardapio.run(data, preco)
-
-    const cardapioId = resultado.lastInsertRowid
-
-    const adicionarOpcao = db.prepare(`
-      INSERT INTO opcoes_cardapio
-      (cardapio_id, categoria, nome)
-      VALUES (?, ?, ?)
-    `)
-
-    for (const opcao of opcoes) {
-      adicionarOpcao.run(
-        cardapioId,
-        opcao.categoria,
-        opcao.nome
-      )
+  const opcoes = []
+  const chaves = new Set()
+  for (const opcao of opcoesRecebidas) {
+    const categoria = typeof opcao?.categoria === 'string' ? opcao.categoria.trim() : ''
+    const nome = typeof opcao?.nome === 'string' ? opcao.nome.trim() : ''
+    if (!['carne', 'guarnicao'].includes(categoria) || !nome || nome.length > 100) {
+      return { erro: 'Cada opção precisa ter uma categoria válida e um nome de até 100 caracteres.' }
     }
+    const chave = `${categoria}:${nome.toLocaleLowerCase('pt-BR')}`
+    if (chaves.has(chave)) return { erro: 'O cardápio não pode ter opções repetidas.' }
+    chaves.add(chave)
+    opcoes.push({ categoria, nome })
+  }
+  return { data, preco, opcoes }
+}
 
-    res.status(201).json({
-      mensagem: 'Cardápio criado com sucesso!',
-      id: cardapioId
-    })
+const criarCardapio = db.transaction(({ data, preco, opcoes }) => {
+  const resultado = db.prepare('INSERT INTO cardapios (data, preco) VALUES (?, ?)').run(data, preco)
+  const inserirOpcao = db.prepare(`
+    INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome)
+    VALUES (?, ?, ?)
+  `)
+  for (const opcao of opcoes) inserirOpcao.run(resultado.lastInsertRowid, opcao.categoria, opcao.nome)
+  return Number(resultado.lastInsertRowid)
+})
 
+const atualizarCardapio = db.transaction((id, preco, opcoes) => {
+  db.prepare('UPDATE cardapios SET preco = ? WHERE id = ?').run(preco, id)
+  db.prepare('DELETE FROM opcoes_cardapio WHERE cardapio_id = ?').run(id)
+  const inserirOpcao = db.prepare(`
+    INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome)
+    VALUES (?, ?, ?)
+  `)
+  for (const opcao of opcoes) inserirOpcao.run(id, opcao.categoria, opcao.nome)
+})
+
+app.post('/cardapios', exigirAdmin, (req, res) => {
+  const validacao = validarCardapio(req.body)
+  if (validacao.erro) return res.status(400).json({ erro: validacao.erro })
+
+  try {
+    const id = criarCardapio(validacao)
+    return res.status(201).json({ mensagem: 'Card\u00e1pio criado com sucesso!', id })
   } catch (erro) {
-
     if (erro.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      const existente = db.prepare('SELECT id FROM cardapios WHERE data = ?').get(validacao.data)
       return res.status(409).json({
-        erro: 'Já existe um cardápio para essa data.'
+        erro: 'J\u00e1 existe um card\u00e1pio para essa data. Ele foi carregado para edi\u00e7\u00e3o.',
+        id: existente?.id
       })
     }
-
-    console.error(erro)
-
-    res.status(500).json({
-      erro: 'Erro ao criar cardápio.'
-    })
+    console.error('Falha ao criar card\u00e1pio:', erro)
+    return res.status(500).json({ erro: 'N\u00e3o foi poss\u00edvel salvar o card\u00e1pio. Seus dados continuam na tela; tente novamente.' })
   }
 })
 
@@ -125,69 +245,23 @@ app.get('/cardapios/:data', (req, res) => {
   })
 })
 
-app.put('/cardapios/:data', (req, res) => {
-  const { data } = req.params
-  const { preco, opcoes } = req.body
+app.put('/cardapios/:data', exigirAdmin, (req, res) => {
+  const validacao = validarCardapio({ ...req.body, data: req.params.data })
+  if (validacao.erro) return res.status(400).json({ erro: validacao.erro })
 
-  if (!preco || !Array.isArray(opcoes)) {
-    return res.status(400).json({
-      erro: 'Preço e opções são obrigatórios.'
-    })
-  }
+  const cardapio = db.prepare('SELECT id FROM cardapios WHERE data = ?').get(validacao.data)
+  if (!cardapio) return res.status(404).json({ erro: 'Card\u00e1pio n\u00e3o encontrado para essa data.' })
 
   try {
-    const cardapio = db.prepare(`
-      SELECT id
-      FROM cardapios
-      WHERE data = ?
-    `).get(data)
-
-    if (!cardapio) {
-      return res.status(404).json({
-        erro: 'Cardápio não encontrado para essa data.'
-      })
-    }
-
-    const atualizarPreco = db.prepare(`
-      UPDATE cardapios
-      SET preco = ?
-      WHERE id = ?
-    `)
-
-    atualizarPreco.run(preco, cardapio.id)
-
-    db.prepare(`
-      DELETE FROM opcoes_cardapio
-      WHERE cardapio_id = ?
-    `).run(cardapio.id)
-
-    const adicionarOpcao = db.prepare(`
-      INSERT INTO opcoes_cardapio
-      (cardapio_id, categoria, nome)
-      VALUES (?, ?, ?)
-    `)
-
-    for (const opcao of opcoes) {
-      adicionarOpcao.run(
-        cardapio.id,
-        opcao.categoria,
-        opcao.nome
-      )
-    }
-
-    res.json({
-      mensagem: 'Cardápio atualizado com sucesso!'
-    })
-
+    atualizarCardapio(cardapio.id, validacao.preco, validacao.opcoes)
+    return res.json({ mensagem: 'Card\u00e1pio atualizado com sucesso!' })
   } catch (erro) {
-    console.error(erro)
-    res.status(500).json({
-      erro: 'Erro ao atualizar cardápio.'
-    })
+    console.error('Falha ao atualizar card\u00e1pio:', erro)
+    return res.status(500).json({ erro: 'N\u00e3o foi poss\u00edvel atualizar o card\u00e1pio. A vers\u00e3o anterior foi preservada.' })
   }
 })
 
-app.post('/pedidos', (req, res) => {
+app.post('/pedidos', limitarPedidos, (req, res) => {
   const {
     nome,
     loja,
@@ -350,13 +424,19 @@ app.post('/pedidos', (req, res) => {
   }
 })
 
-app.get('/pedidos', (req, res) => {
+app.get('/pedidos', exigirAdmin, (req, res) => {
   try {
-    const pedidos = db.prepare(`
-      SELECT *
-      FROM pedidos
-      ORDER BY criado_em DESC
-    `).all()
+    const limiteSolicitado = Number.parseInt(req.query.limit, 10)
+    const beforeId = Number.parseInt(req.query.beforeId, 10)
+    const limit = Number.isInteger(limiteSolicitado) ? Math.min(Math.max(limiteSolicitado, 1), 100) : 100
+    const consulta = Number.isInteger(beforeId) && beforeId > 0
+      ? db.prepare('SELECT * FROM pedidos WHERE id < ? ORDER BY id DESC LIMIT ?').all(beforeId, limit)
+      : db.prepare('SELECT * FROM pedidos ORDER BY id DESC LIMIT ?').all(limit)
+    const pedidos = consulta
+    const ultimoId = pedidos[pedidos.length - 1]?.id
+    const temMais = ultimoId ? Boolean(db.prepare('SELECT 1 FROM pedidos WHERE id < ? LIMIT 1').get(ultimoId)) : false
+    res.setHeader('X-Has-More', String(temMais))
+    if (temMais) res.setHeader('X-Next-Cursor', String(ultimoId))
 
     res.json(pedidos)
 
@@ -372,7 +452,7 @@ app.get('/pedidos', (req, res) => {
 app.get('/pedidos/:id', (req, res) => {
   try {
     const pedido = db.prepare(`
-      SELECT *
+      SELECT id, status, criado_em
       FROM pedidos
       WHERE id = ?
     `).get(req.params.id)
@@ -394,7 +474,7 @@ app.get('/pedidos/:id', (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/aprovar', (req, res) => {
+app.put('/pedidos/:id/aprovar', exigirAdmin, (req, res) => {
   try {
     const resultado = db.prepare(`
       UPDATE pedidos
@@ -421,7 +501,7 @@ app.put('/pedidos/:id/aprovar', (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/recusar', (req, res) => {
+app.put('/pedidos/:id/recusar', exigirAdmin, (req, res) => {
   try {
     const resultado = db.prepare(`
       UPDATE pedidos
@@ -448,7 +528,7 @@ app.put('/pedidos/:id/recusar', (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/preparo', (req, res) => {
+app.put('/pedidos/:id/preparo', exigirAdmin, (req, res) => {
   try {
     const resultado = db.prepare(`
       UPDATE pedidos
@@ -475,7 +555,7 @@ app.put('/pedidos/:id/preparo', (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/pronto', (req, res) => {
+app.put('/pedidos/:id/pronto', exigirAdmin, (req, res) => {
   try {
     const resultado = db.prepare(`
       UPDATE pedidos
@@ -502,16 +582,26 @@ app.put('/pedidos/:id/pronto', (req, res) => {
   }
 })
 
-process.on('uncaughtException', (err) => {
-  console.error('Erro não capturado:', err)
+app.use((erro, req, res, next) => {
+  if (res.headersSent) return next(erro)
+  if (erro.type === 'entity.too.large') return res.status(413).json({ erro: 'A solicita??o excede o tamanho permitido.' })
+  if (String(erro.message || '').includes('CORS')) return res.status(403).json({ erro: 'Origem n\u00e3o autorizada.' })
+  console.error('Erro n\u00e3o tratado na API:', erro)
+  return res.status(500).json({ erro: 'Erro interno do servidor.' })
 })
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Rejeição não tratada em:', promise, 'razão:', reason)
+process.on('uncaughtException', (erro) => {
+  console.error('Erro n\u00e3o capturado; encerrando para rein\u00edcio seguro:', erro)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (razao) => {
+  console.error('Rejei\u00e7\u00e3o n\u00e3o tratada; encerrando para rein\u00edcio seguro:', razao)
+  process.exit(1)
 })
 
 const server = app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`)
+  console.log(`Servidor rodando na porta ${server.address().port}`)
 })
 
 server.on('close', () => {

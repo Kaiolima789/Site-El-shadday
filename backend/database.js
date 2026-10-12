@@ -1,8 +1,11 @@
 const Database = require('better-sqlite3')
 
-const db = new Database('elshadday.db')
+const databasePath = process.env.DATABASE_PATH || 'elshadday.db'
+const db = new Database(databasePath)
 
 db.pragma('journal_mode = WAL')
+db.pragma('foreign_keys = ON')
+db.pragma('busy_timeout = 5000')
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS cardapios (

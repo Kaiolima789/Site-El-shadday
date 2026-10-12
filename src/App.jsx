@@ -9,6 +9,7 @@ import PedidosVivendas from './PedidosVivendas'
 import AcompanharPedido from './AcompanharPedido'
 import Home from './Home'
 import LoginAdmin from './LoginAdmin'
+import { API_URL } from './config'
 
 function App() {
   const [pagina, setPagina] = useState(() => {
@@ -18,9 +19,8 @@ function App() {
     return 'home'
   })
   const [pedido, setPedido] = useState(null)
-  const [isAdminLogado, setIsAdminLogado] = useState(() => {
-    return localStorage.getItem('elshadday_admin_autenticado') === 'true'
-  })
+  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('elshadday_admin_token') || '')
+  const isAdminLogado = Boolean(adminToken)
 
   // Detecta acesso direto pela URL com #admin
   useEffect(() => {
@@ -37,8 +37,14 @@ function App() {
   }, [])
 
   function fazerLogoutAdmin() {
-    localStorage.removeItem('elshadday_admin_autenticado')
-    setIsAdminLogado(false)
+    if (adminToken) {
+      fetch(`${API_URL}/admin/logout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${adminToken}` }
+      }).catch(() => {})
+    }
+    sessionStorage.removeItem('elshadday_admin_token')
+    setAdminToken('')
     window.location.hash = ''
     setPagina('home')
   }
@@ -52,8 +58,8 @@ function App() {
             window.location.hash = ''
             setPagina('home')
           }}
-          onLoginSucesso={() => {
-            setIsAdminLogado(true)
+          onLoginSucesso={(token) => {
+            setAdminToken(token)
             setPagina('admin')
           }}
         />
@@ -64,6 +70,7 @@ function App() {
   if (pagina === 'admin') {
     return (
       <AdminCardapio
+        authToken={adminToken}
         voltar={() => {
           window.location.hash = ''
           setPagina('home')
@@ -77,6 +84,7 @@ function App() {
   if (pagina === 'admin-pedidos' || pagina === 'pedidos-vivendas') {
     return (
       <PedidosVivendas
+        authToken={adminToken}
         voltar={() => setPagina('admin')}
         logout={fazerLogoutAdmin}
       />

@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './AdminCardapio.css'
-
-const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000'
-  : 'https://site-el-shadday.onrender.com'
+import { API_URL } from './config'
 
 const PROTEINAS_SUGERIDAS = [
   'Churrasco',
@@ -39,7 +36,7 @@ function dataHojeISO() {
   return `${ano}-${mes}-${dia}`
 }
 
-function AdminCardapio({ voltar, pedidos }) {
+function AdminCardapio({ voltar, pedidos, authToken, logout }) {
   const [data, setData] = useState(dataHojeISO())
   const [preco, setPreco] = useState('18.00')
 
@@ -55,6 +52,9 @@ function AdminCardapio({ voltar, pedidos }) {
 
   const [modoEdicao, setModoEdicao] = useState(false)
   const [mensagem, setMensagem] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const [consultando, setConsultando] = useState(false)
+  const consultaId = useRef(0)
 
   useEffect(() => {
     verificarCardapio(dataHojeISO())
@@ -62,89 +62,76 @@ function AdminCardapio({ voltar, pedidos }) {
 
   async function verificarCardapio(dataEscolhida) {
     if (!dataEscolhida) return
+    const idConsulta = ++consultaId.current
+    setConsultando(true)
 
     try {
-      const resposta = await fetch(
-        `${API_URL}/cardapios/${dataEscolhida}`
-      )
+      const resposta = await fetch(`${API_URL}/cardapios/${dataEscolhida}`)
+      if (idConsulta !== consultaId.current) return
 
       if (resposta.status === 404) {
         setModoEdicao(false)
-        setMensagem('Novo cardápio para esta data.')
+        setMensagem('Novo card\u00e1pio para esta data.')
         return
       }
-
-      if (!resposta.ok) {
-        throw new Error('Erro ao consultar cardápio')
-      }
+      if (!resposta.ok) throw new Error('Erro ao consultar card\u00e1pio')
 
       const dados = await resposta.json()
+      if (idConsulta !== consultaId.current) return
       setModoEdicao(true)
-      setMensagem('Cardápio encontrado. Você está editando.')
+      setMensagem('Card\u00e1pio encontrado. Voc\u00ea est\u00e1 editando.')
       setPreco(String(dados.preco || '18.00'))
 
-      const novasOpcoes = {
-        carne: [],
-        guarnicao: []
-      }
-
-      dados.opcoes.forEach((opcao) => {
-        if (novasOpcoes[opcao.categoria]) {
-          novasOpcoes[opcao.categoria].push(opcao.nome)
-        }
+      const novasOpcoes = { carne: [], guarnicao: [] }
+      ;(Array.isArray(dados.opcoes) ? dados.opcoes : []).forEach((opcao) => {
+        if (novasOpcoes[opcao.categoria]) novasOpcoes[opcao.categoria].push(opcao.nome)
       })
-
       setOpcoes(novasOpcoes)
     } catch (erro) {
       console.error(erro)
-      setMensagem('Modo offline / Não foi possível carregar do servidor.')
+      if (idConsulta === consultaId.current) setMensagem('N\u00e3o foi poss\u00edvel carregar o card\u00e1pio do servidor.')
+    } finally {
+      if (idConsulta === consultaId.current) setConsultando(false)
     }
   }
 
   async function salvarCardapio() {
+    if (salvando || consultando) return
+    setSalvando(true)
     try {
-      const opcoesFormatadas = Object.entries(opcoes).flatMap(
-        ([categoria, itens]) =>
-          itens.map((nome) => ({
-            categoria,
-            nome
-          }))
+      const opcoesFormatadas = Object.entries(opcoes).flatMap(([categoria, itens]) =>
+        itens.map((nome) => ({ categoria, nome }))
       )
-
       const metodo = modoEdicao ? 'PUT' : 'POST'
-      const url = modoEdicao
-        ? `${API_URL}/cardapios/${data}`
-        : `${API_URL}/cardapios`
-
+      const url = modoEdicao ? `${API_URL}/cardapios/${data}` : `${API_URL}/cardapios`
       const resposta = await fetch(url, {
         method: metodo,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
         },
-        body: JSON.stringify({
-          data,
-          preco: Number(preco),
-          opcoes: opcoesFormatadas
-        })
+        body: JSON.stringify({ data, preco: Number(preco), opcoes: opcoesFormatadas })
       })
-
-      const resultado = await resposta.json()
+      const resultado = await resposta.json().catch(() => ({}))
 
       if (!resposta.ok) {
-        alert(resultado.erro || 'Erro ao salvar cardápio')
+        if (resposta.status === 401) logout?.()
+        if (resposta.status === 409 && resultado.id) {
+          await verificarCardapio(data)
+          setMensagem('Este card\u00e1pio j\u00e1 estava salvo. Confira os dados carregados e salve novamente para atualizar.')
+        }
+        alert(resultado.erro || 'Erro ao salvar card\u00e1pio.')
         return
       }
 
-      alert(
-        modoEdicao
-          ? 'Cardápio atualizado e publicado com sucesso!'
-          : 'Cardápio criado e publicado com sucesso!'
-      )
-
+      alert(modoEdicao ? 'Card\u00e1pio atualizado e publicado com sucesso!' : 'Card\u00e1pio criado e publicado com sucesso!')
       setModoEdicao(true)
     } catch (erro) {
       console.error(erro)
-      alert('Não foi possível conectar com o servidor.')
+      await verificarCardapio(data)
+      alert('A conex\u00e3o caiu durante o salvamento. Verifique se o card\u00e1pio foi carregado antes de tentar novamente.')
+    } finally {
+      setSalvando(false)
     }
   }
 
@@ -252,6 +239,7 @@ function AdminCardapio({ voltar, pedidos }) {
                 onChange={(e) => {
                   const novaData = e.target.value
                   setData(novaData)
+                  setModoEdicao(false)
                   verificarCardapio(novaData)
                 }}
               />
@@ -416,8 +404,9 @@ function AdminCardapio({ voltar, pedidos }) {
             type="button"
             className="salvar-cardapio-btn"
             onClick={salvarCardapio}
+            disabled={salvando || consultando}
           >
-            SALVAR E PUBLICAR CARDÁPIO →
+            {salvando ? 'SALVANDO...' : 'SALVAR E PUBLICAR CARD\u00c1PIO \u2192'}
           </button>
 
         </section>

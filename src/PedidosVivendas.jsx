@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './PedidosVivendas.css'
 import { rotuloPagamento, textoTroco } from './formasPagamento'
+import { API_URL } from './config'
 
-const API_URL = 'https://site-el-shadday.onrender.com'
 
 function formatarHora(criadoEm) {
   if (!criadoEm) return ''
@@ -148,27 +148,52 @@ function textoFaixaCobranca(pedido) {
   return texto
 }
 
-function PedidosVivendas({ voltar }) {
+function PedidosVivendas({ voltar, authToken, logout }) {
   const [pedidos, setPedidos] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [filtro, setFiltro] = useState('aguardando')
   const [dataSelecionada, setDataSelecionada] = useState(hojeLocal())
+  const [proximoCursor, setProximoCursor] = useState('')
+  const [temMais, setTemMais] = useState(false)
+  const [carregandoMais, setCarregandoMais] = useState(false)
+  const proximoCursorRef = useRef('')
+  const historicoCarregadoRef = useRef(false)
 
-  async function carregarPedidos(mostrarErro = true) {
+  async function requisicaoAdmin(url, opcoes = {}) {
+    const resposta = await fetch(url, {
+      ...opcoes,
+      headers: { ...opcoes.headers, Authorization: `Bearer ${authToken}` }
+    })
+    if (resposta.status === 401) logout?.()
+    return resposta
+  }
+
+  async function carregarPedidos(mostrarErro = true, cursor = '', carregarMais = false) {
     try {
-      const resposta = await fetch(`${API_URL}/pedidos`)
-      if (!resposta.ok) {
-        throw new Error('Erro ao buscar pedidos')
-      }
+      const parametroCursor = cursor ? `&beforeId=${encodeURIComponent(cursor)}` : ''
+      const resposta = await requisicaoAdmin(`${API_URL}/pedidos?limit=100${parametroCursor}`)
+      if (!resposta.ok) throw new Error('Erro ao buscar pedidos')
       const dados = await resposta.json()
-      setPedidos(dados)
+      if (carregarMais) historicoCarregadoRef.current = true
+      setPedidos((atuais) => {
+        const idsPagina = new Set(dados.map((pedido) => pedido.id))
+        return carregarMais
+          ? [...atuais, ...dados.filter((pedido) => !atuais.some((atual) => atual.id === pedido.id))]
+          : [...dados, ...atuais.filter((pedido) => !idsPagina.has(pedido.id))]
+      })
+      if (carregarMais || !historicoCarregadoRef.current) {
+        const ultimoId = dados[dados.length - 1]?.id
+        const novoCursor = resposta.headers.get('X-Next-Cursor') || (ultimoId ? String(ultimoId) : '')
+        proximoCursorRef.current = novoCursor
+        setProximoCursor(novoCursor)
+        setTemMais(resposta.headers.get('X-Has-More') === 'true')
+      }
     } catch (erro) {
       console.error(erro)
-      if (mostrarErro) {
-        alert('Não foi possível carregar os pedidos.')
-      }
+      if (mostrarErro) alert('N\u00e3o foi poss\u00edvel carregar os pedidos.')
     } finally {
       setCarregando(false)
+      setCarregandoMais(false)
     }
   }
 
@@ -182,7 +207,7 @@ function PedidosVivendas({ voltar }) {
 
   async function aprovarPedido(pedido) {
     try {
-      const resposta = await fetch(
+      const resposta = await requisicaoAdmin(
         `${API_URL}/pedidos/${pedido.id}/aprovar`,
         { method: 'PUT' }
       )
@@ -205,7 +230,7 @@ function PedidosVivendas({ voltar }) {
 
   async function recusarPedido(id) {
     try {
-      const resposta = await fetch(
+      const resposta = await requisicaoAdmin(
         `${API_URL}/pedidos/${id}/recusar`,
         { method: 'PUT' }
       )
@@ -223,7 +248,7 @@ function PedidosVivendas({ voltar }) {
 
   async function marcarEmPreparo(id) {
     try {
-      const resposta = await fetch(
+      const resposta = await requisicaoAdmin(
         `${API_URL}/pedidos/${id}/preparo`,
         { method: 'PUT' }
       )
@@ -241,7 +266,7 @@ function PedidosVivendas({ voltar }) {
 
   async function marcarPronto(id) {
     try {
-      const resposta = await fetch(
+      const resposta = await requisicaoAdmin(
         `${API_URL}/pedidos/${id}/pronto`,
         { method: 'PUT' }
       )
@@ -638,6 +663,20 @@ function PedidosVivendas({ voltar }) {
             )
           })}
         </div>
+
+        {temMais && (
+          <button
+            type="button"
+            className="btn-imprimir-figma"
+            disabled={carregandoMais}
+            onClick={() => {
+              setCarregandoMais(true)
+              carregarPedidos(false, proximoCursor, true)
+            }}
+          >
+            {carregandoMais ? 'Carregando...' : 'Carregar mais pedidos'}
+          </button>
+        )}
 
       </main>
 
