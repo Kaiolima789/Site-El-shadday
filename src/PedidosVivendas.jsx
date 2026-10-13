@@ -492,7 +492,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
         </button>
 
         <button className="admin-aba-btn admin-aba-ativa">
-          Pedidos Recebidos ({contagem.aguardando})
+          Pedidos Recebidos ({pedidosFiltrados.length})
         </button>
       </div>
 
