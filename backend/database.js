@@ -39,6 +39,8 @@ db.exec(`
     observacao TEXT,
     preco REAL NOT NULL,
     status TEXT DEFAULT 'aguardando',
+    codigo_rastreio TEXT,
+    chave_idempotencia TEXT,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `)

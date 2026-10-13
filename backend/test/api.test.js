@@ -52,6 +52,25 @@ async function chamar(rota, opcoes = {}) {
 before(async () => {
   tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'el-shadday-test-'))
   databasePath = path.join(tempDir, 'test.db')
+  const baseAntiga = new Database(databasePath)
+  baseAntiga.exec(`
+    CREATE TABLE pedidos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nome TEXT NOT NULL,
+      loja TEXT NOT NULL,
+      codigo_vivendas TEXT NOT NULL,
+      carne TEXT,
+      guarnicao TEXT,
+      observacao TEXT,
+      preco REAL NOT NULL,
+      status TEXT DEFAULT 'aguardando',
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    INSERT INTO pedidos (nome, loja, codigo_vivendas, preco, status)
+    VALUES ('Pedido antigo', '', '', 18, 'aguardando');
+  `)
+  baseAntiga.close()
+
   const port = await freePort()
   baseUrl = `http://127.0.0.1:${port}`
   child = spawn(process.execPath, ['server.js'], {
@@ -86,9 +105,27 @@ test('health check confirma que a API consegue consultar o banco', async () => {
   assert.deepEqual(await resposta.json(), { status: 'ok', database: 'ok' })
 })
 
+test('migração adiciona código de rastreio sem alterar pedidos antigos', () => {
+  const colunas = database.prepare('PRAGMA table_info(pedidos)').all().map((coluna) => coluna.name)
+  assert.ok(colunas.includes('codigo_rastreio'))
+  assert.ok(colunas.includes('chave_idempotencia'))
+  const pedidoAntigo = database.prepare('SELECT nome, codigo_rastreio FROM pedidos WHERE id = 1').get()
+  assert.deepEqual(pedidoAntigo, { nome: 'Pedido antigo', codigo_rastreio: null })
+})
+
 test('recusa origem desconhecida e rotas administrativas sem sessao', async () => {
   const cors = await fetch(`${baseUrl}/`, { headers: { Origin: 'https://origem-invasora.example' } })
   assert.equal(cors.status, 403)
+  const preflight = await fetch(`${baseUrl}/pedidos`, {
+    method: 'OPTIONS',
+    headers: {
+      Origin: 'http://localhost:5173',
+      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Headers': 'content-type,idempotency-key'
+    }
+  })
+  assert.equal(preflight.status, 204)
+  assert.match(preflight.headers.get('Access-Control-Allow-Headers'), /idempotency-key/i)
   const pedidos = await chamar('/pedidos')
   assert.equal(pedidos.status, 401)
   const criar = await chamar('/cardapios', { method: 'POST', body: {} })
@@ -128,6 +165,56 @@ test('validacao recusa cardapio invalido sem gravar dados', async () => {
   })
   assert.equal(resposta.status, 400)
   assert.equal(database.prepare('SELECT COUNT(*) AS total FROM cardapios').get().total, 0)
+})
+
+test('validacao de pedidos rejeita campos malformados e valores negativos', async () => {
+  const resposta = await chamar('/pedidos', {
+    method: 'POST',
+    body: {
+      origem: 'vivendas', nome: { inesperado: true }, loja: 'Centro', codigo: '123',
+      preco: 18, preco_marmita: 18, preco_bebida: 0, valor_cobrar: -5
+    }
+  })
+  assert.equal(resposta.status, 400)
+  assert.equal(database.prepare('SELECT COUNT(*) AS total FROM pedidos').get().total, 1)
+})
+
+test('pedido válido continua sendo aceito depois das novas validações', async () => {
+  const chaveIdempotencia = 'ab'.repeat(16)
+  const resposta = await chamar('/pedidos', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': chaveIdempotencia },
+    body: {
+      origem: 'vivendas', nome: '  Cliente Teste  ', loja: 'Centro', codigo: '123',
+      tipo_entrega: 'loja', carne: 'Frango', guarnicao: 'Arroz',
+      preco: 18, preco_marmita: 18, preco_bebida: 0, valor_cobrar: 0,
+      bebida_quantidade: 0, forma_pagamento: ''
+    }
+  })
+  assert.equal(resposta.status, 201)
+  const pedidoCriado = await resposta.json()
+  const { id } = pedidoCriado
+  assert.equal(database.prepare('SELECT nome FROM pedidos WHERE id = ?').get(id).nome, 'Cliente Teste')
+  const codigo = database.prepare('SELECT codigo_rastreio FROM pedidos WHERE id = ?').get(id).codigo_rastreio
+  assert.match(codigo, /^[a-f0-9]{48}$/)
+  assert.equal(database.prepare('SELECT chave_idempotencia FROM pedidos WHERE id = ?').get(id).chave_idempotencia, chaveIdempotencia)
+
+  const repetido = await chamar('/pedidos', {
+    method: 'POST',
+    headers: { 'Idempotency-Key': chaveIdempotencia },
+    body: {}
+  })
+  const pedidoRepetido = await repetido.json()
+  assert.equal(repetido.status, 200)
+  assert.equal(pedidoRepetido.duplicado, true)
+  assert.equal(pedidoRepetido.id, id)
+  assert.equal(pedidoRepetido.codigo_rastreio, codigo)
+  assert.equal(database.prepare('SELECT COUNT(*) AS total FROM pedidos').get().total, 2)
+
+  const rastreio = await chamar(`/pedidos/rastreio/${codigo}`)
+  assert.equal(rastreio.status, 200)
+  assert.deepEqual(Object.keys(await rastreio.json()).sort(), ['criado_em', 'id', 'status'])
+  assert.equal((await chamar(`/pedidos/${id}`)).status, 404)
 })
 
 test('criacao eh atomica: falha ao inserir opcao nao deixa cardapio pela metade', async () => {
@@ -206,7 +293,7 @@ test('API suporta volume de pedidos, pagina por cursor e consulta publica nao re
   assert.equal((await ultima.json()).length, 1)
   assert.equal(ultima.headers.get('X-Has-More'), 'false')
 
-  const pedido = database.prepare('SELECT id FROM pedidos LIMIT 1').get()
+  const pedido = database.prepare('SELECT id FROM pedidos WHERE codigo_rastreio IS NULL LIMIT 1').get()
   const publico = await chamar(`/pedidos/${pedido.id}`)
   const dadosPublicos = await publico.json()
   assert.equal(publico.status, 200)

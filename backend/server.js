@@ -16,6 +16,7 @@ const allowedOrigins = new Set([
 
 app.use(cors({
   exposedHeaders: ['X-Has-More', 'X-Next-Cursor'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) return callback(null, true)
     return callback(new Error('Origem não autorizada pelo CORS.'))
@@ -34,15 +35,39 @@ const sessoesAdmin = new Map()
 const tentativasLogin = new Map()
 const tentativasPedidos = new Map()
 const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000
+const MAX_ESTADOS_RATE_LIMIT = 10000
+const MAX_SESSOES_ADMIN = 1000
+
+function obterEstadoRateLimit(mapa, chave, agora, duracaoJanela) {
+  let estado = mapa.get(chave)
+  if (estado && agora - estado.inicio > duracaoJanela) {
+    mapa.delete(chave)
+    estado = null
+  }
+
+  if (!estado) {
+    if (mapa.size >= MAX_ESTADOS_RATE_LIMIT) {
+      const chavesRemover = Math.ceil(MAX_ESTADOS_RATE_LIMIT * 0.1)
+      let removidas = 0
+      for (const chaveAntiga of mapa.keys()) {
+        mapa.delete(chaveAntiga)
+        removidas += 1
+        if (removidas >= chavesRemover) break
+      }
+    }
+    estado = { quantidade: 0, inicio: agora }
+  }
+
+  // Mantém os estados recentemente usados no fim do mapa para limitar a memória.
+  mapa.delete(chave)
+  mapa.set(chave, estado)
+  return estado
+}
 
 function limitarLogin(req, res, next) {
   const agora = Date.now()
   const chave = req.ip || req.socket.remoteAddress || 'desconhecido'
-  const estado = tentativasLogin.get(chave) || { quantidade: 0, inicio: agora }
-  if (agora - estado.inicio > 15 * 60 * 1000) {
-    estado.quantidade = 0
-    estado.inicio = agora
-  }
+  const estado = obterEstadoRateLimit(tentativasLogin, chave, agora, 15 * 60 * 1000)
   if (estado.quantidade >= 8) {
     res.setHeader('Retry-After', '900')
     return res.status(429).json({ erro: 'Muitas tentativas. Tente novamente em 15 minutos.' })
@@ -55,11 +80,7 @@ function limitarLogin(req, res, next) {
 function limitarPedidos(req, res, next) {
   const agora = Date.now()
   const chave = req.ip || req.socket.remoteAddress || 'desconhecido'
-  const estado = tentativasPedidos.get(chave) || { quantidade: 0, inicio: agora }
-  if (agora - estado.inicio > 60 * 1000) {
-    estado.quantidade = 0
-    estado.inicio = agora
-  }
+  const estado = obterEstadoRateLimit(tentativasPedidos, chave, agora, 60 * 1000)
   if (estado.quantidade >= 30) {
     res.setHeader('Retry-After', '60')
     return res.status(429).json({ erro: 'Muitos pedidos enviados deste dispositivo. Aguarde um minuto e tente novamente.' })
@@ -99,6 +120,9 @@ app.post('/admin/login', limitarLogin, (req, res) => {
   for (const [sessao, expiraEm] of sessoesAdmin) {
     if (expiraEm <= Date.now()) sessoesAdmin.delete(sessao)
   }
+  if (sessoesAdmin.size >= MAX_SESSOES_ADMIN) {
+    sessoesAdmin.delete(sessoesAdmin.keys().next().value)
+  }
   const token = crypto.randomBytes(32).toString('hex')
   sessoesAdmin.set(token, Date.now() + DURACAO_SESSAO_MS)
   res.json({ token, expiraEm: DURACAO_SESSAO_MS })
@@ -129,7 +153,9 @@ const novasColunas = [
   ['preco_bebida', 'REAL'],
   ['valor_cobrar', 'REAL'],
   ['forma_pagamento', "TEXT DEFAULT ''"],
-  ['troco_para', 'REAL']
+  ['troco_para', 'REAL'],
+  ['codigo_rastreio', 'TEXT'],
+  ['chave_idempotencia', 'TEXT']
 ]
 
 for (const [nomeColuna, definicao] of novasColunas) {
@@ -138,6 +164,17 @@ for (const [nomeColuna, definicao] of novasColunas) {
     console.log(`Coluna "${nomeColuna}" adicionada na tabela pedidos.`)
   }
 }
+
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_codigo_rastreio
+  ON pedidos (codigo_rastreio)
+  WHERE codigo_rastreio IS NOT NULL
+`)
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_chave_idempotencia
+  ON pedidos (chave_idempotencia)
+  WHERE chave_idempotencia IS NOT NULL
+`)
 
 app.get('/', (req, res) => {
   res.json({
@@ -271,7 +308,92 @@ app.put('/cardapios/:data', exigirAdmin, (req, res) => {
   }
 })
 
+function responderPedidoExistente(res, pedido) {
+  return res.status(200).json({
+    mensagem: 'Este pedido já foi recebido.',
+    id: pedido.id,
+    codigo_rastreio: pedido.codigo_rastreio,
+    duplicado: true
+  })
+}
+
 app.post('/pedidos', limitarPedidos, (req, res) => {
+  const chaveRecebida = req.get('Idempotency-Key')
+  if (chaveRecebida && !/^[a-f0-9]{32}$/i.test(chaveRecebida)) {
+    return res.status(400).json({ erro: 'A chave de envio do pedido está inválida.' })
+  }
+  const chaveIdempotencia = chaveRecebida?.toLowerCase() || null
+  if (chaveIdempotencia) {
+    const pedidoExistente = db.prepare(`
+      SELECT id, codigo_rastreio
+      FROM pedidos
+      WHERE chave_idempotencia = ?
+    `).get(chaveIdempotencia)
+    if (pedidoExistente) return responderPedidoExistente(res, pedidoExistente)
+  }
+
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ erro: 'Os dados do pedido estão inválidos.' })
+  }
+
+  const limitesTexto = {
+    nome: 100,
+    loja: 100,
+    codigo: 100,
+    codigo_vivendas: 100,
+    telefone: 40,
+    tipo_entrega: 20,
+    endereco: 300,
+    origem: 30,
+    carne: 500,
+    guarnicao: 500,
+    refrigerante_sabor: 600,
+    refrigerante_tamanho: 300,
+    agua_tipo: 600,
+    forma_pagamento: 20,
+    observacao: 1000
+  }
+
+  for (const [campo, limite] of Object.entries(limitesTexto)) {
+    const valor = req.body[campo]
+    if (valor === undefined || valor === null) continue
+    if (typeof valor !== 'string' || valor.trim().length > limite) {
+      return res.status(400).json({ erro: `O campo ${campo} está inválido ou excede o limite permitido.` })
+    }
+    req.body[campo] = valor.trim()
+  }
+
+  const origensValidas = ['cliente_comum', 'vivendas']
+  if (req.body.origem && !origensValidas.includes(req.body.origem)) {
+    return res.status(400).json({ erro: 'A origem do pedido é inválida.' })
+  }
+
+  const tiposEntregaValidos = ['entrega', 'retirada', 'loja']
+  if (req.body.tipo_entrega && !tiposEntregaValidos.includes(req.body.tipo_entrega)) {
+    return res.status(400).json({ erro: 'O tipo de entrega é inválido.' })
+  }
+
+  const precosRecebidos = ['preco', 'preco_marmita', 'preco_bebida', 'valor_cobrar']
+  for (const campo of precosRecebidos) {
+    const valor = req.body[campo]
+    if (valor === undefined || valor === null) continue
+    if ((typeof valor !== 'number' && typeof valor !== 'string') || String(valor).trim() === '') {
+      return res.status(400).json({ erro: `O campo ${campo} deve conter um valor válido.` })
+    }
+    const numero = Number(valor)
+    const minimo = campo === 'preco' ? 0.01 : 0
+    if (!Number.isFinite(numero) || numero < minimo || numero > 1000) {
+      return res.status(400).json({ erro: `O campo ${campo} deve estar entre R$ ${minimo.toFixed(2)} e R$ 1.000,00.` })
+    }
+  }
+
+  if (req.body.bebida_quantidade !== undefined && req.body.bebida_quantidade !== null) {
+    const quantidadeBebidas = Number(req.body.bebida_quantidade)
+    if (!Number.isInteger(quantidadeBebidas) || quantidadeBebidas < 0 || quantidadeBebidas > 100) {
+      return res.status(400).json({ erro: 'A quantidade de bebidas é inválida.' })
+    }
+  }
+
   const {
     nome,
     loja,
@@ -361,7 +483,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   ) {
     trocoPara = Number(String(troco_para).replace(',', '.'))
 
-    if (Number.isNaN(trocoPara) || trocoPara < valorCobrar) {
+    if (!Number.isFinite(trocoPara) || trocoPara < valorCobrar) {
       return res.status(400).json({
         erro: 'O valor do troco deve ser maior ou igual ao valor a pagar.'
       })
@@ -369,6 +491,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   }
 
   try {
+    const codigoRastreio = crypto.randomBytes(24).toString('hex')
     const criarPedido = db.prepare(`
       INSERT INTO pedidos (
         nome,
@@ -391,9 +514,11 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
         troco_para,
         observacao,
         preco,
-        status
+        status,
+        codigo_rastreio,
+        chave_idempotencia
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     const resultado = criarPedido.run(
@@ -417,15 +542,26 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       trocoPara,
       observacao || '',
       precoFinal,
-      'aguardando'
+      'aguardando',
+      codigoRastreio,
+      chaveIdempotencia
     )
 
     res.status(201).json({
       mensagem: 'Pedido enviado para aprovação!',
-      id: resultado.lastInsertRowid
+      id: resultado.lastInsertRowid,
+      codigo_rastreio: codigoRastreio
     })
 
   } catch (erro) {
+    if (erro.code === 'SQLITE_CONSTRAINT_UNIQUE' && chaveIdempotencia) {
+      const pedidoExistente = db.prepare(`
+        SELECT id, codigo_rastreio
+        FROM pedidos
+        WHERE chave_idempotencia = ?
+      `).get(chaveIdempotencia)
+      if (pedidoExistente) return responderPedidoExistente(res, pedidoExistente)
+    }
     console.error(erro)
 
     res.status(500).json({
@@ -459,12 +595,29 @@ app.get('/pedidos', exigirAdmin, (req, res) => {
   }
 })
 
+app.get('/pedidos/rastreio/:codigo', (req, res) => {
+  try {
+    const pedido = db.prepare(`
+      SELECT id, status, criado_em
+      FROM pedidos
+      WHERE codigo_rastreio = ?
+    `).get(req.params.codigo)
+
+    if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' })
+    return res.json(pedido)
+  } catch (erro) {
+    console.error(erro)
+    return res.status(500).json({ erro: 'Erro ao buscar pedido.' })
+  }
+})
+
+// Mantém a consulta por ID apenas para pedidos antigos sem código secreto.
 app.get('/pedidos/:id', (req, res) => {
   try {
     const pedido = db.prepare(`
       SELECT id, status, criado_em
       FROM pedidos
-      WHERE id = ?
+      WHERE id = ? AND codigo_rastreio IS NULL
     `).get(req.params.id)
 
     if (!pedido) {

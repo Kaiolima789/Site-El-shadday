@@ -12,7 +12,11 @@ In the Render API service settings, set the health check path to `/health`. This
 
 ## Database persistence
 
-Set `DATABASE_PATH` to `elshadday.db` inside the persistent disk mount configured for the Render service. First back up and copy the existing database to that path; pointing the API at a new empty file makes existing orders and menus appear missing. A file stored outside a persistent mount may be lost when the service is replaced. Keep a separate backup and test restoring it before relying on the database for long-term order history.
+For the Render API service, use `/var/data` as the disk mount path and set `DATABASE_PATH` to `/var/data/elshadday.db`. Render preserves only files under the disk mount path.
+
+**Do not attach a new empty disk or change `DATABASE_PATH` until the current live database has been backed up and copied to `/var/data/elshadday.db`.** Mounting an empty disk hides files previously at that path, and pointing the API at a new empty database makes existing orders and menus appear missing. Keep a separate backup and verify the restored database before considering the migration complete.
+
+Persistent disks are available only for paid Render services, cost extra per GB-month, and cause a few seconds of downtime when attached. Check the current plan and total price in the Render dashboard before adding one. A Render disk also cannot be shared across scaled service instances.
 
 For local development, the database path remains relative to the process working directory for compatibility with the current setup. Start the backend from the `backend` directory; the example value `./elshadday.db` assumes that working directory.
 
