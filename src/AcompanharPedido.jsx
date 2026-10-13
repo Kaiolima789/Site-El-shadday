@@ -146,7 +146,11 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
 
   async function buscarPedido() {
     try {
-      const resposta = await fetch(`${API_URL}/pedidos/${pedidoId}`)
+      const codigoOuId = encodeURIComponent(pedidoId)
+      const rota = /^[a-f0-9]{48}$/i.test(String(pedidoId))
+        ? `/pedidos/rastreio/${codigoOuId}`
+        : `/pedidos/${codigoOuId}`
+      const resposta = await fetch(`${API_URL}${rota}`)
       if (!resposta.ok) {
         throw new Error('Pedido não encontrado')
       }

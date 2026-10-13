@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './Vivendas.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
+import { criarChaveIdempotencia } from './chaveIdempotencia'
 
 function IconeVoltar({ size = 16 }) {
   return (
@@ -63,6 +64,7 @@ function IconeCheckCirculo({ size = 18 }) {
 }
 
 function Vivendas({ voltar, pedido, enviarPedido }) {
+  const chaveIdempotenciaRef = useRef(null)
   const [nome, setNome] = useState('')
   const [loja, setLoja] = useState('')
   const [codigo, setCodigo] = useState('')
@@ -105,6 +107,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       }
     }
 
+    chaveIdempotenciaRef.current ||= criarChaveIdempotencia()
     setEnviando(true)
 
     const dadosPedido = {
@@ -134,7 +137,8 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       const resposta = await fetch(`${API_URL}/pedidos`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Idempotency-Key': chaveIdempotenciaRef.current
         },
         body: JSON.stringify(dadosPedido)
       })
@@ -142,14 +146,17 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       const dados = await resposta.json()
 
       if (!resposta.ok) {
+        if (resposta.status < 500) chaveIdempotenciaRef.current = null
         alert(dados.erro || 'Erro ao enviar pedido.')
         setEnviando(false)
         return
       }
 
+      chaveIdempotenciaRef.current = null
       enviarPedido({
         ...dadosPedido,
-        id: dados.id
+        id: dados.id,
+        codigo_rastreio: dados.codigo_rastreio
       })
     } catch (erro) {
       console.error(erro)

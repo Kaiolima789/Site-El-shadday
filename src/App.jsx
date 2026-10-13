@@ -105,7 +105,7 @@ function App() {
   if (pagina === 'aguardando') {
     return (
       <AcompanharPedido
-        pedidoId={pedido?.id}
+        pedidoId={pedido?.codigo_rastreio || pedido?.id}
         pedidoInicial={pedido}
         voltar={() => {
           setPedido(null)

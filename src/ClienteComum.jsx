@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
+import { criarChaveIdempotencia } from './chaveIdempotencia'
 
 // Regiões de entrega e taxas diferenciadas
 const REGIOES_ENTREGA = [
@@ -53,6 +54,7 @@ function IconeRecibo({ size = 18 }) {
 }
 
 function ClienteComum({ voltar, pedido, enviarPedido }) {
+  const chaveIdempotenciaRef = useRef(null)
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
   const [tipoEntrega, setTipoEntrega] = useState('entrega')
@@ -102,6 +104,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
       }
     }
 
+    chaveIdempotenciaRef.current ||= criarChaveIdempotencia()
     setEnviando(true)
 
     const enderecoCompleto = tipoEntrega === 'entrega'
@@ -131,7 +134,8 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
       const resposta = await fetch(`${API_URL}/pedidos`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Idempotency-Key': chaveIdempotenciaRef.current
         },
         body: JSON.stringify(dadosPedido)
       })
@@ -139,6 +143,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
       const dados = await resposta.json()
 
       if (!resposta.ok) {
+        if (resposta.status < 500) chaveIdempotenciaRef.current = null
         alert(dados.erro || 'Erro ao enviar pedido.')
         setEnviando(false)
         return
@@ -146,8 +151,10 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
 
       const pedidoCompleto = {
         ...dadosPedido,
-        id: dados.id
+        id: dados.id,
+        codigo_rastreio: dados.codigo_rastreio
       }
+      chaveIdempotenciaRef.current = null
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
