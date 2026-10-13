@@ -79,7 +79,29 @@ function limparTexto(texto) {
     .replace(/[•·]/g, '-')
 }
 
+function normalizarStatus(status) {
+  const statusNormalizado = String(status || '')
+    .trim()
+    .toLocaleLowerCase('pt-BR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_')
+
+  const aliases = {
+    aguardando_aprovacao: 'aguardando',
+    pendente: 'aguardando',
+    aprovado: 'aprovado',
+    em_preparo: 'em_preparo',
+    preparando: 'em_preparo',
+    pronto: 'pronto',
+    recusado: 'recusado'
+  }
+
+  return aliases[statusNormalizado] || statusNormalizado
+}
+
 function rotuloStatus(status) {
+  const statusNormalizado = normalizarStatus(status)
   const rotulos = {
     aguardando: 'Aguardando Aprovação',
     aprovado: 'Aprovado',
@@ -87,7 +109,7 @@ function rotuloStatus(status) {
     pronto: 'Prontos / Entrega',
     recusado: 'Recusado'
   }
-  return rotulos[status] || status
+  return rotulos[statusNormalizado] || status
 }
 
 function formatarReais(valor) {
@@ -107,11 +129,22 @@ function formatarTelefone(tel) {
 }
 
 function ehClienteComum(pedido) {
-  return pedido.origem === 'cliente_comum'
+  const origem = String(pedido.origem || '')
+    .trim()
+    .toLocaleLowerCase('pt-BR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s-]+/g, '_')
+
+  return ['cliente_comum', 'cliente'].includes(origem)
 }
 
 function rotuloOrigem(pedido) {
-  return ehClienteComum(pedido) ? 'Cliente Comum' : 'Vivendas'
+  const rotulos = {
+    cliente_comum: 'Cliente Comum',
+    vivendas: 'Vivendas'
+  }
+  return rotulos[ehClienteComum(pedido) ? 'cliente_comum' : 'vivendas']
 }
 
 function textoCarne(pedido) {
@@ -408,23 +441,24 @@ function PedidosVivendas({ voltar, authToken, logout }) {
 
   // Pedidos que exigem ação da cozinha (aguardando ou em preparo) NUNCA ficam ocultos por data
   const pedidosFiltrados = pedidos.filter((pedido) => {
+    const status = normalizarStatus(pedido.status)
     if (filtro === 'aguardando') {
-      return pedido.status === 'aguardando'
+      return status === 'aguardando'
     }
     if (filtro === 'em_preparo') {
-      return pedido.status === 'em_preparo' || pedido.status === 'aprovado'
+      return status === 'em_preparo' || status === 'aprovado'
     }
     // Histórico (prontos e recusados) filtra pelo dia selecionado
     const dataPedido = dataLocalDoPedido(pedido.criado_em)
     const mesmoDia = dataPedido === dataSelecionada || !dataPedido
-    return mesmoDia && pedido.status === filtro
+    return mesmoDia && status === filtro
   })
 
   const contagem = {
-    aguardando: pedidos.filter((p) => p.status === 'aguardando').length,
-    em_preparo: pedidos.filter((p) => p.status === 'em_preparo' || p.status === 'aprovado').length,
-    pronto: pedidos.filter((p) => p.status === 'pronto' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length,
-    recusado: pedidos.filter((p) => p.status === 'recusado' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length
+    aguardando: pedidos.filter((p) => normalizarStatus(p.status) === 'aguardando').length,
+    em_preparo: pedidos.filter((p) => ['em_preparo', 'aprovado'].includes(normalizarStatus(p.status))).length,
+    pronto: pedidos.filter((p) => normalizarStatus(p.status) === 'pronto' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length,
+    recusado: pedidos.filter((p) => normalizarStatus(p.status) === 'recusado' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length
   }
 
   return (
@@ -539,6 +573,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           {pedidosFiltrados.map((pedido) => {
             const carne = textoCarne(pedido)
             const bebida = textoBebida(pedido)
+            const status = normalizarStatus(pedido.status)
             const telLimpo = pedido.telefone ? pedido.telefone.replace(/\D/g, '') : ''
 
             return (
@@ -551,8 +586,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                   </div>
 
                   <div className="pedido-tags-linha">
-                    <span className={`badge-status-${pedido.status}`}>
-                      {rotuloStatus(pedido.status)}
+                    <span className={`badge-status-${status}`}>
+                      {rotuloStatus(status)}
                     </span>
 
                     <span className={`badge-origem-${ehClienteComum(pedido) ? 'comum' : 'vivendas'}`}>
@@ -611,7 +646,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
 
                 {/* BOTÕES DE AÇÃO NA BASE */}
                 <div className="pedido-acoes-botoes">
-                  {pedido.status === 'aguardando' && (
+                  {status === 'aguardando' && (
                     <>
                       <button
                         type="button"
@@ -630,7 +665,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                     </>
                   )}
 
-                  {pedido.status === 'aprovado' && (
+                  {status === 'aprovado' && (
                     <button
                       type="button"
                       className="btn-preparo-figma"
@@ -640,7 +675,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                     </button>
                   )}
 
-                  {pedido.status === 'em_preparo' && (
+                  {status === 'em_preparo' && (
                     <button
                       type="button"
                       className="btn-pronto-figma"
