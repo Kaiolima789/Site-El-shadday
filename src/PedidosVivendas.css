@@ -37,6 +37,41 @@
   gap: 20px;
 }
 
+.admin-api-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #665B4F;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.admin-api-status time {
+  margin-left: 4px;
+  color: #8A7D70;
+}
+
+.admin-api-status-ponto {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.admin-api-status-online .admin-api-status-ponto {
+  color: #2E7D32;
+}
+
+.admin-api-status-offline {
+  color: #A32626;
+}
+
+.admin-api-status-offline .admin-api-status-ponto {
+  color: #C62828;
+}
+
+.admin-api-status-checking .admin-api-status-ponto {
+  color: #B7791F;
+}
+
 .admin-status-toggle {
   display: flex;
   align-items: center;
@@ -509,6 +544,18 @@
 @media (max-width: 600px) {
   .admin-header {
     padding: 0 16px;
+  }
+
+  .admin-header-direita {
+    gap: 8px;
+  }
+
+  .admin-api-status {
+    font-size: 10px;
+  }
+
+  .admin-api-status time {
+    display: none;
   }
 
   .pedidos-filtro-barra {

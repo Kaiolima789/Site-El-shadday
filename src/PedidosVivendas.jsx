@@ -184,6 +184,8 @@ function textoFaixaCobranca(pedido) {
 function PedidosVivendas({ voltar, authToken, logout }) {
   const [pedidos, setPedidos] = useState([])
   const [carregando, setCarregando] = useState(true)
+  const [apiStatus, setApiStatus] = useState('checking')
+  const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
   const [filtro, setFiltro] = useState('aguardando')
   const [dataSelecionada, setDataSelecionada] = useState(hojeLocal())
   const [proximoCursor, setProximoCursor] = useState('')
@@ -207,6 +209,10 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       const resposta = await requisicaoAdmin(`${API_URL}/pedidos?limit=100${parametroCursor}`)
       if (!resposta.ok) throw new Error('Erro ao buscar pedidos')
       const dados = await resposta.json()
+      if (!Array.isArray(dados)) throw new Error('Resposta inválida ao buscar pedidos')
+
+      setApiStatus('online')
+      setUltimaAtualizacao(new Date())
       if (carregarMais) historicoCarregadoRef.current = true
       setPedidos((atuais) => {
         const idsPagina = new Set(dados.map((pedido) => pedido.id))
@@ -223,6 +229,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       }
     } catch (erro) {
       console.error(erro)
+      setApiStatus('offline')
       if (mostrarErro) alert('N\u00e3o foi poss\u00edvel carregar os pedidos.')
     } finally {
       setCarregando(false)
@@ -471,6 +478,20 @@ function PedidosVivendas({ voltar, authToken, logout }) {
         </div>
 
         <div className="admin-header-direita">
+          <div className={`admin-api-status admin-api-status-${apiStatus}`} role="status" aria-live="polite">
+            <span className="admin-api-status-ponto" aria-hidden="true">●</span>
+            <span>
+              {apiStatus === 'online' && 'API conectada'}
+              {apiStatus === 'offline' && 'API sem conexão — lista pode estar desatualizada'}
+              {apiStatus === 'checking' && 'Verificando API...'}
+            </span>
+            {ultimaAtualizacao && (
+              <time dateTime={ultimaAtualizacao.toISOString()}>
+                Atualizado às {ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </time>
+            )}
+          </div>
+
           <label className="admin-status-toggle">
             <span className="status-dot-verde">●</span>
             <span>Restaurante Aberto</span>
