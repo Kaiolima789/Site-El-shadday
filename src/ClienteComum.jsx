@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
@@ -53,35 +53,21 @@ function IconeRecibo({ size = 18 }) {
   )
 }
 
-function lerRascunhoCheckout(campo, padrao) {
-  try {
-    return JSON.parse(sessionStorage.getItem('checkout_cliente_comum') || '{}')[campo] ?? padrao
-  } catch {
-    return padrao
-  }
-}
-
-function ClienteComum({ voltar, pedido, enviarPedido, adicionarMarmita, removerMarmita }) {
+function ClienteComum({ voltar, pedido, enviarPedido }) {
   const chaveIdempotenciaRef = useRef(null)
-  const [nome, setNome] = useState(() => lerRascunhoCheckout('nome', ''))
-  const [telefone, setTelefone] = useState(() => lerRascunhoCheckout('telefone', ''))
-  const [tipoEntrega, setTipoEntrega] = useState(() => lerRascunhoCheckout('tipoEntrega', 'entrega'))
-  const [regiaoEntrega, setRegiaoEntrega] = useState(() => { const salva = lerRascunhoCheckout('regiaoEntrega', REGIOES_ENTREGA[0]); return REGIOES_ENTREGA.find((regiao) => regiao.id === salva.id) || REGIOES_ENTREGA[0] }) // Padrão: Santa Maria Sul (R$ 3,00)
-  const [endereco, setEndereco] = useState(() => lerRascunhoCheckout('endereco', ''))
-  const [observacao, setObservacao] = useState(() => lerRascunhoCheckout('observacao', ''))
-  const [formaPagamento, setFormaPagamento] = useState(() => lerRascunhoCheckout('formaPagamento', 'dinheiro'))
-  const [trocoPara, setTrocoPara] = useState(() => lerRascunhoCheckout('trocoPara', ''))
+  const [nome, setNome] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const [tipoEntrega, setTipoEntrega] = useState('entrega')
+  const [regiaoEntrega, setRegiaoEntrega] = useState(REGIOES_ENTREGA[0])
+  const [endereco, setEndereco] = useState('')
+  const [observacao, setObservacao] = useState('')
+  const [formaPagamento, setFormaPagamento] = useState('dinheiro')
+  const [trocoPara, setTrocoPara] = useState('')
   const [enviando, setEnviando] = useState(false)
   const marmitasPedido = Array.isArray(pedido?.marmitas) && pedido.marmitas.length > 0
     ? pedido.marmitas
     : [pedido || {}]
   const quantidadeMarmitas = marmitasPedido.length
-
-  useEffect(() => {
-    sessionStorage.setItem('checkout_cliente_comum', JSON.stringify({
-      nome, telefone, tipoEntrega, regiaoEntrega, endereco, observacao, formaPagamento, trocoPara
-    }))
-  }, [nome, telefone, tipoEntrega, regiaoEntrega, endereco, observacao, formaPagamento, trocoPara])
 
   // Cálculos de valores dinâmicos
   const subtotalMarmita = marmitasPedido.reduce((total, marmita) => total + Number(marmita?.preco_marmita || 0), 0)
@@ -176,8 +162,6 @@ function ClienteComum({ voltar, pedido, enviarPedido, adicionarMarmita, removerM
         codigo_rastreio: dados.codigo_rastreio
       }
       chaveIdempotenciaRef.current = null
-      sessionStorage.removeItem('checkout_cliente_comum')
-
       if (typeof window !== 'undefined') {
         localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
       }
@@ -360,29 +344,8 @@ function ClienteComum({ voltar, pedido, enviarPedido, adicionarMarmita, removerM
                     {marmita.guarnicao && <span className="cc-resumo-tag">{marmita.guarnicao}</span>}
                   </div>
                   {detalheBebidaResumo(marmita) && <p className="cc-marmita-bebida">Bebida: {detalheBebidaResumo(marmita)}</p>}
-                  {quantidadeMarmitas > 1 && (
-                    <button
-                      type="button"
-                      className="cc-remover-marmita"
-                      onClick={() => removerMarmita(indice)}
-                      disabled={enviando}
-                    >
-                      Remover marmita
-                    </button>
-                  )}
                 </div>
               ))}
-
-              {quantidadeMarmitas < 20 && (
-                <button
-                  type="button"
-                  className="cc-adicionar-marmita"
-                  onClick={adicionarMarmita}
-                  disabled={enviando}
-                >
-                  + Adicionar outra marmita
-                </button>
-              )}
 
               {subtotalBebida > 0 && (
                 <div className="cc-resumo-linha cc-resumo-linha-bebida">

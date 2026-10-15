@@ -49,6 +49,19 @@ function IconeVivendas({ size = 22 }) {
 }
 
 function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
+  const marmitas = Array.isArray(pedido?.marmitas) ? pedido.marmitas : []
+  const possuiVariasMarmitas = marmitas.length > 1
+
+  function escolherVivendas() {
+    if (possuiVariasMarmitas) {
+      const confirmar = window.confirm(
+        'O convênio Vivendas permite apenas uma marmita por código. Continuar somente com a Marmita 1?'
+      )
+      if (!confirmar) return
+    }
+    vivendas(marmitas[0] || pedido)
+  }
+
   return (
     <div className="destino-page">
 
@@ -85,10 +98,8 @@ function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
 
           <button
             type="button"
-            className={`destino-card ${pedido?.marmitas?.length > 1 ? 'destino-card-indisponivel' : ''}`}
-            onClick={vivendas}
-            disabled={pedido?.marmitas?.length > 1}
-            title={pedido?.marmitas?.length > 1 ? 'Pedidos Vivendas aceitam apenas uma marmita.' : undefined}
+            className="destino-card"
+            onClick={escolherVivendas}
           >
             <div className="destino-badge">
               <IconeVivendas size={22} />
@@ -96,7 +107,7 @@ function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
 
             <div className="destino-card-info">
               <h3>Vivendas</h3>
-              <p>{pedido?.marmitas?.length > 1 ? 'Disponível apenas para pedido com uma marmita' : 'Pedido destinado a cliente Vivendas'}</p>
+              <p>{possuiVariasMarmitas ? 'Convênio válido para uma marmita por código' : 'Pedido destinado a cliente Vivendas'}</p>
             </div>
 
             <span className="destino-seta">→</span>

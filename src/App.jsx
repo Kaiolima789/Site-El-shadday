@@ -43,7 +43,6 @@ function App() {
     return 'home'
   })
   const [pedido, setPedido] = useState(null)
-  const [adicionandoMarmita, setAdicionandoMarmita] = useState(false)
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('elshadday_admin_token') || '')
   const isAdminLogado = Boolean(adminToken)
 
@@ -120,12 +119,12 @@ function App() {
     return (
       <DestinoPedido
         pedido={pedido}
-        voltar={() => {
-          setAdicionandoMarmita((pedido?.marmitas?.length || 0) > 1)
-          setPagina('marmitas')
-        }}
+        voltar={() => setPagina('marmitas')}
         clienteComum={() => setPagina('cliente-comum')}
-        vivendas={() => setPagina('vivendas')}
+        vivendas={(marmitaUnica) => {
+          if (marmitaUnica) setPedido(agregarMarmitasPedido([marmitaUnica]))
+          setPagina('vivendas')
+        }}
       />
     )
   }
@@ -161,15 +160,6 @@ function App() {
       <ClienteComum
         pedido={pedido}
         voltar={() => setPagina('destino')}
-        adicionarMarmita={() => {
-          setAdicionandoMarmita(true)
-          setPagina('marmitas')
-        }}
-        removerMarmita={(indice) => {
-          setPedido((atual) => agregarMarmitasPedido(
-            (atual?.marmitas || [atual]).filter((_, i) => i !== indice)
-          ))
-        }}
         enviarPedido={(pedidoCliente) => {
           setPedido(pedidoCliente)
           setPagina('aguardando')
@@ -181,18 +171,13 @@ function App() {
   if (pagina === 'marmitas') {
     return (
       <Marmitas
-        voltar={() => setPagina(adicionandoMarmita ? 'cliente-comum' : 'home')}
-        adicionandoMarmita={adicionandoMarmita}
-        numeroMarmita={(pedido?.marmitas?.length || 0) + 1}
+        voltar={() => setPagina('home')}
         continuar={(pedidoSelecionado) => {
-          if (adicionandoMarmita) {
-            setPedido((atual) => agregarMarmitasPedido([...(atual?.marmitas || [atual]), pedidoSelecionado]))
-            setAdicionandoMarmita(false)
-            setPagina('cliente-comum')
-          } else {
-            setPedido(agregarMarmitasPedido([pedidoSelecionado]))
-            setPagina('destino')
-          }
+          const marmitas = Array.isArray(pedidoSelecionado?.marmitas)
+            ? pedidoSelecionado.marmitas
+            : [pedidoSelecionado]
+          setPedido(agregarMarmitasPedido(marmitas))
+          setPagina('destino')
         }}
         irParaAdmin={() => setPagina('admin')}
         isAdminLogado={isAdminLogado}
@@ -203,9 +188,7 @@ function App() {
   return (
     <Home
       irParaPedido={() => {
-        sessionStorage.removeItem('checkout_cliente_comum')
         setPedido(null)
-        setAdicionandoMarmita(false)
         setPagina('marmitas')
       }}
       irParaAdmin={() => setPagina('admin')}

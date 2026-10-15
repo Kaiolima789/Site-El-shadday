@@ -156,9 +156,10 @@ function dataHojeLocal() {
   return `${ano}-${mes}-${dia}`
 }
 
-function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita = 1 }) {
+function Marmitas({ voltar, continuar }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
+  const [marmitasSelecionadas, setMarmitasSelecionadas] = useState([])
 
   // ===== SISTEMA MULTI-BEBIDAS =====
   const [bebidas, setBebidas] = useState([])
@@ -255,6 +256,9 @@ function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita
     setAbaBebida('nenhuma')
     setSaborCustomAtivo(false)
     setSaborCustomTexto('')
+    setRefriTamanhoSel(REFRIGERANTE_TAMANHOS_PADRAO[1])
+    setRefriSaborSel('Fanta Laranja')
+    setAguaSel(AGUA_TIPOS_PADRAO[0])
   }
 
   function alternarCarne(nome) {
@@ -382,42 +386,63 @@ function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita
     (acc, item) => acc + Number(item.preco) * Number(item.quantidade),
     0
   )
-  const totalGeral = precoMarmita + totalBebidas
+  const marmitaAtualSelecionada = carne.length > 0
+  const totalMarmitasSalvas = marmitasSelecionadas.reduce((total, item) => total + Number(item.preco_marmita || 0), 0)
+  const totalBebidasSalvas = marmitasSelecionadas.reduce((total, item) => total + Number(item.preco_bebida || 0), 0)
+  const totalGeral = totalMarmitasSalvas + totalBebidasSalvas + (marmitaAtualSelecionada ? precoMarmita + totalBebidas : 0)
   const totalBebidasQtd = bebidas.reduce((acc, item) => acc + item.quantidade, 0)
 
-  // Validação de continuação
-  function tentarContinuar() {
-    if (carne.length === 0) {
-      alert('Por favor, selecione pelo menos uma opção de proteína para sua marmita.')
-      return
-    }
-
+  function montarMarmitaAtual() {
     const nomesRefris = bebidas
       .filter((b) => b.tipo === 'refrigerante')
       .map((b) => `${b.quantidade}x ${b.sabor} (${b.tamanho})`)
       .join(', ')
-
     const nomesAguas = bebidas
       .filter((b) => b.tipo === 'agua')
       .map((b) => `${b.quantidade}x ${b.nome}`)
       .join(', ')
 
-    continuar({
+    return {
       carne: carne.join(', '),
       guarnicao: guarnicao.join(', '),
       refrigerante_sabor: nomesRefris,
-      refrigerante_tamanho: bebidas
-        .filter((b) => b.tipo === 'refrigerante')
-        .map((b) => b.tamanho)
-        .join(', '),
+      refrigerante_tamanho: bebidas.filter((b) => b.tipo === 'refrigerante').map((b) => b.tamanho).join(', '),
       agua_tipo: nomesAguas,
       bebida_quantidade: totalBebidasQtd,
-      bebidas: bebidas,
+      bebidas,
       preco_marmita: precoMarmita,
       preco_bebida: totalBebidas,
-      preco: totalGeral,
-      valor_cobrar: totalGeral
-    })
+      preco: precoMarmita + totalBebidas,
+      valor_cobrar: precoMarmita + totalBebidas
+    }
+  }
+
+  function adicionarOutraMarmita() {
+    if (carne.length === 0) {
+      alert('Por favor, selecione pelo menos uma opção de proteína para sua marmita.')
+      return
+    }
+
+    if (marmitasSelecionadas.length >= 19) {
+      alert('Você pode adicionar até 20 marmitas por pedido.')
+      return
+    }
+
+    setMarmitasSelecionadas((atuais) => [...atuais, montarMarmitaAtual()])
+    limparEscolhas()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function tentarContinuar() {
+    if (marmitaAtualSelecionada) {
+      continuar({ marmitas: [...marmitasSelecionadas, montarMarmitaAtual()] })
+      return
+    }
+    if (marmitasSelecionadas.length > 0) {
+      continuar({ marmitas: marmitasSelecionadas })
+      return
+    }
+    alert('Por favor, selecione pelo menos uma opção de proteína para sua marmita.')
   }
 
   return (
@@ -463,7 +488,7 @@ function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita
 
       {/* TÍTULO PRINCIPAL */}
       <section className="titulo-marmita">
-        <h2>{adicionandoMarmita ? `Monte a Marmita ${numeroMarmita}` : 'Monte sua Marmita'}</h2>
+        <h2>{marmitasSelecionadas.length ? `Monte a Marmita ${marmitasSelecionadas.length + 1}` : 'Monte sua Marmita'}</h2>
         <p>Escolha as opções de hoje</p>
       </section>
 
@@ -754,10 +779,30 @@ function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita
           </div>
 
           <div className="resumo-extrato">
+            {marmitasSelecionadas.map((marmita, indice) => (
+              <div className="resumo-marmita-salva" key={`marmita-salva-${indice}`}>
+                <div className="resumo-linha">
+                  <strong>Marmita {indice + 1}</strong>
+                  <span className="resumo-linha-valor">R$ {Number(marmita.preco_marmita || 0).toFixed(2).replace('.', ',')}</span>
+                </div>
+                <div className="resumo-pills">
+                  {marmita.carne && <span className="resumo-pill-tag">{marmita.carne}</span>}
+                  {marmita.guarnicao && <span className="resumo-pill-tag">{marmita.guarnicao}</span>}
+                </div>
+                {(marmita.refrigerante_sabor || marmita.agua_tipo) && (
+                  <p className="resumo-marmita-bebida">Bebida: {[marmita.refrigerante_sabor, marmita.agua_tipo].filter(Boolean).join(' + ')}</p>
+                )}
+                {Number(marmita.preco_bebida) > 0 && <p className="resumo-marmita-bebida">Bebidas: R$ {Number(marmita.preco_bebida).toFixed(2).replace('.', ',')}</p>}
+                <button type="button" className="remover-marmita-salva" onClick={() => setMarmitasSelecionadas((atuais) => atuais.filter((_, i) => i !== indice))}>
+                  Remover
+                </button>
+              </div>
+            ))}
+
             <div className="resumo-linha">
-              <span className="resumo-linha-titulo">Marmita Tradicional</span>
+              <span className="resumo-linha-titulo">Marmita {marmitasSelecionadas.length + 1}</span>
               <span className="resumo-linha-valor">
-                R$ {precoMarmita.toFixed(2).replace('.', ',')}
+                {marmitaAtualSelecionada ? `R$ ${precoMarmita.toFixed(2).replace('.', ',')}` : 'Em montagem'}
               </span>
             </div>
 
@@ -806,12 +851,23 @@ function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita
             </div>
           </div>
 
+          {marmitasSelecionadas.length < 19 && (
+            <button
+              type="button"
+              className="adicionar-marmita-btn"
+              onClick={adicionarOutraMarmita}
+              disabled={!marmitaAtualSelecionada}
+            >
+              + Adicionar outra marmita
+            </button>
+          )}
+
           <button
             type="button"
             className="continuar-btn"
             onClick={tentarContinuar}
           >
-            {adicionandoMarmita ? 'Adicionar Marmita e Voltar ao Pedido' : 'Continuar Pedido →'}
+            Continuar Pedido →
           </button>
 
           <button
