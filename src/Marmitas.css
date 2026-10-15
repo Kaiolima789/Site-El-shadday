@@ -587,6 +587,48 @@
 }
 
 /* ===== BOTÕES ===== */
+.resumo-marmita-salva {
+  padding: 9px 0;
+  border-bottom: 1px solid #EAE4D9;
+}
+
+.resumo-marmita-bebida {
+  margin: 3px 0;
+  color: #6E2636;
+  font-size: 12px;
+}
+
+.remover-marmita-salva {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9B3948;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.adicionar-marmita-btn {
+  width: 100%;
+  margin: 10px 0;
+  padding: 11px 14px;
+  border: 1px dashed #6E2636;
+  border-radius: 10px;
+  background: #FFFAF7;
+  color: #6E2636;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.adicionar-marmita-btn:hover:not(:disabled) {
+  background: #F8F0EB;
+}
+
+.adicionar-marmita-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .continuar-btn {
   width: 100%;
   background: #6E2636;
