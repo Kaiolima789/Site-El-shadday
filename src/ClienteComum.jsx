@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
+import { salvarPedidoCliente } from './pedidosCliente'
 import { criarChaveIdempotencia } from './chaveIdempotencia'
 
 // Regiões de entrega e taxas diferenciadas
@@ -162,9 +163,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
         codigo_rastreio: dados.codigo_rastreio
       }
       chaveIdempotenciaRef.current = null
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
-      }
+      salvarPedidoCliente(pedidoCompleto)
 
       enviarPedido(pedidoCompleto)
     } catch (erro) {

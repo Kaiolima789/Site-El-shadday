@@ -10,6 +10,7 @@ import AcompanharPedido from './AcompanharPedido'
 import Home from './Home'
 import LoginAdmin from './LoginAdmin'
 import { API_URL } from './config'
+import { listarPedidosSalvos } from './pedidosCliente'
 
 function agregarMarmitasPedido(marmitas) {
   const itens = marmitas.filter(Boolean)
@@ -43,26 +44,22 @@ function App() {
     return 'home'
   })
   const [pedido, setPedido] = useState(null)
-  const [pedidoSalvo, setPedidoSalvo] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('ultimo_pedido') || 'null')
-    } catch {
-      return null
-    }
-  })
+  const [pedidosSalvos, setPedidosSalvos] = useState(listarPedidosSalvos)
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('elshadday_admin_token') || '')
   const isAdminLogado = Boolean(adminToken)
 
   function abrirAcompanhamento(pedidoParaAcompanhar) {
-    let pedidoAlvo = pedidoParaAcompanhar || pedidoSalvo
-    if (!pedidoAlvo) {
-      try { pedidoAlvo = JSON.parse(localStorage.getItem('ultimo_pedido') || 'null') } catch {}
-    }
+    const pedidoAlvo = pedidoParaAcompanhar || pedidosSalvos[0]
     if (pedidoAlvo) {
       setPedido(pedidoAlvo)
-      setPedidoSalvo(pedidoAlvo)
       setPagina('aguardando')
     }
+  }
+
+  function registrarPedido(novoPedido) {
+    setPedidosSalvos(listarPedidosSalvos())
+    setPedido(novoPedido)
+    setPagina('aguardando')
   }
 
   // Detecta acesso direto pela URL com #admin
@@ -154,9 +151,7 @@ function App() {
         pedidoId={pedido?.codigo_rastreio || pedido?.id}
         pedidoInicial={pedido}
         voltar={() => {
-          try {
-            setPedidoSalvo(JSON.parse(localStorage.getItem('ultimo_pedido') || 'null'))
-          } catch {}
+          setPedidosSalvos(listarPedidosSalvos())
           setPedido(null)
           setPagina('home')
         }}
@@ -170,9 +165,7 @@ function App() {
         pedido={pedido}
         voltar={() => setPagina('destino')}
         enviarPedido={(pedidoVivendas) => {
-          setPedido(pedidoVivendas)
-          setPedidoSalvo(pedidoVivendas)
-          setPagina('aguardando')
+          registrarPedido(pedidoVivendas)
         }}
       />
     )
@@ -184,9 +177,7 @@ function App() {
         pedido={pedido}
         voltar={() => setPagina('destino')}
         enviarPedido={(pedidoCliente) => {
-          setPedido(pedidoCliente)
-          setPedidoSalvo(pedidoCliente)
-          setPagina('aguardando')
+          registrarPedido(pedidoCliente)
         }}
       />
     )
@@ -215,8 +206,8 @@ function App() {
         setPedido(null)
         setPagina('marmitas')
       }}
-      pedidoEmAndamento={pedidoSalvo && !['recusado', 'entregue', 'cancelado', 'concluido'].includes(pedidoSalvo.status) ? pedidoSalvo : null}
-      acompanharPedido={() => abrirAcompanhamento()}
+      pedidosEmAndamento={pedidosSalvos.filter((pedidoSalvo) => !['recusado', 'entregue', 'cancelado', 'concluido'].includes(pedidoSalvo.status))}
+      acompanharPedido={abrirAcompanhamento}
       irParaAdmin={() => setPagina('admin')}
       isAdminLogado={isAdminLogado}
     />

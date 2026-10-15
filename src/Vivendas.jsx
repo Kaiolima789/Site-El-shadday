@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import './Vivendas.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
+import { salvarPedidoCliente } from './pedidosCliente'
 import { criarChaveIdempotencia } from './chaveIdempotencia'
 
 function IconeVoltar({ size = 16 }) {
@@ -159,13 +160,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
         id: dados.id,
         codigo_rastreio: dados.codigo_rastreio
       }
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
-        } catch (erro) {
-          console.error('Não foi possível salvar o pedido neste navegador.', erro)
-        }
-      }
+      salvarPedidoCliente(pedidoCompleto)
       enviarPedido(pedidoCompleto)
     } catch (erro) {
       console.error(erro)

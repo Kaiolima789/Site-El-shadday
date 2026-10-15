@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import './AcompanharPedido.css'
 import { rotuloPagamento } from './formasPagamento'
 import { API_URL } from './config'
+import { atualizarPedidoSalvo } from './pedidosCliente'
 
 // Etapas do fluxo de entrega para a linha do tempo (dot stepper vertical Figma)
 const ETAPAS = [
@@ -157,11 +158,7 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
       const dados = await resposta.json()
       const pedidoAtualizado = { ...(pedidoReferencia || {}), ...dados }
       setPedido(pedidoAtualizado)
-      if (typeof window !== 'undefined' && pedidoAtualizado.codigo_rastreio) {
-        try {
-          localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoAtualizado))
-        } catch {}
-      }
+      if (pedidoAtualizado.codigo_rastreio) atualizarPedidoSalvo(pedidoAtualizado)
       setErro(false)
     } catch (e) {
       console.error(e)

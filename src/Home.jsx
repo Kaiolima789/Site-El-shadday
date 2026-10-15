@@ -61,7 +61,7 @@ const GOOGLE_MAPS_LINK =
   'https://www.google.com/maps/search/?api=1&query=QR+202+Conjunto+E,+3+-+Santa+Maria,+Bras%C3%ADlia+-+DF,+72502-409'
 const FUNCIONAMENTO = 'Segunda a Sábado, das 11:00 às 14:00'
 
-function Home({ irParaPedido, pedidoEmAndamento, acompanharPedido }) {
+function Home({ irParaPedido, pedidosEmAndamento = [], acompanharPedido }) {
   return (
     <div className="home-page">
 
@@ -116,11 +116,12 @@ function Home({ irParaPedido, pedidoEmAndamento, acompanharPedido }) {
                 <ArrowRight size={16} aria-hidden="true" />
               </button>
 
-              {pedidoEmAndamento && (
+              {pedidosEmAndamento.map((pedidoEmAndamento) => (
                 <button
                   type="button"
                   className="home-pedido-andamento"
-                  onClick={acompanharPedido}
+                  key={pedidoEmAndamento.codigo_rastreio || pedidoEmAndamento.id}
+                  onClick={() => acompanharPedido(pedidoEmAndamento)}
                 >
                   <span className="home-pedido-andamento-texto">
                     <strong>🛵 Você tem um pedido em andamento!</strong>
@@ -130,7 +131,7 @@ function Home({ irParaPedido, pedidoEmAndamento, acompanharPedido }) {
                     Acompanhar Pedido em Tempo Real <ArrowRight size={15} aria-hidden="true" />
                   </span>
                 </button>
-              )}
+              ))}
 
               <span className="home-pilula">
                 <Heart size={13} aria-hidden="true" />
