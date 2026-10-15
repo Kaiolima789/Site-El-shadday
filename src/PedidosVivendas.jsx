@@ -522,7 +522,20 @@ function PedidosVivendas({ voltar, authToken, logout }) {
         {/* 3. BARRA DE FILTROS FIGMA */}
         <div className="pedidos-filtro-barra">
           <div className="pedidos-dia-nav">
-            <span>📅 {formatarDataSelecionada(dataSelecionada)}</span>
+            <span className="pedidos-dia-label">
+              <label className="pedidos-calendario-picker" title="Escolher data">
+                <span aria-hidden="true">📅</span>
+                <input
+                  type="date"
+                  value={dataSelecionada}
+                  onChange={(evento) => {
+                    if (evento.target.value) setDataSelecionada(evento.target.value)
+                  }}
+                  aria-label="Escolher data dos pedidos"
+                />
+              </label>
+              {formatarDataSelecionada(dataSelecionada)}
+            </span>
             <button
               type="button"
               onClick={() => setDataSelecionada((d) => mudarDia(d, -1))}
