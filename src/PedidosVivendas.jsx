@@ -34,12 +34,21 @@ function tempoDecorrido(criadoEm) {
 
 function dataLocalDoPedido(criadoEm) {
   if (!criadoEm) return ''
-  const d = new Date(criadoEm.replace(' ', 'T') + 'Z')
+  const d = new Date(criadoEm.includes('T') ? criadoEm : `${criadoEm.replace(' ', 'T')}Z`)
   if (Number.isNaN(d.getTime())) return ''
-  const ano = d.getFullYear()
-  const mes = String(d.getMonth() + 1).padStart(2, '0')
-  const dia = String(d.getDate()).padStart(2, '0')
-  return `${ano}-${mes}-${dia}`
+  const partes = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d)
+  const valores = Object.fromEntries(partes.map(({ type, value }) => [type, value]))
+  return `${valores.year}-${valores.month}-${valores.day}`
+}
+
+const CHAVE_DATA_PEDIDOS = 'admin_pedidos_data_selecionada'
+
+function dataInicialPedidos() {
+  try {
+    const salva = window.localStorage.getItem(CHAVE_DATA_PEDIDOS)
+    if (salva && /^\d{4}-\d{2}-\d{2}$/.test(salva)) return salva
+  } catch {}
+  return hojeLocal()
 }
 
 function hojeLocal() {
@@ -209,12 +218,16 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   const [apiStatus, setApiStatus] = useState('checking')
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
   const [filtro, setFiltro] = useState('aguardando')
-  const [dataSelecionada, setDataSelecionada] = useState(hojeLocal())
+  const [dataSelecionada, setDataSelecionada] = useState(dataInicialPedidos)
   const [proximoCursor, setProximoCursor] = useState('')
   const [temMais, setTemMais] = useState(false)
   const [carregandoMais, setCarregandoMais] = useState(false)
   const proximoCursorRef = useRef('')
   const historicoCarregadoRef = useRef(false)
+
+  useEffect(() => {
+    try { window.localStorage.setItem(CHAVE_DATA_PEDIDOS, dataSelecionada) } catch {}
+  }, [dataSelecionada])
 
   async function requisicaoAdmin(url, opcoes = {}) {
     const resposta = await fetch(url, {
@@ -470,23 +483,17 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   // Pedidos que exigem ação da cozinha (aguardando ou em preparo) NUNCA ficam ocultos por data
   const pedidosFiltrados = pedidos.filter((pedido) => {
     const status = normalizarStatus(pedido.status)
-    if (filtro === 'aguardando') {
-      return status === 'aguardando'
-    }
-    if (filtro === 'em_preparo') {
-      return status === 'em_preparo' || status === 'aprovado'
-    }
-    // Histórico (prontos e recusados) filtra pelo dia selecionado
-    const dataPedido = dataLocalDoPedido(pedido.criado_em)
-    const mesmoDia = dataPedido === dataSelecionada || !dataPedido
-    return mesmoDia && status === filtro
+    if (dataLocalDoPedido(pedido.criado_em) !== dataSelecionada) return false
+    if (filtro === 'aguardando') return status === 'aguardando'
+    if (filtro === 'em_preparo') return status === 'em_preparo' || status === 'aprovado'
+    return status === filtro
   })
 
   const contagem = {
-    aguardando: pedidos.filter((p) => normalizarStatus(p.status) === 'aguardando').length,
-    em_preparo: pedidos.filter((p) => ['em_preparo', 'aprovado'].includes(normalizarStatus(p.status))).length,
-    pronto: pedidos.filter((p) => normalizarStatus(p.status) === 'pronto' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length,
-    recusado: pedidos.filter((p) => normalizarStatus(p.status) === 'recusado' && (dataLocalDoPedido(p.criado_em) === dataSelecionada || !p.criado_em)).length
+    aguardando: pedidos.filter((p) => dataLocalDoPedido(p.criado_em) === dataSelecionada && normalizarStatus(p.status) === 'aguardando').length,
+    em_preparo: pedidos.filter((p) => dataLocalDoPedido(p.criado_em) === dataSelecionada && ['em_preparo', 'aprovado'].includes(normalizarStatus(p.status))).length,
+    pronto: pedidos.filter((p) => dataLocalDoPedido(p.criado_em) === dataSelecionada && normalizarStatus(p.status) === 'pronto').length,
+    recusado: pedidos.filter((p) => dataLocalDoPedido(p.criado_em) === dataSelecionada && normalizarStatus(p.status) === 'recusado').length
   }
 
   return (
@@ -545,7 +552,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <div className="pedidos-dia-nav">
             <span className="pedidos-dia-label">
               <label className="pedidos-calendario-picker" title="Escolher data">
-                <span aria-hidden="true">📅</span>
+                <svg aria-hidden="true" viewBox="0 0 16 16" focusable="false"><rect x="2.25" y="3.5" width="11.5" height="10" rx="1.25" /><path d="M5 2v3M11 2v3M2.5 6.25h11" /></svg>
                 <input
                   type="date"
                   value={dataSelecionada}
