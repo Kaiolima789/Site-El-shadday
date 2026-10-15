@@ -155,6 +155,7 @@ const novasColunas = [
   ['forma_pagamento', "TEXT DEFAULT ''"],
   ['troco_para', 'REAL'],
   ['quantidade_marmitas', 'INTEGER DEFAULT 1'],
+  ['marmitas_json', "TEXT DEFAULT '[]'"],
   ['cpf_vivendas', "TEXT DEFAULT ''"],
   ['codigo_rastreio', 'TEXT'],
   ['chave_idempotencia', 'TEXT']
@@ -407,9 +408,14 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
     }
   }
 
-  const quantidadeMarmitas = req.body.quantidade_marmitas === undefined
-    ? 1
-    : Number(req.body.quantidade_marmitas)
+  let quantidadeMarmitas = Array.isArray(req.body.marmitas)
+    ? req.body.marmitas.length
+    : req.body.quantidade_marmitas === undefined
+      ? 1
+      : Number(req.body.quantidade_marmitas)
+  if (req.body.marmitas !== undefined && !Array.isArray(req.body.marmitas)) {
+    return res.status(400).json({ erro: 'A lista de marmitas está inválida.' })
+  }
   if (!Number.isInteger(quantidadeMarmitas) || quantidadeMarmitas < 1 || quantidadeMarmitas > 20) {
     return res.status(400).json({ erro: 'A quantidade de marmitas deve ser entre 1 e 20.' })
   }
@@ -437,6 +443,45 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   } = req.body
 
   const ehClienteComum = origem === 'cliente_comum'
+  let marmitasDetalhadas = []
+  if (ehClienteComum) {
+    const itensRecebidos = Array.isArray(req.body.marmitas) ? req.body.marmitas : null
+    if (itensRecebidos) {
+      for (const item of itensRecebidos) {
+        if (!item || typeof item !== 'object' || Array.isArray(item)) {
+          return res.status(400).json({ erro: 'Uma das marmitas do pedido está inválida.' })
+        }
+        for (const campo of ['carne', 'guarnicao', 'refrigerante_sabor', 'refrigerante_tamanho', 'agua_tipo']) {
+          if (item[campo] !== undefined && (typeof item[campo] !== 'string' || item[campo].length > 500)) {
+            return res.status(400).json({ erro: `Os detalhes da marmita (${campo}) são inválidos.` })
+          }
+        }
+      }
+      marmitasDetalhadas = itensRecebidos.map((item) => ({
+        carne: String(item.carne || '').trim(),
+        guarnicao: String(item.guarnicao || '').trim(),
+        refrigerante_sabor: String(item.refrigerante_sabor || '').trim(),
+        refrigerante_tamanho: String(item.refrigerante_tamanho || '').trim(),
+        agua_tipo: String(item.agua_tipo || '').trim(),
+        bebida_quantidade: Number(item.bebida_quantidade) || 0,
+        preco_marmita: Number(item.preco_marmita) || 0,
+        preco_bebida: Number(item.preco_bebida) || 0
+      }))
+    } else {
+      const quantidadeAntiga = Number(req.body.quantidade_marmitas) || 1
+      marmitasDetalhadas = Array.from({ length: quantidadeAntiga }, (_, indice) => ({
+        carne: indice === 0 ? String(carne || '') : String(carne || ''),
+        guarnicao: indice === 0 ? String(guarnicao || '') : String(guarnicao || ''),
+        refrigerante_sabor: indice === 0 ? String(refrigerante_sabor || '') : '',
+        refrigerante_tamanho: indice === 0 ? String(refrigerante_tamanho || '') : '',
+        agua_tipo: indice === 0 ? String(agua_tipo || '') : '',
+        bebida_quantidade: indice === 0 ? Number(bebida_quantidade) || 0 : 0,
+        preco_marmita: Number(preco_marmita) / quantidadeAntiga || 0,
+        preco_bebida: indice === 0 ? Number(preco_bebida) || 0 : 0
+      }))
+    }
+    quantidadeMarmitas = marmitasDetalhadas.length
+  }
   const identificadorVivendas = String(req.body.codigo_vivendas || codigo || '').trim()
   const digitosIdentificador = identificadorVivendas.replace(/\D/g, '')
   const cpfVivendas = !ehClienteComum && digitosIdentificador.length === 11 ? digitosIdentificador : ''
@@ -557,12 +602,13 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
         observacao,
         preco,
         quantidade_marmitas,
+        marmitas_json,
         cpf_vivendas,
         status,
         codigo_rastreio,
         chave_idempotencia
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     const resultado = criarPedido.run(
@@ -587,6 +633,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       observacao || '',
       precoFinal,
       quantidadeMarmitas,
+      ehClienteComum ? JSON.stringify(marmitasDetalhadas) : '[]',
       cpfVivendas,
       'aguardando',
       codigoRastreio,

@@ -156,7 +156,7 @@ function dataHojeLocal() {
   return `${ano}-${mes}-${dia}`
 }
 
-function Marmitas({ voltar, continuar }) {
+function Marmitas({ voltar, continuar, adicionandoMarmita = false, numeroMarmita = 1 }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
 
@@ -463,7 +463,7 @@ function Marmitas({ voltar, continuar }) {
 
       {/* TÍTULO PRINCIPAL */}
       <section className="titulo-marmita">
-        <h2>Monte sua Marmita</h2>
+        <h2>{adicionandoMarmita ? `Monte a Marmita ${numeroMarmita}` : 'Monte sua Marmita'}</h2>
         <p>Escolha as opções de hoje</p>
       </section>
 
@@ -811,7 +811,7 @@ function Marmitas({ voltar, continuar }) {
             className="continuar-btn"
             onClick={tentarContinuar}
           >
-            Continuar Pedido →
+            {adicionandoMarmita ? 'Adicionar Marmita e Voltar ao Pedido' : 'Continuar Pedido →'}
           </button>
 
           <button

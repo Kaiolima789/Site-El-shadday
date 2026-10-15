@@ -248,36 +248,51 @@
   color: #3D2D24;
 }
 
-.cc-resumo-quantidade {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 8px 0 12px;
-  color: #5c4a42;
-  font-size: 13px;
+.cc-marmita-resumo {
+  padding: 10px 0;
+  border-bottom: 1px solid #eae4d9;
 }
 
-.cc-quantidade-controles {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+.cc-marmita-resumo .cc-resumo-linha {
+  font-weight: 700;
 }
 
-.cc-quantidade-controles button {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #eae4d9;
-  border-radius: 50%;
-  background: #fff;
+.cc-marmita-bebida {
+  margin: 4px 0;
   color: #6e2636;
-  font-size: 18px;
+  font-size: 12px;
+}
+
+.cc-remover-marmita {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9b3948;
+  font-size: 12px;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-.cc-quantidade-controles span {
-  min-width: 16px;
-  text-align: center;
+.cc-adicionar-marmita {
+  width: 100%;
+  margin: 12px 0 18px;
+  padding: 11px 14px;
+  border: 1px dashed #6e2636;
+  border-radius: 10px;
+  background: #fffaf7;
+  color: #6e2636;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.cc-adicionar-marmita:hover:not(:disabled) {
+  background: #f8f0eb;
+}
+
+.cc-adicionar-marmita:disabled,
+.cc-remover-marmita:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .cc-resumo-linha-bebida {

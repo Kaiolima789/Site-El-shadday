@@ -450,6 +450,17 @@
   color: #2E1E1E;
 }
 
+.pedido-item-marmita + .pedido-item-marmita {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #EAE4D9;
+}
+
+.pedido-item-marmita > strong {
+  font-size: 13px;
+  color: #6E2636;
+}
+
 /* Faixa Azul de Cobrança */
 .pedido-cobranca-faixa {
   background: #EBF3FA;

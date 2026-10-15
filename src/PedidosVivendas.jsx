@@ -151,6 +151,28 @@ function textoCarne(pedido) {
   return pedido.carne || pedido.opcao_carne || ''
 }
 
+function listarMarmitas(pedido) {
+  if (Array.isArray(pedido.marmitas) && pedido.marmitas.length) return pedido.marmitas
+  try {
+    const itens = JSON.parse(pedido.marmitas_json || '[]')
+    if (Array.isArray(itens) && itens.length) return itens
+  } catch {}
+  return [{
+    carne: textoCarne(pedido),
+    guarnicao: pedido.guarnicao || '',
+    refrigerante_sabor: pedido.refrigerante_sabor || '',
+    refrigerante_tamanho: pedido.refrigerante_tamanho || '',
+    agua_tipo: pedido.agua_tipo || ''
+  }]
+}
+
+function textoBebidaMarmita(marmita) {
+  const partes = []
+  if (marmita.refrigerante_sabor) partes.push(marmita.refrigerante_sabor)
+  if (marmita.agua_tipo) partes.push(marmita.agua_tipo)
+  return partes.join(' + ')
+}
+
 function textoBebida(pedido) {
   const partes = []
   if (pedido.refrigerante_sabor) {
@@ -328,6 +350,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
 
     const carne = textoCarne(pedido)
     const bebida = textoBebida(pedido)
+    const marmitasDoPedido = listarMarmitas(pedido)
     const total = Number(pedido.valor_cobrar !== undefined && pedido.valor_cobrar !== null ? pedido.valor_cobrar : pedido.preco || 0)
 
     janela.document.write(`
@@ -423,10 +446,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <div class="divisor">--------------------------------</div>
 
           <div class="item-linha"><strong>ITENS:</strong></div>
-          ${ehClienteComum(pedido) && Number(pedido.quantidade_marmitas) > 1 ? `<div class="item-linha"><strong>Marmitas:</strong> ${Number(pedido.quantidade_marmitas)}</div>` : ''}
-          ${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}
-          ${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}
-          ${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}
+          ${ehClienteComum(pedido) ? marmitasDoPedido.map((marmita, indice) => `<div class="item-linha"><strong>Marmita ${indice + 1}</strong></div>${marmita.carne ? `<div class="item-linha">- Proteina: ${limparTexto(marmita.carne)}</div>` : ''}${marmita.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(marmita.guarnicao)}</div>` : ''}${textoBebidaMarmita(marmita) ? `<div class="item-linha">- Bebida: ${limparTexto(textoBebidaMarmita(marmita))}</div>` : ''}`).join('') : `${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}`}
           ${pedido.observacao ? `<div class="item-linha">- Obs: ${limparTexto(pedido.observacao)}</div>` : ''}
 
           <div class="divisor">--------------------------------</div>
@@ -606,7 +626,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
         {/* 4. CARDS DE PEDIDO FIGMA */}
         <div className="pedidos-grid">
           {pedidosFiltrados.map((pedido) => {
-            const carne = textoCarne(pedido)
+            const carne = ehClienteComum(pedido) ? '' : textoCarne(pedido)
             const bebida = textoBebida(pedido)
             const status = normalizarStatus(pedido.status)
             const telLimpo = pedido.telefone ? pedido.telefone.replace(/\D/g, '') : ''
@@ -668,10 +688,18 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                 {/* DETALHES DA MARMITA */}
                 <div className="pedido-detalhes-bloco">
                   <span className="detalhes-titulo">DETALHES DA MARMITA</span>
-                  {ehClienteComum(pedido) && Number(pedido.quantidade_marmitas) > 1 && <p>Quantidade de marmitas: {pedido.quantidade_marmitas}</p>}
-                  {carne && <p>Proteína: {carne}</p>}
-                  {pedido.guarnicao && <p>Guarnições: {pedido.guarnicao}</p>}
-                  {bebida && <p>Bebida: {bebida}</p>}
+                  {ehClienteComum(pedido) ? listarMarmitas(pedido).map((marmita, indice) => (
+                    <div className="pedido-item-marmita" key={`pedido-${pedido.id}-marmita-${indice}`}>
+                      <strong>Marmita {indice + 1}</strong>
+                      {marmita.carne && <p>Proteína: {marmita.carne}</p>}
+                      {marmita.guarnicao && <p>Guarnições: {marmita.guarnicao}</p>}
+                      {textoBebidaMarmita(marmita) && <p>Bebida: {textoBebidaMarmita(marmita)}</p>}
+                    </div>
+                  )) : <>
+                    {carne && <p>Proteína: {carne}</p>}
+                    {pedido.guarnicao && <p>Guarnições: {pedido.guarnicao}</p>}
+                    {bebida && <p>Bebida: {bebida}</p>}
+                  </>}
                   {pedido.observacao && <p>Observação: {pedido.observacao}</p>}
                 </div>
 

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './ClienteComum.css'
 import FormaPagamento from './FormaPagamento'
 import { API_URL } from './config'
@@ -53,23 +53,40 @@ function IconeRecibo({ size = 18 }) {
   )
 }
 
-function ClienteComum({ voltar, pedido, enviarPedido }) {
+function lerRascunhoCheckout(campo, padrao) {
+  try {
+    return JSON.parse(sessionStorage.getItem('checkout_cliente_comum') || '{}')[campo] ?? padrao
+  } catch {
+    return padrao
+  }
+}
+
+function ClienteComum({ voltar, pedido, enviarPedido, adicionarMarmita, removerMarmita }) {
   const chaveIdempotenciaRef = useRef(null)
-  const [nome, setNome] = useState('')
-  const [telefone, setTelefone] = useState('')
-  const [tipoEntrega, setTipoEntrega] = useState('entrega')
-  const [regiaoEntrega, setRegiaoEntrega] = useState(REGIOES_ENTREGA[0]) // Padrão: Santa Maria Sul (R$ 3,00)
-  const [endereco, setEndereco] = useState('')
-  const [observacao, setObservacao] = useState('')
-  const [formaPagamento, setFormaPagamento] = useState('dinheiro')
-  const [trocoPara, setTrocoPara] = useState('')
+  const [nome, setNome] = useState(() => lerRascunhoCheckout('nome', ''))
+  const [telefone, setTelefone] = useState(() => lerRascunhoCheckout('telefone', ''))
+  const [tipoEntrega, setTipoEntrega] = useState(() => lerRascunhoCheckout('tipoEntrega', 'entrega'))
+  const [regiaoEntrega, setRegiaoEntrega] = useState(() => { const salva = lerRascunhoCheckout('regiaoEntrega', REGIOES_ENTREGA[0]); return REGIOES_ENTREGA.find((regiao) => regiao.id === salva.id) || REGIOES_ENTREGA[0] }) // Padrão: Santa Maria Sul (R$ 3,00)
+  const [endereco, setEndereco] = useState(() => lerRascunhoCheckout('endereco', ''))
+  const [observacao, setObservacao] = useState(() => lerRascunhoCheckout('observacao', ''))
+  const [formaPagamento, setFormaPagamento] = useState(() => lerRascunhoCheckout('formaPagamento', 'dinheiro'))
+  const [trocoPara, setTrocoPara] = useState(() => lerRascunhoCheckout('trocoPara', ''))
   const [enviando, setEnviando] = useState(false)
-  const [quantidadeMarmitas, setQuantidadeMarmitas] = useState(1)
+  const marmitasPedido = Array.isArray(pedido?.marmitas) && pedido.marmitas.length > 0
+    ? pedido.marmitas
+    : [pedido || {}]
+  const quantidadeMarmitas = marmitasPedido.length
+
+  useEffect(() => {
+    sessionStorage.setItem('checkout_cliente_comum', JSON.stringify({
+      nome, telefone, tipoEntrega, regiaoEntrega, endereco, observacao, formaPagamento, trocoPara
+    }))
+  }, [nome, telefone, tipoEntrega, regiaoEntrega, endereco, observacao, formaPagamento, trocoPara])
 
   // Cálculos de valores dinâmicos
-  const subtotalMarmita = Number(pedido?.preco_marmita || (pedido?.preco ? pedido.preco - (pedido.preco_bebida || 0) : 18.0)) || 18.0
-  const totalMarmitas = subtotalMarmita * quantidadeMarmitas
-  const subtotalBebida = Number(pedido?.preco_bebida || 0.0)
+  const subtotalMarmita = marmitasPedido.reduce((total, marmita) => total + Number(marmita?.preco_marmita || 0), 0)
+  const totalMarmitas = subtotalMarmita || Number(pedido?.preco_marmita || 18.0)
+  const subtotalBebida = marmitasPedido.reduce((total, marmita) => total + Number(marmita?.preco_bebida || 0), 0)
   const valorEntrega = tipoEntrega === 'entrega' ? Number(regiaoEntrega.taxa) : 0.0
   const totalFinal = totalMarmitas + subtotalBebida + valorEntrega
 
@@ -126,6 +143,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
         formaPagamento === 'dinheiro' && trocoPara.trim() ? trocoNumero : null,
       taxa_entrega: valorEntrega,
       quantidade_marmitas: quantidadeMarmitas,
+      marmitas: marmitasPedido,
       preco_marmita: totalMarmitas,
       preco_bebida: subtotalBebida,
       preco: totalFinal,
@@ -158,6 +176,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
         codigo_rastreio: dados.codigo_rastreio
       }
       chaveIdempotenciaRef.current = null
+      sessionStorage.removeItem('checkout_cliente_comum')
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
@@ -171,10 +190,10 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
     }
   }
 
-  function detalheBebidaResumo() {
+  function detalheBebidaResumo(item = pedido) {
     const partes = []
-    if (pedido?.refrigerante_sabor) partes.push(pedido.refrigerante_sabor)
-    if (pedido?.agua_tipo) partes.push(pedido.agua_tipo)
+    if (item?.refrigerante_sabor) partes.push(item.refrigerante_sabor)
+    if (item?.agua_tipo) partes.push(item.agua_tipo)
     return partes.length > 0 ? partes.join(' + ') : null
   }
 
@@ -330,41 +349,45 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
 
             <div className="cc-resumo-extrato">
 
-              <div className="cc-resumo-linha">
-                <span className="cc-resumo-item-nome">
-                  {quantidadeMarmitas > 1 ? `Marmitas Tradicionais (${quantidadeMarmitas})` : 'Marmita Tradicional'}
-                </span>
-                <span className="cc-resumo-item-preco">
-                  R$ {totalMarmitas.toFixed(2).replace('.', ',')}
-                </span>
-              </div>
-
-              <div className="cc-resumo-quantidade" aria-label="Quantidade de marmitas">
-                <span>Quantidade (mesma seleção)</span>
-                <div className="cc-quantidade-controles">
-                  <button type="button" onClick={() => setQuantidadeMarmitas((quantidade) => Math.max(1, quantidade - 1))} aria-label="Diminuir quantidade">−</button>
-                  <span>{quantidadeMarmitas}</span>
-                  <button type="button" onClick={() => setQuantidadeMarmitas((quantidade) => Math.min(20, quantidade + 1))} aria-label="Aumentar quantidade">+</button>
+              {marmitasPedido.map((marmita, indice) => (
+                <div className="cc-marmita-resumo" key={`marmita-${indice}`}>
+                  <div className="cc-resumo-linha">
+                    <strong>Marmita {indice + 1}</strong>
+                    <span>R$ {Number(marmita.preco_marmita || 0).toFixed(2).replace('.', ',')}</span>
+                  </div>
+                  <div className="cc-resumo-tags">
+                    {marmita.carne && <span className="cc-resumo-tag">{marmita.carne}</span>}
+                    {marmita.guarnicao && <span className="cc-resumo-tag">{marmita.guarnicao}</span>}
+                  </div>
+                  {detalheBebidaResumo(marmita) && <p className="cc-marmita-bebida">Bebida: {detalheBebidaResumo(marmita)}</p>}
+                  {quantidadeMarmitas > 1 && (
+                    <button
+                      type="button"
+                      className="cc-remover-marmita"
+                      onClick={() => removerMarmita(indice)}
+                      disabled={enviando}
+                    >
+                      Remover marmita
+                    </button>
+                  )}
                 </div>
-              </div>
+              ))}
 
-              <div className="cc-resumo-tags">
-                {pedido?.carne && (
-                  <span className="cc-resumo-tag">{pedido.carne}</span>
-                )}
-                {pedido?.guarnicao && (
-                  <span className="cc-resumo-tag">{pedido.guarnicao}</span>
-                )}
-              </div>
+              {quantidadeMarmitas < 20 && (
+                <button
+                  type="button"
+                  className="cc-adicionar-marmita"
+                  onClick={adicionarMarmita}
+                  disabled={enviando}
+                >
+                  + Adicionar outra marmita
+                </button>
+              )}
 
-              {detalheBebidaResumo() && (
+              {subtotalBebida > 0 && (
                 <div className="cc-resumo-linha cc-resumo-linha-bebida">
-                  <span className="cc-resumo-item-nome">
-                    Bebida: {detalheBebidaResumo()}
-                  </span>
-                  <span className="cc-resumo-item-preco">
-                    R$ {subtotalBebida.toFixed(2).replace('.', ',')}
-                  </span>
+                  <span className="cc-resumo-item-nome">Total das bebidas</span>
+                  <span className="cc-resumo-item-preco">R$ {subtotalBebida.toFixed(2).replace('.', ',')}</span>
                 </div>
               )}
 

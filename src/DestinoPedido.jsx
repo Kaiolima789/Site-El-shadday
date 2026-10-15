@@ -85,8 +85,10 @@ function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
 
           <button
             type="button"
-            className="destino-card"
+            className={`destino-card ${pedido?.marmitas?.length > 1 ? 'destino-card-indisponivel' : ''}`}
             onClick={vivendas}
+            disabled={pedido?.marmitas?.length > 1}
+            title={pedido?.marmitas?.length > 1 ? 'Pedidos Vivendas aceitam apenas uma marmita.' : undefined}
           >
             <div className="destino-badge">
               <IconeVivendas size={22} />
@@ -94,7 +96,7 @@ function DestinoPedido({ pedido, voltar, clienteComum, vivendas }) {
 
             <div className="destino-card-info">
               <h3>Vivendas</h3>
-              <p>Pedido destinado a cliente Vivendas</p>
+              <p>{pedido?.marmitas?.length > 1 ? 'Disponível apenas para pedido com uma marmita' : 'Pedido destinado a cliente Vivendas'}</p>
             </div>
 
             <span className="destino-seta">→</span>

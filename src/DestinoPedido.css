@@ -95,6 +95,12 @@
   transform: translateY(-1px);
 }
 
+.destino-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .destino-badge {
   width: 44px;
   height: 44px;
