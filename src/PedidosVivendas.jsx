@@ -224,6 +224,64 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   const [carregandoMais, setCarregandoMais] = useState(false)
   const proximoCursorRef = useRef('')
   const historicoCarregadoRef = useRef(false)
+  const pedidosConhecidosRef = useRef(null)
+  const contextoAudioRef = useRef(null)
+  const alertaPendenteRef = useRef(false)
+
+  function tocarAlertaNovoPedido() {
+    const contexto = contextoAudioRef.current
+    if (!contexto || contexto.state !== 'running') {
+      alertaPendenteRef.current = true
+      return
+    }
+
+    const agora = contexto.currentTime
+    ;[880, 660].forEach((frequencia, indice) => {
+      const inicio = agora + indice * 0.22
+      const oscilador = contexto.createOscillator()
+      const volume = contexto.createGain()
+      oscilador.type = 'sine'
+      oscilador.frequency.value = frequencia
+      volume.gain.setValueAtTime(0.0001, inicio)
+      volume.gain.exponentialRampToValueAtTime(0.18, inicio + 0.025)
+      volume.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.28)
+      oscilador.connect(volume)
+      volume.connect(contexto.destination)
+      oscilador.start(inicio)
+      oscilador.stop(inicio + 0.3)
+    })
+  }
+
+  useEffect(() => {
+    function liberarAudio() {
+      try {
+        const AudioContextNativo = window.AudioContext || window.webkitAudioContext
+        if (!AudioContextNativo) return
+        if (!contextoAudioRef.current) contextoAudioRef.current = new AudioContextNativo()
+        const contexto = contextoAudioRef.current
+        if (contexto.state === 'suspended') {
+          contexto.resume().then(() => {
+            if (alertaPendenteRef.current) {
+              alertaPendenteRef.current = false
+              tocarAlertaNovoPedido()
+            }
+          }).catch(() => {})
+        } else if (alertaPendenteRef.current) {
+          alertaPendenteRef.current = false
+          tocarAlertaNovoPedido()
+        }
+      } catch {}
+    }
+
+    window.addEventListener('pointerdown', liberarAudio)
+    window.addEventListener('keydown', liberarAudio)
+    return () => {
+      window.removeEventListener('pointerdown', liberarAudio)
+      window.removeEventListener('keydown', liberarAudio)
+      contextoAudioRef.current?.close()
+      contextoAudioRef.current = null
+    }
+  }, [])
 
   useEffect(() => {
     try { window.localStorage.setItem(CHAVE_DATA_PEDIDOS, dataSelecionada) } catch {}
@@ -245,6 +303,21 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       if (!resposta.ok) throw new Error('Erro ao buscar pedidos')
       const dados = await resposta.json()
       if (!Array.isArray(dados)) throw new Error('Resposta inválida ao buscar pedidos')
+
+      const conhecidos = pedidosConhecidosRef.current
+      if (conhecidos) {
+        const atuais = new Map(dados.map((pedido) => [String(pedido.id), normalizarStatus(pedido.status)]))
+        const entrouEmAguardando = dados.some((pedido) => {
+          if (normalizarStatus(pedido.status) !== 'aguardando') return false
+          const id = String(pedido.id)
+          return !conhecidos.has(id) || conhecidos.get(id) !== 'aguardando'
+        })
+        if (entrouEmAguardando) tocarAlertaNovoPedido()
+        pedidosConhecidosRef.current = atuais
+      } else {
+        // A primeira consulta estabelece a referência sem tocar para pedidos antigos.
+        pedidosConhecidosRef.current = new Map(dados.map((pedido) => [String(pedido.id), normalizarStatus(pedido.status)]))
+      }
 
       setApiStatus('online')
       setUltimaAtualizacao(new Date())
