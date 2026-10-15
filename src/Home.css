@@ -179,6 +179,37 @@
   transform: translateY(-1px);
 }
 
+.home-pedido-andamento {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--home-borda);
+  border-left: 4px solid var(--home-vinho);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--home-titulo);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(46, 30, 30, 0.06);
+}
+
+.home-pedido-andamento-texto,
+.home-pedido-andamento-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-pedido-andamento-texto { flex-wrap: wrap; }
+.home-pedido-andamento-texto > span { color: var(--home-apoio); font-size: 13px; }
+.home-pedido-andamento-link { color: var(--home-vinho); font-size: 13px; font-weight: 600; }
+.home-pedido-andamento:hover { border-color: var(--home-vinho); }
+
 .home-pilula {
   margin-top: 14px;
   display: inline-flex;

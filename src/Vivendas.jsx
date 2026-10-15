@@ -154,11 +154,19 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       }
 
       chaveIdempotenciaRef.current = null
-      enviarPedido({
+      const pedidoCompleto = {
         ...dadosPedido,
         id: dados.id,
         codigo_rastreio: dados.codigo_rastreio
-      })
+      }
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoCompleto))
+        } catch (erro) {
+          console.error('Não foi possível salvar o pedido neste navegador.', erro)
+        }
+      }
+      enviarPedido(pedidoCompleto)
     } catch (erro) {
       console.error(erro)
       alert('Não foi possível conectar com o servidor.')

@@ -43,8 +43,27 @@ function App() {
     return 'home'
   })
   const [pedido, setPedido] = useState(null)
+  const [pedidoSalvo, setPedidoSalvo] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ultimo_pedido') || 'null')
+    } catch {
+      return null
+    }
+  })
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('elshadday_admin_token') || '')
   const isAdminLogado = Boolean(adminToken)
+
+  function abrirAcompanhamento(pedidoParaAcompanhar) {
+    let pedidoAlvo = pedidoParaAcompanhar || pedidoSalvo
+    if (!pedidoAlvo) {
+      try { pedidoAlvo = JSON.parse(localStorage.getItem('ultimo_pedido') || 'null') } catch {}
+    }
+    if (pedidoAlvo) {
+      setPedido(pedidoAlvo)
+      setPedidoSalvo(pedidoAlvo)
+      setPagina('aguardando')
+    }
+  }
 
   // Detecta acesso direto pela URL com #admin
   useEffect(() => {
@@ -135,6 +154,9 @@ function App() {
         pedidoId={pedido?.codigo_rastreio || pedido?.id}
         pedidoInicial={pedido}
         voltar={() => {
+          try {
+            setPedidoSalvo(JSON.parse(localStorage.getItem('ultimo_pedido') || 'null'))
+          } catch {}
           setPedido(null)
           setPagina('home')
         }}
@@ -149,6 +171,7 @@ function App() {
         voltar={() => setPagina('destino')}
         enviarPedido={(pedidoVivendas) => {
           setPedido(pedidoVivendas)
+          setPedidoSalvo(pedidoVivendas)
           setPagina('aguardando')
         }}
       />
@@ -162,6 +185,7 @@ function App() {
         voltar={() => setPagina('destino')}
         enviarPedido={(pedidoCliente) => {
           setPedido(pedidoCliente)
+          setPedidoSalvo(pedidoCliente)
           setPagina('aguardando')
         }}
       />
@@ -191,6 +215,8 @@ function App() {
         setPedido(null)
         setPagina('marmitas')
       }}
+      pedidoEmAndamento={pedidoSalvo && !['recusado', 'entregue', 'cancelado', 'concluido'].includes(pedidoSalvo.status) ? pedidoSalvo : null}
+      acompanharPedido={() => abrirAcompanhamento()}
       irParaAdmin={() => setPagina('admin')}
       isAdminLogado={isAdminLogado}
     />

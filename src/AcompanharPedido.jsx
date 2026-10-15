@@ -155,7 +155,13 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
         throw new Error('Pedido não encontrado')
       }
       const dados = await resposta.json()
-      setPedido(dados)
+      const pedidoAtualizado = { ...(pedidoReferencia || {}), ...dados }
+      setPedido(pedidoAtualizado)
+      if (typeof window !== 'undefined' && pedidoAtualizado.codigo_rastreio) {
+        try {
+          localStorage.setItem('ultimo_pedido', JSON.stringify(pedidoAtualizado))
+        } catch {}
+      }
       setErro(false)
     } catch (e) {
       console.error(e)
