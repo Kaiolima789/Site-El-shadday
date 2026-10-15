@@ -41,6 +41,8 @@ db.exec(`
     status TEXT DEFAULT 'aguardando',
     codigo_rastreio TEXT,
     chave_idempotencia TEXT,
+    quantidade_marmitas INTEGER DEFAULT 1,
+    cpf_vivendas TEXT DEFAULT '',
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `)

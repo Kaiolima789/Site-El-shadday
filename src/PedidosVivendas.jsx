@@ -423,6 +423,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <div class="divisor">--------------------------------</div>
 
           <div class="item-linha"><strong>ITENS:</strong></div>
+          ${ehClienteComum(pedido) && Number(pedido.quantidade_marmitas) > 1 ? `<div class="item-linha"><strong>Marmitas:</strong> ${Number(pedido.quantidade_marmitas)}</div>` : ''}
           ${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}
           ${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}
           ${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}
@@ -667,6 +668,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                 {/* DETALHES DA MARMITA */}
                 <div className="pedido-detalhes-bloco">
                   <span className="detalhes-titulo">DETALHES DA MARMITA</span>
+                  {ehClienteComum(pedido) && Number(pedido.quantidade_marmitas) > 1 && <p>Quantidade de marmitas: {pedido.quantidade_marmitas}</p>}
                   {carne && <p>Proteína: {carne}</p>}
                   {pedido.guarnicao && <p>Guarnições: {pedido.guarnicao}</p>}
                   {bebida && <p>Bebida: {bebida}</p>}

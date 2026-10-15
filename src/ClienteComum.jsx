@@ -64,12 +64,14 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
   const [formaPagamento, setFormaPagamento] = useState('dinheiro')
   const [trocoPara, setTrocoPara] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [quantidadeMarmitas, setQuantidadeMarmitas] = useState(1)
 
   // Cálculos de valores dinâmicos
   const subtotalMarmita = Number(pedido?.preco_marmita || (pedido?.preco ? pedido.preco - (pedido.preco_bebida || 0) : 18.0)) || 18.0
+  const totalMarmitas = subtotalMarmita * quantidadeMarmitas
   const subtotalBebida = Number(pedido?.preco_bebida || 0.0)
   const valorEntrega = tipoEntrega === 'entrega' ? Number(regiaoEntrega.taxa) : 0.0
-  const totalFinal = subtotalMarmita + subtotalBebida + valorEntrega
+  const totalFinal = totalMarmitas + subtotalBebida + valorEntrega
 
   async function enviar() {
     const partesNome = nome.trim().split(/\s+/)
@@ -123,7 +125,8 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
       troco_para:
         formaPagamento === 'dinheiro' && trocoPara.trim() ? trocoNumero : null,
       taxa_entrega: valorEntrega,
-      preco_marmita: subtotalMarmita,
+      quantidade_marmitas: quantidadeMarmitas,
+      preco_marmita: totalMarmitas,
       preco_bebida: subtotalBebida,
       preco: totalFinal,
       valor_cobrar: totalFinal,
@@ -328,10 +331,21 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
             <div className="cc-resumo-extrato">
 
               <div className="cc-resumo-linha">
-                <span className="cc-resumo-item-nome">Marmita Tradicional</span>
-                <span className="cc-resumo-item-preco">
-                  R$ {subtotalMarmita.toFixed(2).replace('.', ',')}
+                <span className="cc-resumo-item-nome">
+                  {quantidadeMarmitas > 1 ? `Marmitas Tradicionais (${quantidadeMarmitas})` : 'Marmita Tradicional'}
                 </span>
+                <span className="cc-resumo-item-preco">
+                  R$ {totalMarmitas.toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+
+              <div className="cc-resumo-quantidade" aria-label="Quantidade de marmitas">
+                <span>Quantidade (mesma seleção)</span>
+                <div className="cc-quantidade-controles">
+                  <button type="button" onClick={() => setQuantidadeMarmitas((quantidade) => Math.max(1, quantidade - 1))} aria-label="Diminuir quantidade">−</button>
+                  <span>{quantidadeMarmitas}</span>
+                  <button type="button" onClick={() => setQuantidadeMarmitas((quantidade) => Math.min(20, quantidade + 1))} aria-label="Aumentar quantidade">+</button>
+                </div>
               </div>
 
               <div className="cc-resumo-tags">

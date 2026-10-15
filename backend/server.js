@@ -154,6 +154,8 @@ const novasColunas = [
   ['valor_cobrar', 'REAL'],
   ['forma_pagamento', "TEXT DEFAULT ''"],
   ['troco_para', 'REAL'],
+  ['quantidade_marmitas', 'INTEGER DEFAULT 1'],
+  ['cpf_vivendas', "TEXT DEFAULT ''"],
   ['codigo_rastreio', 'TEXT'],
   ['chave_idempotencia', 'TEXT']
 ]
@@ -163,6 +165,17 @@ for (const [nomeColuna, definicao] of novasColunas) {
     db.prepare(`ALTER TABLE pedidos ADD COLUMN ${nomeColuna} ${definicao}`).run()
     console.log(`Coluna "${nomeColuna}" adicionada na tabela pedidos.`)
   }
+}
+
+// Reconhece CPFs usados anteriormente no campo único "código ou CPF".
+const pedidosVivendasAntigos = db.prepare(`
+  SELECT id, codigo_vivendas FROM pedidos
+  WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''
+`).all()
+const salvarCpfAntigo = db.prepare('UPDATE pedidos SET cpf_vivendas = ? WHERE id = ?')
+for (const pedido of pedidosVivendasAntigos) {
+  const cpf = String(pedido.codigo_vivendas || '').replace(/\D/g, '')
+  if (cpf.length === 11) salvarCpfAntigo.run(cpf, pedido.id)
 }
 
 db.exec(`
@@ -394,6 +407,13 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
     }
   }
 
+  const quantidadeMarmitas = req.body.quantidade_marmitas === undefined
+    ? 1
+    : Number(req.body.quantidade_marmitas)
+  if (!Number.isInteger(quantidadeMarmitas) || quantidadeMarmitas < 1 || quantidadeMarmitas > 20) {
+    return res.status(400).json({ erro: 'A quantidade de marmitas deve ser entre 1 e 20.' })
+  }
+
   const {
     nome,
     loja,
@@ -417,6 +437,28 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   } = req.body
 
   const ehClienteComum = origem === 'cliente_comum'
+  const identificadorVivendas = String(req.body.codigo_vivendas || codigo || '').trim()
+  const digitosIdentificador = identificadorVivendas.replace(/\D/g, '')
+  const cpfVivendas = !ehClienteComum && digitosIdentificador.length === 11 ? digitosIdentificador : ''
+
+  if (!ehClienteComum && quantidadeMarmitas !== 1) {
+    return res.status(400).json({ erro: 'No convênio Vivendas, é permitido pedir apenas uma marmita por CPF.' })
+  }
+
+  if (!ehClienteComum && cpfVivendas) {
+    const cpfJaUsado = db.prepare(`
+      SELECT 1 FROM pedidos WHERE origem = 'vivendas' AND cpf_vivendas = ? LIMIT 1
+    `).get(cpfVivendas)
+    if (cpfJaUsado) return res.status(409).json({ erro: 'Este CPF já foi utilizado em um pedido Vivendas.' })
+  } else if (!ehClienteComum && identificadorVivendas) {
+    const codigoJaUsado = db.prepare(`
+      SELECT 1 FROM pedidos
+      WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''
+        AND codigo_vivendas = ? COLLATE NOCASE
+      LIMIT 1
+    `).get(identificadorVivendas)
+    if (codigoJaUsado) return res.status(409).json({ erro: 'Este código já foi utilizado em um pedido Vivendas.' })
+  }
 
   // Regra de pagamento:
   // - Vivendas: marmita é coberta pelo convênio; paga só a bebida (se houver).
@@ -514,17 +556,19 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
         troco_para,
         observacao,
         preco,
+        quantidade_marmitas,
+        cpf_vivendas,
         status,
         codigo_rastreio,
         chave_idempotencia
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     const resultado = criarPedido.run(
       nome,
       ehClienteComum ? '' : loja,
-      ehClienteComum ? '' : codigo,
+      ehClienteComum ? '' : identificadorVivendas,
       ehClienteComum ? telefone : '',
       ehClienteComum ? (tipo_entrega || 'retirada') : '',
       ehClienteComum && tipo_entrega === 'entrega' ? endereco : '',
@@ -542,6 +586,8 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       trocoPara,
       observacao || '',
       precoFinal,
+      quantidadeMarmitas,
+      cpfVivendas,
       'aguardando',
       codigoRastreio,
       chaveIdempotencia

@@ -116,6 +116,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
       loja: loja.trim(),
       codigo: codigo.trim(),
       codigo_vivendas: codigo.trim(),
+      quantidade_marmitas: 1,
       tipo_entrega: 'loja',
       endereco: '',
       regiao_entrega: '',
