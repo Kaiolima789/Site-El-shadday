@@ -252,7 +252,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
                   rel="noopener noreferrer"
                   aria-label="Consultar e obter o código Vivendas (abre em nova aba)"
                 >
-                  Consulte aqui
+                  Valide aqui
                 </a>
               </p>
             </div>
