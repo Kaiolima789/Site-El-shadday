@@ -34,7 +34,10 @@ function tempoDecorrido(criadoEm) {
 
 function dataLocalDoPedido(criadoEm) {
   if (!criadoEm) return ''
-  const d = new Date(criadoEm.includes('T') ? criadoEm : `${criadoEm.replace(' ', 'T')}Z`)
+  // O SQLite grava CURRENT_TIMESTAMP em UTC sem sufixo. Converter esse instante
+  // para o fuso local antes de agrupar por dia evita esconder pedidos noturnos.
+  const valor = criadoEm.includes('T') ? criadoEm : `${criadoEm.replace(' ', 'T')}Z`
+  const d = new Date(valor)
   if (Number.isNaN(d.getTime())) return ''
   const partes = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d)
   const valores = Object.fromEntries(partes.map(({ type, value }) => [type, value]))
@@ -44,10 +47,8 @@ function dataLocalDoPedido(criadoEm) {
 const CHAVE_DATA_PEDIDOS = 'admin_pedidos_data_selecionada'
 
 function dataInicialPedidos() {
-  try {
-    const salva = window.localStorage.getItem(CHAVE_DATA_PEDIDOS)
-    if (salva && /^\d{4}-\d{2}-\d{2}$/.test(salva)) return salva
-  } catch {}
+  // Ao abrir a tela, começar no dia atual para que pedidos novos não fiquem
+  // escondidos por uma data antiga salva no navegador.
   return hojeLocal()
 }
 
@@ -651,6 +652,11 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             >
               →
             </button>
+            {dataSelecionada !== hojeLocal() && (
+              <button type="button" onClick={() => setDataSelecionada(hojeLocal())}>
+                Hoje
+              </button>
+            )}
           </div>
 
           <div className="pedidos-abas">
