@@ -244,6 +244,17 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
               />
+              <p className="vivendas-ajuda-codigo">
+                Ainda não tem o código?{' '}
+                <a
+                  href="https://refeicao.supervs.com.br:8443/c/ad18451b110245618ab814ee84ba516d"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Consultar e obter o código Vivendas (abre em nova aba)"
+                >
+                  Consulte aqui
+                </a>
+              </p>
             </div>
 
             {/* AVISO DO BENEFÍCIO */}

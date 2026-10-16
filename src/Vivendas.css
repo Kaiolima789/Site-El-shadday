@@ -163,6 +163,24 @@
   box-shadow: 0 0 0 3px rgba(110, 38, 54, 0.08);
 }
 
+.vivendas-ajuda-codigo {
+  margin: 7px 2px 0;
+  color: #5C4A42;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.vivendas-ajuda-codigo a {
+  color: #6E2636;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.vivendas-ajuda-codigo a:hover {
+  color: #551D29;
+}
+
 .vivendas-campo textarea {
   min-height: 70px;
   resize: vertical;
