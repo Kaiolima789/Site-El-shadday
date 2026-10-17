@@ -448,12 +448,13 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <title>Comanda #${pedido.id}</title>
           <style>
             @page {
+              size: 80mm auto;
               margin: 0;
             }
             @media print {
               html, body {
-                width: 48mm;
-                max-width: 48mm;
+                width: 80mm;
+                max-width: 80mm;
                 margin: 0 !important;
                 padding: 0 !important;
               }
@@ -469,10 +470,10 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               line-height: 1.25;
               color: #000;
               background: #fff;
-              width: 48mm;
-              max-width: 48mm;
+              width: 80mm;
+              max-width: 80mm;
               margin: 0;
-              padding: 2mm 1mm;
+              padding: 2mm 3mm;
             }
             .cabecalho {
               text-align: center;
