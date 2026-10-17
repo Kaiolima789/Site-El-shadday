@@ -453,8 +453,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             @media print {
               html, body {
-                width: 80mm;
-                max-width: 80mm;
+                width: 100% !important;
+                max-width: none !important;
                 margin: 0 !important;
                 padding: 0 !important;
               }
@@ -471,10 +471,10 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               line-height: 1.2;
               color: #000;
               background: #fff;
-              width: 80mm;
-              max-width: 80mm;
+              width: 100%;
+              max-width: none;
               margin: 0;
-              padding: 1mm 1mm;
+              padding: 1mm 2mm;
             }
             .cabecalho {
               text-align: center;
@@ -493,12 +493,12 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               font-weight: 700;
             }
             .divisor {
-              letter-spacing: 0;
-              overflow: hidden;
-              white-space: nowrap;
-              margin: 2px 0;
-              font-size: 11px;
-              font-weight: 700;
+              width: 100%;
+              height: 0;
+              border-top: 1px dashed #000;
+              margin: 3px 0;
+              font-size: 0;
+              line-height: 0;
             }
             .item-linha {
               margin: 1px 0;
