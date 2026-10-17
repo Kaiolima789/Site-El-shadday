@@ -453,8 +453,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             @media print {
               html, body {
-                width: 100% !important;
-                max-width: none !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
               }
@@ -465,34 +465,34 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               padding: 0;
             }
             body {
-              font-family: Arial, 'Courier New', monospace;
-              font-size: 12px;
-              font-weight: 700;
-              -webkit-text-stroke: 0.25px #000;
-              text-shadow: 0 0 0.35px #000;
-              line-height: 1.2;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+              font-weight: 900;
+              -webkit-text-stroke: 0.35px #000;
+              text-shadow: 0 0 0.5px #000;
+              line-height: 1.25;
               color: #000;
               background: #fff;
-              width: 100%;
-              max-width: none;
-              margin: 0;
-              padding: 1mm 2mm;
+              width: 80mm;
+              max-width: 80mm;
+              margin: 0 auto;
+              padding: 2mm;
             }
             .cabecalho {
               text-align: center;
               margin-bottom: 2px;
             }
             .titulo {
-              font-size: 14px;
-              letter-spacing: -0.5px;
+              font-size: 16px;
+              font-weight: 900;
             }
             .subtitulo {
-              font-size: 12px;
-              font-weight: 700;
+              font-size: 14px;
+              font-weight: 900;
             }
             .origem {
-              font-size: 12px;
-              font-weight: 700;
+              font-size: 14px;
+              font-weight: 900;
             }
             .divisor {
               width: 100%;
@@ -511,13 +511,14 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             .total {
               font-weight: bold;
-              font-size: 13px;
-              text-align: right;
+              font-size: 15px;
+              text-align: center;
+              font-weight: 900;
               margin-top: 3px;
             }
             .rodape {
               text-align: center;
-              font-size: 9px;
+              font-size: 11px;
               margin-top: 4px;
               padding-bottom: 2mm;
             }
@@ -530,7 +531,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             <div class="origem">${limparTexto(rotuloOrigem(pedido).toUpperCase())}</div>
           </div>
 
-          <div class="divisor">--------------------------------</div>
+          <div class="divisor"></div>
 
           <div class="item-linha"><strong>Cliente:</strong> ${limparTexto(pedido.nome)}</div>
           <div class="item-linha"><strong>Telefone:</strong> ${formatarTelefone(pedido.telefone) || '-'}</div>
@@ -538,18 +539,18 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           ${ehClienteComum(pedido) && pedido.tipo_entrega === 'retirada' ? `<div class="item-linha"><strong>Entrega:</strong> Retirada no local</div>` : ''}
           ${!ehClienteComum(pedido) ? `<div class="item-linha"><strong>Loja:</strong> ${limparTexto(pedido.loja)} - <strong>Codigo:</strong>${limparTexto(pedido.codigo_vivendas)}</div>` : ''}
 
-          <div class="divisor">--------------------------------</div>
+          <div class="divisor"></div>
 
           <div class="item-linha"><strong>ITENS:</strong></div>
           ${ehClienteComum(pedido) ? marmitasDoPedido.map((marmita, indice) => `<div class="item-linha"><strong>Marmita ${indice + 1}</strong></div>${marmita.carne ? `<div class="item-linha">- Proteina: ${limparTexto(marmita.carne)}</div>` : ''}${marmita.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(marmita.guarnicao)}</div>` : ''}${textoBebidaMarmita(marmita) ? `<div class="item-linha">- Bebida: ${limparTexto(textoBebidaMarmita(marmita))}</div>` : ''}`).join('') : `${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}`}
           ${pedido.observacao ? `<div class="item-linha">- Obs: ${limparTexto(pedido.observacao)}</div>` : ''}
 
-          <div class="divisor">--------------------------------</div>
+          <div class="divisor"></div>
 
           <div class="total">TOTAL A PAGAR: ${formatarReais(total)}</div>
           ${pedido.forma_pagamento ? `<div class="item-linha">Pagamento: ${limparTexto(rotuloPagamento(pedido.forma_pagamento))}</div>` : ''}
 
-          <div class="divisor">--------------------------------</div>
+          <div class="divisor"></div>
           <div class="rodape">${new Date().toLocaleString('pt-BR')}</div>
         </body>
       </html>
