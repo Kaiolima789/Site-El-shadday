@@ -468,6 +468,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               font-family: Arial, 'Courier New', monospace;
               font-size: 12px;
               font-weight: 700;
+              -webkit-text-stroke: 0.25px #000;
+              text-shadow: 0 0 0.35px #000;
               line-height: 1.2;
               color: #000;
               background: #fff;
@@ -504,6 +506,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               margin: 1px 0;
               word-break: break-word;
               font-weight: 700;
+              -webkit-text-stroke: 0.25px #000;
+              text-shadow: 0 0 0.35px #000;
             }
             .total {
               font-weight: bold;
