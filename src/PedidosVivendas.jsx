@@ -465,46 +465,45 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               padding: 0;
             }
             body {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 11px;
-              line-height: 1.25;
+              font-family: Arial, 'Courier New', monospace;
+              font-size: 12px;
+              font-weight: 700;
+              line-height: 1.2;
               color: #000;
               background: #fff;
               width: 80mm;
               max-width: 80mm;
               margin: 0;
-              padding: 2mm 3mm;
+              padding: 1mm 1mm;
             }
             .cabecalho {
               text-align: center;
               margin-bottom: 2px;
             }
             .titulo {
-              font-size: 12px;
-              font-weight: bold;
+              font-size: 14px;
               letter-spacing: -0.5px;
             }
             .subtitulo {
-              font-size: 11px;
+              font-size: 12px;
             }
             .origem {
-              font-weight: bold;
-              font-size: 11px;
+              font-size: 12px;
             }
             .divisor {
-              letter-spacing: -1px;
+              letter-spacing: 0;
               overflow: hidden;
               white-space: nowrap;
-              margin: 3px 0;
-              font-size: 10px;
+              margin: 2px 0;
+              font-size: 11px;
             }
             .item-linha {
-              margin: 2px 0;
+              margin: 1px 0;
               word-break: break-word;
             }
             .total {
               font-weight: bold;
-              font-size: 12px;
+              font-size: 13px;
               text-align: right;
               margin-top: 3px;
             }
