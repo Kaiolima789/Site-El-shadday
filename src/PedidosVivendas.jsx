@@ -251,6 +251,15 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       oscilador.start(inicio)
       oscilador.stop(inicio + 0.3)
     })
+
+    if ('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) {
+      const avisoFalado = new SpeechSynthesisUtterance('Pedido na tela')
+      avisoFalado.lang = 'pt-BR'
+      avisoFalado.rate = 1
+      avisoFalado.pitch = 1
+      avisoFalado.volume = 1
+      window.speechSynthesis.speak(avisoFalado)
+    }
   }
 
   useEffect(() => {
