@@ -486,9 +486,11 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             .subtitulo {
               font-size: 12px;
+              font-weight: 700;
             }
             .origem {
               font-size: 12px;
+              font-weight: 700;
             }
             .divisor {
               letter-spacing: 0;
@@ -496,10 +498,12 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               white-space: nowrap;
               margin: 2px 0;
               font-size: 11px;
+              font-weight: 700;
             }
             .item-linha {
               margin: 1px 0;
               word-break: break-word;
+              font-weight: 700;
             }
             .total {
               font-weight: bold;
