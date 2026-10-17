@@ -159,6 +159,7 @@ function dataHojeLocal() {
 function Marmitas({ voltar, continuar }) {
   const [carne, setCarne] = useState([])
   const [guarnicao, setGuarnicao] = useState([])
+  const [observacaoMarmita, setObservacaoMarmita] = useState('')
   const [marmitasSelecionadas, setMarmitasSelecionadas] = useState([])
 
   // ===== SISTEMA MULTI-BEBIDAS =====
@@ -252,6 +253,7 @@ function Marmitas({ voltar, continuar }) {
   function limparEscolhas() {
     setCarne([])
     setGuarnicao([])
+    setObservacaoMarmita('')
     setBebidas([])
     setAbaBebida('nenhuma')
     setSaborCustomAtivo(false)
@@ -405,6 +407,7 @@ function Marmitas({ voltar, continuar }) {
     return {
       carne: carne.join(', '),
       guarnicao: guarnicao.join(', '),
+      observacao: observacaoMarmita.trim(),
       refrigerante_sabor: nomesRefris,
       refrigerante_tamanho: bebidas.filter((b) => b.tipo === 'refrigerante').map((b) => b.tamanho).join(', '),
       agua_tipo: nomesAguas,
@@ -560,13 +563,31 @@ function Marmitas({ voltar, continuar }) {
           </div>
         </section>
 
-        {/* PASSO 3: BEBIDAS */}
+        <section className="escolha escolha-observacao">
+          <div className="escolha-cabecalho">
+            <div className="escolha-icon" aria-hidden="true">✎</div>
+            <h3>3. Observação desta marmita (opcional)</h3>
+          </div>
+          <div className="escolha-conteudo">
+            <textarea
+              className="marmita-observacao-input"
+              value={observacaoMarmita}
+              onChange={(evento) => setObservacaoMarmita(evento.target.value)}
+              placeholder="Ex.: sem salada, molho à parte..."
+              maxLength={500}
+              rows={3}
+              aria-label="Observação desta marmita"
+            />
+          </div>
+        </section>
+
+        {/* PASSO 4: BEBIDAS */}
         <section className="escolha escolha-bebida">
           <div className="escolha-cabecalho">
             <div className="escolha-icon">
               <IconeBebida size={18} />
             </div>
-            <h3>3. Escolha sua bebida (opcional)</h3>
+            <h3>4. Escolha sua bebida (opcional)</h3>
           </div>
 
           <div className="escolha-conteudo">
@@ -789,6 +810,7 @@ function Marmitas({ voltar, continuar }) {
                   {marmita.carne && <span className="resumo-pill-tag">{marmita.carne}</span>}
                   {marmita.guarnicao && <span className="resumo-pill-tag">{marmita.guarnicao}</span>}
                 </div>
+                {marmita.observacao && <p className="resumo-marmita-observacao">Obs.: {marmita.observacao}</p>}
                 {(marmita.refrigerante_sabor || marmita.agua_tipo) && (
                   <p className="resumo-marmita-bebida">Bebida: {[marmita.refrigerante_sabor, marmita.agua_tipo].filter(Boolean).join(' + ')}</p>
                 )}
@@ -819,6 +841,9 @@ function Marmitas({ voltar, continuar }) {
                 </span>
               )}
             </div>
+            {observacaoMarmita.trim() && (
+              <p className="resumo-marmita-observacao">Obs.: {observacaoMarmita.trim()}</p>
+            )}
 
             {/* LISTA DE TODAS AS BEBIDAS ADICIONADAS */}
             {bebidas.length === 0 && (

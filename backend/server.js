@@ -451,7 +451,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
         if (!item || typeof item !== 'object' || Array.isArray(item)) {
           return res.status(400).json({ erro: 'Uma das marmitas do pedido está inválida.' })
         }
-        for (const campo of ['carne', 'guarnicao', 'refrigerante_sabor', 'refrigerante_tamanho', 'agua_tipo']) {
+        for (const campo of ['carne', 'guarnicao', 'refrigerante_sabor', 'refrigerante_tamanho', 'agua_tipo', 'observacao']) {
           if (item[campo] !== undefined && (typeof item[campo] !== 'string' || item[campo].length > 500)) {
             return res.status(400).json({ erro: `Os detalhes da marmita (${campo}) são inválidos.` })
           }
@@ -460,6 +460,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       marmitasDetalhadas = itensRecebidos.map((item) => ({
         carne: String(item.carne || '').trim(),
         guarnicao: String(item.guarnicao || '').trim(),
+        observacao: String(item.observacao || '').trim(),
         refrigerante_sabor: String(item.refrigerante_sabor || '').trim(),
         refrigerante_tamanho: String(item.refrigerante_tamanho || '').trim(),
         agua_tipo: String(item.agua_tipo || '').trim(),

@@ -542,7 +542,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <div class="divisor"></div>
 
           <div class="item-linha"><strong>ITENS:</strong></div>
-          ${ehClienteComum(pedido) ? marmitasDoPedido.map((marmita, indice) => `<div class="item-linha"><strong>Marmita ${indice + 1}</strong></div>${marmita.carne ? `<div class="item-linha">- Proteina: ${limparTexto(marmita.carne)}</div>` : ''}${marmita.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(marmita.guarnicao)}</div>` : ''}${textoBebidaMarmita(marmita) ? `<div class="item-linha">- Bebida: ${limparTexto(textoBebidaMarmita(marmita))}</div>` : ''}`).join('') : `${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}`}
+          ${ehClienteComum(pedido) ? marmitasDoPedido.map((marmita, indice) => `<div class="item-linha"><strong>Marmita ${indice + 1}</strong></div>${marmita.carne ? `<div class="item-linha">- Proteina: ${limparTexto(marmita.carne)}</div>` : ''}${marmita.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(marmita.guarnicao)}</div>` : ''}${marmita.observacao ? `<div class="item-linha">- Obs.: ${limparTexto(marmita.observacao)}</div>` : ''}${textoBebidaMarmita(marmita) ? `<div class="item-linha">- Bebida: ${limparTexto(textoBebidaMarmita(marmita))}</div>` : ''}`).join('') : `${carne ? `<div class="item-linha">- Proteina: ${limparTexto(carne)}</div>` : ''}${pedido.guarnicao ? `<div class="item-linha">- Guarnicoes: ${limparTexto(pedido.guarnicao)}</div>` : ''}${bebida ? `<div class="item-linha">- Bebida: ${limparTexto(bebida)}</div>` : ''}`}
           ${pedido.observacao ? `<div class="item-linha">- Obs: ${limparTexto(pedido.observacao)}</div>` : ''}
 
           <div class="divisor"></div>
@@ -788,6 +788,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                       <strong>Marmita {indice + 1}</strong>
                       {marmita.carne && <p>Proteína: {marmita.carne}</p>}
                       {marmita.guarnicao && <p>Guarnições: {marmita.guarnicao}</p>}
+                      {marmita.observacao && <p><strong>Obs. da marmita:</strong> {marmita.observacao}</p>}
                       {textoBebidaMarmita(marmita) && <p>Bebida: {textoBebidaMarmita(marmita)}</p>}
                     </div>
                   )) : <>

@@ -342,6 +342,7 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
                     {marmita.carne && <span className="cc-resumo-tag">{marmita.carne}</span>}
                     {marmita.guarnicao && <span className="cc-resumo-tag">{marmita.guarnicao}</span>}
                   </div>
+                  {marmita.observacao && <p className="cc-marmita-bebida">Obs. da marmita: {marmita.observacao}</p>}
                   {detalheBebidaResumo(marmita) && <p className="cc-marmita-bebida">Bebida: {detalheBebidaResumo(marmita)}</p>}
                 </div>
               ))}
