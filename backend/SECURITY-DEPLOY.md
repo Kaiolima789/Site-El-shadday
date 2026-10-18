@@ -18,6 +18,16 @@ For the Render API service, use `/var/data` as the disk mount path and set `DATA
 
 Persistent disks are available only for paid Render services, cost extra per GB-month, and cause a few seconds of downtime when attached. Check the current plan and total price in the Render dashboard before adding one. A Render disk also cannot be shared across scaled service instances.
 
+## Database backups
+
+Run `npm run backup` from `backend` to create a consistent SQLite backup using the SQLite backup API (including pending WAL changes). Set `BACKUP_DIR` to a directory on the persistent disk, such as `/var/data/backups`, and schedule the command with an external scheduler. A backup stored on the same disk protects against accidental database changes, but not disk loss; copy backups to a separate storage account and periodically verify a restore.
+
+The repository does not configure a scheduler or external storage credentials. Confirm that scheduled backups are running and retain at least one copy outside Render before treating the production database as backed up.
+
+## Order prices
+
+The API calculates meal prices from today's active menu, beverage prices from the server's fixed price list, and delivery fees from the selected region. Prices submitted by the browser are not used as the amount to charge. Keep the server beverage price list in sync when changing the prices shown in the frontend.
+
 For local development, the database path remains relative to the process working directory for compatibility with the current setup. Start the backend from the `backend` directory; the example value `./elshadday.db` assumes that working directory.
 
 ## Admin sessions

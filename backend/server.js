@@ -331,6 +331,35 @@ function responderPedidoExistente(res, pedido) {
   })
 }
 
+const PRECOS_BEBIDAS = new Map([
+  ['lata', 5], ['600 ml', 7.5], ['600ml', 7.5], ['2 litros', 12], ['2l', 12],
+  ['água sem gás', 3], ['agua sem gas', 3], ['água com gás', 3.5], ['agua com gas', 3.5]
+])
+
+function precosBebidasValidos(itens) {
+  let total = 0
+  for (const marmita of itens) {
+    if (!Array.isArray(marmita?.bebidas)) continue
+    for (const bebida of marmita.bebidas) {
+      const quantidade = Number(bebida?.quantidade)
+      if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > 10) return { erro: 'A quantidade de uma bebida é inválida.' }
+      const chave = bebida?.tipo === 'refrigerante'
+        ? String(bebida?.tamanho || '').trim().toLocaleLowerCase('pt-BR')
+        : bebida?.tipo === 'agua'
+          ? String(bebida?.nome || '').trim().toLocaleLowerCase('pt-BR')
+          : ''
+      const unitario = PRECOS_BEBIDAS.get(chave)
+      if (unitario === undefined) return { erro: 'Uma bebida do pedido não é válida.' }
+      total += unitario * quantidade
+    }
+  }
+  return { total: Math.round(total * 100) / 100 }
+}
+
+function dataLocalSaoPaulo() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+}
+
 app.post('/pedidos', limitarPedidos, (req, res) => {
   const chaveRecebida = req.get('Idempotency-Key')
   if (chaveRecebida && !/^[a-f0-9]{32}$/i.test(chaveRecebida)) {
@@ -528,7 +557,24 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       : valorBebida
   }
 
-  const precoFinal = Number(preco) || valorCobrar || (valorMarmita + valorBebida)
+  const precosBebidas = precosBebidasValidos(Array.isArray(req.body.marmitas) ? req.body.marmitas : [])
+  if (precosBebidas.erro) return res.status(400).json({ erro: precosBebidas.erro })
+  valorBebida = precosBebidas.total
+  const cardapioHoje = db.prepare('SELECT preco FROM cardapios WHERE data = ? AND ativo = 1').get(dataLocalSaoPaulo())
+  valorMarmita = Number(cardapioHoje?.preco ?? 10) * (ehClienteComum ? marmitasDetalhadas.length : 1)
+  if (ehClienteComum) {
+    marmitasDetalhadas = marmitasDetalhadas.map((item, indice) => ({
+      ...item,
+      preco_marmita: Number(cardapioHoje?.preco ?? 10),
+      preco_bebida: precosBebidasValidos([Array.isArray(req.body.marmitas) ? req.body.marmitas[indice] : {}]).total
+    }))
+  }
+  const taxaEntrega = ehClienteComum && tipo_entrega === 'entrega'
+    ? ({ 'Santa Maria Sul': 3, 'Santa Maria Norte': 5, 'Novo Gama': 7, Gama: 10, 'Demais Regiões': 15 }[String(req.body.regiao_entrega || '').trim()] ?? null)
+    : 0
+  if (taxaEntrega === null) return res.status(400).json({ erro: 'A região de entrega é inválida.' })
+  valorCobrar = ehClienteComum ? valorMarmita + valorBebida + taxaEntrega : valorBebida
+  const precoFinal = valorMarmita + valorBebida
 
   if (ehClienteComum) {
     if (!nome || !telefone || preco === undefined || preco === null) {
