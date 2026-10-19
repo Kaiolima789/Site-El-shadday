@@ -8,11 +8,13 @@ The production frontend origin is allowed by default. If the site uses another d
 
 ## Render health check
 
-In the Render API service settings, set the health check path to `/health`. This endpoint verifies both that the API is responding and that SQLite can execute a query. It does not expose database contents.
+In the Render API service settings, set the health check path to `/health`. This endpoint verifies that the API can execute a query against its configured database. It does not expose database contents.
 
-## PostgreSQL on Render
+## PostgreSQL on Supabase
 
-When `DATABASE_URL` is set, the API uses PostgreSQL. For the Render API, set `DATABASE_URL` to the database's **internal** connection string and keep the API and database in the same region. Leave `DATABASE_URL` unset for local SQLite development. Never commit a real connection string.
+When `DATABASE_URL` is set, the API uses PostgreSQL, including Supabase Postgres. Leave it unset for local SQLite development. Never commit a real connection string.
+
+For a backend that runs continuously on Render, use Supabase's **Session pooler** connection string when the direct connection is unavailable (for example, due to IPv4 compatibility). Do not use the Transaction pooler for this app: the API uses explicit database transactions for menu updates and SQLite imports. Copy the connection string from Supabase **Connect** and keep its SSL requirement (`sslmode=require`) intact. The same URL can be used from your computer for the initial import and from Render after cutover; store it only in environment variables.
 
 PostgreSQL is the recommended production database for concurrent orders and future API scaling. Before scaling the API to multiple instances, use PostgreSQL and confirm that all shared state is in the database; admin sessions are stored there, while per-IP rate limits are still process-local.
 
@@ -20,15 +22,15 @@ PostgreSQL is the recommended production database for concurrent orders and futu
 
 Do not set `DATABASE_URL` on the live API until the current production SQLite database has been copied and imported. Pointing the API at an empty PostgreSQL database makes menus and orders appear missing.
 
-1. Create a Render PostgreSQL database and keep the API service running on SQLite for now. Check current pricing and recovery options in Render before choosing a plan.
+1. Create a Supabase project and keep the API service running on SQLite for now. Choose the Supabase Session pooler URL for a persistent Render backend.
 2. Create and verify a SQLite backup from the **production database**, then copy that backup to a trusted machine. Do not assume the local development database contains production orders.
-3. From `backend`, set `DATABASE_URL` to the PostgreSQL external connection string for the one-time import and set `DATABASE_SOURCE_PATH` to the copied SQLite file. Run `npm run migrate:postgres` with `CONFIRM_POSTGRES_IMPORT=YES`. The importer refuses a PostgreSQL database that already contains rows and imports the menu and order tables in a transaction.
-4. Verify menu and order counts and sample records in PostgreSQL before cutover. For a consistent final cutover, pause new orders, take a final SQLite backup, import it into a clean PostgreSQL database, set the Render API's `DATABASE_URL` to the PostgreSQL **internal** URL, redeploy, and verify `/health`, menu loading, order submission, and the admin queue. Resume orders after verification.
+3. From `backend`, set `DATABASE_URL` to the Supabase Session pooler connection string and `DATABASE_SOURCE_PATH` to the copied SQLite file. Run `npm run migrate:postgres` with `CONFIRM_POSTGRES_IMPORT=YES`. The importer refuses a PostgreSQL database that already contains rows and imports the menu and order tables in a transaction.
+4. Verify menu and order counts and sample records in Supabase before cutover. For a consistent final cutover, pause new orders, take a final SQLite backup, import it into a clean Supabase project, set the Render API's `DATABASE_URL` to the same Supabase Session pooler connection string, redeploy, and verify `/health`, menu loading, order submission, and the admin queue. Resume orders after verification.
 5. Keep the SQLite source and its backup unchanged until the PostgreSQL service is verified in production.
 
 ## PostgreSQL backups
 
-The SQLite daily backup scheduler runs only when the API is using SQLite. PostgreSQL backups are managed by Render according to the selected database plan. Check the database's Recovery page after setup; Render documents point-in-time recovery for paid databases and logical exports. For long-term offsite retention, configure a separate export destination and periodically verify a restore.
+The SQLite daily backup scheduler runs only when the API is using SQLite. Configure and review Supabase's database backups and recovery options in the Supabase dashboard for the selected plan. For long-term offsite retention, configure a separate export destination and periodically verify a restore.
 
 ## Order prices
 
