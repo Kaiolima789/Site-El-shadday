@@ -226,6 +226,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   const proximoCursorRef = useRef('')
   const historicoCarregadoRef = useRef(false)
   const pedidosConhecidosRef = useRef(null)
+  const carregamentoPedidosRef = useRef(false)
   const contextoAudioRef = useRef(null)
   const alertaPendenteRef = useRef(false)
 
@@ -307,6 +308,8 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   }
 
   async function carregarPedidos(mostrarErro = true, cursor = '', carregarMais = false) {
+    if (carregamentoPedidosRef.current) return
+    carregamentoPedidosRef.current = true
     try {
       const parametroCursor = cursor ? `&beforeId=${encodeURIComponent(cursor)}` : ''
       const resposta = await requisicaoAdmin(`${API_URL}/pedidos?limit=100${parametroCursor}`)
@@ -350,6 +353,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       setApiStatus('offline')
       if (mostrarErro) alert('N\u00e3o foi poss\u00edvel carregar os pedidos.')
     } finally {
+      carregamentoPedidosRef.current = false
       setCarregando(false)
       setCarregandoMais(false)
     }
@@ -358,8 +362,9 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   useEffect(() => {
     carregarPedidos()
     const intervalo = setInterval(() => {
+      if (document.visibilityState === 'hidden') return
       carregarPedidos(false)
-    }, 8000)
+    }, 15000)
     return () => clearInterval(intervalo)
   }, [])
 

@@ -202,7 +202,10 @@ function Marmitas({ voltar, continuar }) {
 
     carregarCardapio()
 
+    let buscandoCardapio = false
     const intervalo = setInterval(async () => {
+      if (document.visibilityState === 'hidden' || buscandoCardapio) return
+      buscandoCardapio = true
       try {
         const resposta = await fetch(`${API_URL}/cardapios/${dataHojeLocal()}`)
         if (resposta.ok) {
@@ -210,8 +213,10 @@ function Marmitas({ voltar, continuar }) {
         }
       } catch (e) {
         // falha silenciosa em segundo plano
+      } finally {
+        buscandoCardapio = false
       }
-    }, 15000)
+    }, 60000)
 
     return () => clearInterval(intervalo)
   }, [])

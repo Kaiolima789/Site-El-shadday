@@ -10,19 +10,25 @@ The production frontend origin is allowed by default. If the site uses another d
 
 In the Render API service settings, set the health check path to `/health`. This endpoint verifies both that the API is responding and that SQLite can execute a query. It does not expose database contents.
 
-## Database persistence
+## PostgreSQL on Render
 
-For the Render API service, use `/var/data` as the disk mount path and set `DATABASE_PATH` to `/var/data/elshadday.db`. Render preserves only files under the disk mount path.
+When `DATABASE_URL` is set, the API uses PostgreSQL. For the Render API, set `DATABASE_URL` to the database's **internal** connection string and keep the API and database in the same region. Leave `DATABASE_URL` unset for local SQLite development. Never commit a real connection string.
 
-**Do not attach a new empty disk or change `DATABASE_PATH` until the current live database has been backed up and copied to `/var/data/elshadday.db`.** Mounting an empty disk hides files previously at that path, and pointing the API at a new empty database makes existing orders and menus appear missing. Keep a separate backup and verify the restored database before considering the migration complete.
+PostgreSQL is the recommended production database for concurrent orders and future API scaling. Before scaling the API to multiple instances, use PostgreSQL and confirm that all shared state is in the database; admin sessions are stored there, while per-IP rate limits are still process-local.
 
-Persistent disks are available only for paid Render services, cost extra per GB-month, and cause a few seconds of downtime when attached. Check the current plan and total price in the Render dashboard before adding one. A Render disk also cannot be shared across scaled service instances.
+## Migrating existing SQLite data
 
-## Database backups
+Do not set `DATABASE_URL` on the live API until the current production SQLite database has been copied and imported. Pointing the API at an empty PostgreSQL database makes menus and orders appear missing.
 
-Run `npm run backup` from `backend` to create a consistent SQLite backup using the SQLite backup API (including pending WAL changes). Set `BACKUP_DIR` to a directory on the persistent disk, such as `/var/data/backups`, and schedule the command with an external scheduler. A backup stored on the same disk protects against accidental database changes, but not disk loss; copy backups to a separate storage account and periodically verify a restore.
+1. Create a Render PostgreSQL database and keep the API service running on SQLite for now. Check current pricing and recovery options in Render before choosing a plan.
+2. Create and verify a SQLite backup from the **production database**, then copy that backup to a trusted machine. Do not assume the local development database contains production orders.
+3. From `backend`, set `DATABASE_URL` to the PostgreSQL external connection string for the one-time import and set `DATABASE_SOURCE_PATH` to the copied SQLite file. Run `npm run migrate:postgres` with `CONFIRM_POSTGRES_IMPORT=YES`. The importer refuses a PostgreSQL database that already contains rows and imports the menu and order tables in a transaction.
+4. Verify menu and order counts and sample records in PostgreSQL before cutover. For a consistent final cutover, pause new orders, take a final SQLite backup, import it into a clean PostgreSQL database, set the Render API's `DATABASE_URL` to the PostgreSQL **internal** URL, redeploy, and verify `/health`, menu loading, order submission, and the admin queue. Resume orders after verification.
+5. Keep the SQLite source and its backup unchanged until the PostgreSQL service is verified in production.
 
-The repository does not configure a scheduler or external storage credentials. Confirm that scheduled backups are running and retain at least one copy outside Render before treating the production database as backed up.
+## PostgreSQL backups
+
+The SQLite daily backup scheduler runs only when the API is using SQLite. PostgreSQL backups are managed by Render according to the selected database plan. Check the database's Recovery page after setup; Render documents point-in-time recovery for paid databases and logical exports. For long-term offsite retention, configure a separate export destination and periodically verify a restore.
 
 ## Order prices
 
@@ -32,4 +38,4 @@ For local development, the database path remains relative to the process working
 
 ## Admin sessions
 
-The login route issues an eight-hour in-memory session. Restarting or redeploying the API invalidates all admin sessions, so the owner will need to log in again. Admin tokens stay in the current browser tab's `sessionStorage` and are never embedded in the frontend build.
+The login route issues an eight-hour session stored in the configured database, so it works across API instances and survives restarts until expiration or logout. Admin tokens stay in the current browser tab's `sessionStorage` and are never embedded in the frontend build. Login and order rate limits are still process-local; keep one API instance until those limits are moved to shared storage or an edge provider.

@@ -112,6 +112,7 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
   )
 
   const statusAnteriorRef = useRef(pedidoInicial?.status || (pedidoInicial?.id ? 'aguardando' : null))
+  const buscaEmAndamentoRef = useRef(false)
 
   // Recupera pedido salvo no navegador em caso de recarregamento
   const pedidoSalvo = (typeof window !== 'undefined' && localStorage.getItem('ultimo_pedido'))
@@ -146,6 +147,8 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
   }
 
   async function buscarPedido() {
+    if (buscaEmAndamentoRef.current || document.visibilityState === 'hidden') return
+    buscaEmAndamentoRef.current = true
     try {
       const codigoOuId = encodeURIComponent(pedidoId)
       const rota = /^[a-f0-9]{48}$/i.test(String(pedidoId))
@@ -163,6 +166,8 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
     } catch (e) {
       console.error(e)
       setErro(true)
+    } finally {
+      buscaEmAndamentoRef.current = false
     }
   }
 
@@ -170,7 +175,7 @@ function AcompanharPedido({ pedidoId, pedidoInicial, voltar }) {
   useEffect(() => {
     if (!pedidoId) return
     buscarPedido()
-    const intervalo = setInterval(buscarPedido, 5000)
+    const intervalo = setInterval(buscarPedido, 15000)
     return () => clearInterval(intervalo)
   }, [pedidoId])
 

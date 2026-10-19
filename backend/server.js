@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const crypto = require('node:crypto')
 const db = require('./database')
+const { criarBackup } = require('./backup')
 
 const app = express()
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
@@ -31,7 +32,6 @@ app.use((req, res, next) => {
   next()
 })
 
-const sessoesAdmin = new Map()
 const tentativasLogin = new Map()
 const tentativasPedidos = new Map()
 const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000
@@ -90,17 +90,17 @@ function limitarPedidos(req, res, next) {
   next()
 }
 
-function exigirAdmin(req, res, next) {
+async function exigirAdmin(req, res, next) {
   const token = req.get('Authorization')?.match(/^Bearer\s+(.+)$/i)?.[1]
-  const expiraEm = token && sessoesAdmin.get(token)
-  if (!expiraEm || expiraEm <= Date.now()) {
-    if (token) sessoesAdmin.delete(token)
+  const sessao = token && await db.get('SELECT expira_em FROM admin_sessions WHERE token = ?', [token])
+  if (!sessao || Number(sessao.expira_em) <= Date.now()) {
+    if (token) await db.run('DELETE FROM admin_sessions WHERE token = ?', [token])
     return res.status(401).json({ erro: 'Sessão administrativa expirada. Entre novamente.' })
   }
   next()
 }
 
-app.post('/admin/login', limitarLogin, (req, res) => {
+app.post('/admin/login', limitarLogin, async (req, res) => {
   const senhaConfigurada = process.env.ADMIN_PASSWORD
   if (!senhaConfigurada) {
     return res.status(503).json({ erro: 'A senha administrativa ainda não foi configurada no servidor.' })
@@ -117,24 +117,24 @@ app.post('/admin/login', limitarLogin, (req, res) => {
   }
 
   tentativasLogin.delete(req.ip || req.socket.remoteAddress || 'desconhecido')
-  for (const [sessao, expiraEm] of sessoesAdmin) {
-    if (expiraEm <= Date.now()) sessoesAdmin.delete(sessao)
-  }
-  if (sessoesAdmin.size >= MAX_SESSOES_ADMIN) {
-    sessoesAdmin.delete(sessoesAdmin.keys().next().value)
+  await db.run('DELETE FROM admin_sessions WHERE expira_em <= ?', [Date.now()])
+  const contagemSessoes = await db.get('SELECT COUNT(*) AS total FROM admin_sessions')
+  if (Number(contagemSessoes.total) >= MAX_SESSOES_ADMIN) {
+    await db.run('DELETE FROM admin_sessions WHERE token = (SELECT token FROM admin_sessions ORDER BY expira_em ASC LIMIT 1)')
   }
   const token = crypto.randomBytes(32).toString('hex')
-  sessoesAdmin.set(token, Date.now() + DURACAO_SESSAO_MS)
+  await db.run('INSERT INTO admin_sessions (token, expira_em) VALUES (?, ?)', [token, Date.now() + DURACAO_SESSAO_MS])
   res.json({ token, expiraEm: DURACAO_SESSAO_MS })
 })
 
-app.post('/admin/logout', exigirAdmin, (req, res) => {
+app.post('/admin/logout', exigirAdmin, async (req, res) => {
   const token = req.get('Authorization').replace(/^Bearer\s+/i, '')
-  sessoesAdmin.delete(token)
+  await db.run('DELETE FROM admin_sessions WHERE token = ?', [token])
   res.status(204).end()
 })
 
 // ===== MIGRAÇÃO: colunas do cliente comum (roda sozinha, só adiciona se faltar) =====
+if (db.kind === 'sqlite') {
 const colunasPedidos = db
   .prepare('PRAGMA table_info(pedidos)')
   .all()
@@ -189,6 +189,7 @@ db.exec(`
   ON pedidos (chave_idempotencia)
   WHERE chave_idempotencia IS NOT NULL
 `)
+}
 
 app.get('/', (req, res) => {
   res.json({
@@ -197,10 +198,10 @@ app.get('/', (req, res) => {
   })
 })
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   try {
-    db.prepare('SELECT 1').get()
-    return res.json({ status: 'ok', database: 'ok' })
+    await db.get('SELECT 1')
+    return res.json({ status: 'ok', database: db.kind })
   } catch (erro) {
     console.error('Verificação do banco falhou:', erro)
     return res.status(503).json({ status: 'error', database: 'unavailable' })
@@ -239,36 +240,42 @@ function validarCardapio(body) {
   return { data, preco, opcoes }
 }
 
-const criarCardapio = db.transaction(({ data, preco, opcoes }) => {
-  const resultado = db.prepare('INSERT INTO cardapios (data, preco) VALUES (?, ?)').run(data, preco)
-  const inserirOpcao = db.prepare(`
-    INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome)
-    VALUES (?, ?, ?)
-  `)
-  for (const opcao of opcoes) inserirOpcao.run(resultado.lastInsertRowid, opcao.categoria, opcao.nome)
-  return Number(resultado.lastInsertRowid)
-})
+function operacoesCriarCardapio({ data, preco, opcoes }) {
+  return [
+    { sql: 'INSERT INTO cardapios (data, preco) VALUES (?, ?) RETURNING id', params: [data, preco] },
+    ...opcoes.map((opcao) => ({
+      sql: 'INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome) VALUES (?, ?, ?)',
+      params: (resultados) => [resultados[0].lastInsertRowid, opcao.categoria, opcao.nome]
+    }))
+  ]
+}
 
-const atualizarCardapio = db.transaction((id, preco, opcoes) => {
-  db.prepare('UPDATE cardapios SET preco = ? WHERE id = ?').run(preco, id)
-  db.prepare('DELETE FROM opcoes_cardapio WHERE cardapio_id = ?').run(id)
-  const inserirOpcao = db.prepare(`
-    INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome)
-    VALUES (?, ?, ?)
-  `)
-  for (const opcao of opcoes) inserirOpcao.run(id, opcao.categoria, opcao.nome)
-})
+function operacoesAtualizarCardapio(id, preco, opcoes) {
+  return [
+    { sql: 'UPDATE cardapios SET preco = ? WHERE id = ?', params: [preco, id] },
+    { sql: 'DELETE FROM opcoes_cardapio WHERE cardapio_id = ?', params: [id] },
+    ...opcoes.map((opcao) => ({
+      sql: 'INSERT INTO opcoes_cardapio (cardapio_id, categoria, nome) VALUES (?, ?, ?)',
+      params: [id, opcao.categoria, opcao.nome]
+    }))
+  ]
+}
 
-app.post('/cardapios', exigirAdmin, (req, res) => {
+function erroUnicidade(erro) {
+  return ['SQLITE_CONSTRAINT_UNIQUE', '23505'].includes(erro.code)
+}
+
+app.post('/cardapios', exigirAdmin, async (req, res) => {
   const validacao = validarCardapio(req.body)
   if (validacao.erro) return res.status(400).json({ erro: validacao.erro })
 
   try {
-    const id = criarCardapio(validacao)
+    const resultados = await db.transaction(operacoesCriarCardapio(validacao))
+    const id = resultados[0].lastInsertRowid
     return res.status(201).json({ mensagem: 'Card\u00e1pio criado com sucesso!', id })
   } catch (erro) {
-    if (erro.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      const existente = db.prepare('SELECT id FROM cardapios WHERE data = ?').get(validacao.data)
+    if (erroUnicidade(erro)) {
+      const existente = await db.get('SELECT id FROM cardapios WHERE data = ?', [validacao.data])
       return res.status(409).json({
         erro: 'J\u00e1 existe um card\u00e1pio para essa data. Ele foi carregado para edi\u00e7\u00e3o.',
         id: existente?.id
@@ -279,14 +286,14 @@ app.post('/cardapios', exigirAdmin, (req, res) => {
   }
 })
 
-app.get('/cardapios/:data', (req, res) => {
+app.get('/cardapios/:data', async (req, res) => {
   const { data } = req.params
 
-  const cardapio = db.prepare(`
+  const cardapio = await db.get(`
     SELECT *
     FROM cardapios
     WHERE data = ? AND ativo = 1
-  `).get(data)
+  `, [data])
 
   if (!cardapio) {
     return res.status(404).json({
@@ -294,11 +301,11 @@ app.get('/cardapios/:data', (req, res) => {
     })
   }
 
-  const opcoes = db.prepare(`
+  const opcoes = await db.all(`
     SELECT id, categoria, nome, disponivel
     FROM opcoes_cardapio
     WHERE cardapio_id = ? AND disponivel = 1
-  `).all(cardapio.id)
+  `, [cardapio.id])
 
   res.json({
     ...cardapio,
@@ -306,15 +313,15 @@ app.get('/cardapios/:data', (req, res) => {
   })
 })
 
-app.put('/cardapios/:data', exigirAdmin, (req, res) => {
+app.put('/cardapios/:data', exigirAdmin, async (req, res) => {
   const validacao = validarCardapio({ ...req.body, data: req.params.data })
   if (validacao.erro) return res.status(400).json({ erro: validacao.erro })
 
-  const cardapio = db.prepare('SELECT id FROM cardapios WHERE data = ?').get(validacao.data)
+  const cardapio = await db.get('SELECT id FROM cardapios WHERE data = ?', [validacao.data])
   if (!cardapio) return res.status(404).json({ erro: 'Card\u00e1pio n\u00e3o encontrado para essa data.' })
 
   try {
-    atualizarCardapio(cardapio.id, validacao.preco, validacao.opcoes)
+    await db.transaction(operacoesAtualizarCardapio(cardapio.id, validacao.preco, validacao.opcoes))
     return res.json({ mensagem: 'Card\u00e1pio atualizado com sucesso!' })
   } catch (erro) {
     console.error('Falha ao atualizar card\u00e1pio:', erro)
@@ -357,21 +364,25 @@ function precosBebidasValidos(itens) {
 }
 
 function dataLocalSaoPaulo() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date())
+  const valores = Object.fromEntries(partes.map(({ type, value }) => [type, value]))
+  return `${valores.year}-${valores.month}-${valores.day}`
 }
 
-app.post('/pedidos', limitarPedidos, (req, res) => {
+app.post('/pedidos', limitarPedidos, async (req, res) => {
   const chaveRecebida = req.get('Idempotency-Key')
   if (chaveRecebida && !/^[a-f0-9]{32}$/i.test(chaveRecebida)) {
     return res.status(400).json({ erro: 'A chave de envio do pedido está inválida.' })
   }
   const chaveIdempotencia = chaveRecebida?.toLowerCase() || null
   if (chaveIdempotencia) {
-    const pedidoExistente = db.prepare(`
+    const pedidoExistente = await db.get(`
       SELECT id, codigo_rastreio
       FROM pedidos
       WHERE chave_idempotencia = ?
-    `).get(chaveIdempotencia)
+    `, [chaveIdempotencia])
     if (pedidoExistente) return responderPedidoExistente(res, pedidoExistente)
   }
 
@@ -521,17 +532,17 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   }
 
   if (!ehClienteComum && cpfVivendas) {
-    const cpfJaUsado = db.prepare(`
+    const cpfJaUsado = await db.get(`
       SELECT 1 FROM pedidos WHERE origem = 'vivendas' AND cpf_vivendas = ? LIMIT 1
-    `).get(cpfVivendas)
+    `, [cpfVivendas])
     if (cpfJaUsado) return res.status(409).json({ erro: 'Este CPF já foi utilizado em um pedido Vivendas.' })
   } else if (!ehClienteComum && identificadorVivendas) {
-    const codigoJaUsado = db.prepare(`
+    const codigoJaUsado = await db.get(`
       SELECT 1 FROM pedidos
       WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''
-        AND codigo_vivendas = ? COLLATE NOCASE
+        AND lower(codigo_vivendas) = lower(?)
       LIMIT 1
-    `).get(identificadorVivendas)
+    `, [identificadorVivendas])
     if (codigoJaUsado) return res.status(409).json({ erro: 'Este código já foi utilizado em um pedido Vivendas.' })
   }
 
@@ -560,7 +571,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   const precosBebidas = precosBebidasValidos(Array.isArray(req.body.marmitas) ? req.body.marmitas : [])
   if (precosBebidas.erro) return res.status(400).json({ erro: precosBebidas.erro })
   valorBebida = precosBebidas.total
-  const cardapioHoje = db.prepare('SELECT preco FROM cardapios WHERE data = ? AND ativo = 1').get(dataLocalSaoPaulo())
+  const cardapioHoje = await db.get('SELECT preco FROM cardapios WHERE data = ? AND ativo = 1', [dataLocalSaoPaulo()])
   valorMarmita = Number(cardapioHoje?.preco ?? 10) * (ehClienteComum ? marmitasDetalhadas.length : 1)
   if (ehClienteComum) {
     marmitasDetalhadas = marmitasDetalhadas.map((item, indice) => ({
@@ -626,7 +637,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
 
   try {
     const codigoRastreio = crypto.randomBytes(24).toString('hex')
-    const criarPedido = db.prepare(`
+    const resultado = await db.run(`
       INSERT INTO pedidos (
         nome,
         loja,
@@ -656,9 +667,8 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
         chave_idempotencia
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `)
-
-    const resultado = criarPedido.run(
+      RETURNING id
+    `, [
       nome,
       ehClienteComum ? '' : loja,
       ehClienteComum ? '' : identificadorVivendas,
@@ -685,7 +695,7 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
       'aguardando',
       codigoRastreio,
       chaveIdempotencia
-    )
+    ])
 
     res.status(201).json({
       mensagem: 'Pedido enviado para aprovação!',
@@ -694,12 +704,12 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
     })
 
   } catch (erro) {
-    if (erro.code === 'SQLITE_CONSTRAINT_UNIQUE' && chaveIdempotencia) {
-      const pedidoExistente = db.prepare(`
+    if (erroUnicidade(erro) && chaveIdempotencia) {
+      const pedidoExistente = await db.get(`
         SELECT id, codigo_rastreio
         FROM pedidos
         WHERE chave_idempotencia = ?
-      `).get(chaveIdempotencia)
+      `, [chaveIdempotencia])
       if (pedidoExistente) return responderPedidoExistente(res, pedidoExistente)
     }
     console.error(erro)
@@ -710,17 +720,17 @@ app.post('/pedidos', limitarPedidos, (req, res) => {
   }
 })
 
-app.get('/pedidos', exigirAdmin, (req, res) => {
+app.get('/pedidos', exigirAdmin, async (req, res) => {
   try {
     const limiteSolicitado = Number.parseInt(req.query.limit, 10)
     const beforeId = Number.parseInt(req.query.beforeId, 10)
     const limit = Number.isInteger(limiteSolicitado) ? Math.min(Math.max(limiteSolicitado, 1), 100) : 100
     const consulta = Number.isInteger(beforeId) && beforeId > 0
-      ? db.prepare('SELECT * FROM pedidos WHERE id < ? ORDER BY id DESC LIMIT ?').all(beforeId, limit)
-      : db.prepare('SELECT * FROM pedidos ORDER BY id DESC LIMIT ?').all(limit)
+      ? await db.all('SELECT * FROM pedidos WHERE id < ? ORDER BY id DESC LIMIT ?', [beforeId, limit])
+      : await db.all('SELECT * FROM pedidos ORDER BY id DESC LIMIT ?', [limit])
     const pedidos = consulta
     const ultimoId = pedidos[pedidos.length - 1]?.id
-    const temMais = ultimoId ? Boolean(db.prepare('SELECT 1 FROM pedidos WHERE id < ? LIMIT 1').get(ultimoId)) : false
+    const temMais = ultimoId ? Boolean(await db.get('SELECT 1 FROM pedidos WHERE id < ? LIMIT 1', [ultimoId])) : false
     res.setHeader('X-Has-More', String(temMais))
     if (temMais) res.setHeader('X-Next-Cursor', String(ultimoId))
 
@@ -735,13 +745,13 @@ app.get('/pedidos', exigirAdmin, (req, res) => {
   }
 })
 
-app.get('/pedidos/rastreio/:codigo', (req, res) => {
+app.get('/pedidos/rastreio/:codigo', async (req, res) => {
   try {
-    const pedido = db.prepare(`
+    const pedido = await db.get(`
       SELECT id, status, criado_em
       FROM pedidos
       WHERE codigo_rastreio = ?
-    `).get(req.params.codigo)
+    `, [req.params.codigo])
 
     if (!pedido) return res.status(404).json({ erro: 'Pedido não encontrado.' })
     return res.json(pedido)
@@ -752,13 +762,13 @@ app.get('/pedidos/rastreio/:codigo', (req, res) => {
 })
 
 // Mantém a consulta por ID apenas para pedidos antigos sem código secreto.
-app.get('/pedidos/:id', (req, res) => {
+app.get('/pedidos/:id', async (req, res) => {
   try {
-    const pedido = db.prepare(`
+    const pedido = await db.get(`
       SELECT id, status, criado_em
       FROM pedidos
       WHERE id = ? AND codigo_rastreio IS NULL
-    `).get(req.params.id)
+    `, [req.params.id])
 
     if (!pedido) {
       return res.status(404).json({
@@ -777,13 +787,13 @@ app.get('/pedidos/:id', (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/aprovar', exigirAdmin, (req, res) => {
+app.put('/pedidos/:id/aprovar', exigirAdmin, async (req, res) => {
   try {
-    const resultado = db.prepare(`
+    const resultado = await db.run(`
       UPDATE pedidos
       SET status = 'em_preparo'
       WHERE id = ? AND status = 'aguardando'
-    `).run(req.params.id)
+    `, [req.params.id])
 
     if (resultado.changes === 0) {
       return res.status(404).json({
@@ -804,13 +814,13 @@ app.put('/pedidos/:id/aprovar', exigirAdmin, (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/recusar', exigirAdmin, (req, res) => {
+app.put('/pedidos/:id/recusar', exigirAdmin, async (req, res) => {
   try {
-    const resultado = db.prepare(`
+    const resultado = await db.run(`
       UPDATE pedidos
       SET status = 'recusado'
       WHERE id = ?
-    `).run(req.params.id)
+    `, [req.params.id])
 
     if (resultado.changes === 0) {
       return res.status(404).json({
@@ -831,13 +841,13 @@ app.put('/pedidos/:id/recusar', exigirAdmin, (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/preparo', exigirAdmin, (req, res) => {
+app.put('/pedidos/:id/preparo', exigirAdmin, async (req, res) => {
   try {
-    const resultado = db.prepare(`
+    const resultado = await db.run(`
       UPDATE pedidos
       SET status = 'em_preparo'
       WHERE id = ? AND status = 'aprovado'
-    `).run(req.params.id)
+    `, [req.params.id])
 
     if (resultado.changes === 0) {
       return res.status(404).json({
@@ -858,13 +868,13 @@ app.put('/pedidos/:id/preparo', exigirAdmin, (req, res) => {
   }
 })
 
-app.put('/pedidos/:id/pronto', exigirAdmin, (req, res) => {
+app.put('/pedidos/:id/pronto', exigirAdmin, async (req, res) => {
   try {
-    const resultado = db.prepare(`
+    const resultado = await db.run(`
       UPDATE pedidos
       SET status = 'pronto'
       WHERE id = ? AND status = 'em_preparo'
-    `).run(req.params.id)
+    `, [req.params.id])
 
     if (resultado.changes === 0) {
       return res.status(404).json({
@@ -903,8 +913,50 @@ process.on('unhandledRejection', (razao) => {
   process.exit(1)
 })
 
-const server = app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${server.address().port}`)
+let server
+
+function agendarBackupDiario() {
+  const agora = new Date()
+  let dataBackup = dataLocalSaoPaulo()
+  let proximoBackup = new Date(`${dataBackup}T03:00:00-03:00`)
+  if (proximoBackup <= agora) {
+    const amanha = new Date(`${dataBackup}T12:00:00Z`)
+    amanha.setUTCDate(amanha.getUTCDate() + 1)
+    dataBackup = amanha.toISOString().slice(0, 10)
+    proximoBackup = new Date(`${dataBackup}T03:00:00-03:00`)
+  }
+
+  const atraso = proximoBackup.getTime() - agora.getTime()
+  async function executarBackup(tentativa = 1) {
+    try {
+      const caminho = await criarBackup({ db })
+      console.log(`Backup diário criado: ${caminho}`)
+    } catch (erro) {
+      console.error('Falha ao criar backup diário:', erro)
+      if (tentativa < 3) {
+        console.log(`Nova tentativa de backup em 15 minutos (${tentativa + 1}/3).`)
+        setTimeout(() => executarBackup(tentativa + 1), 15 * 60 * 1000).unref()
+        return
+      }
+    }
+    agendarBackupDiario()
+  }
+
+  setTimeout(() => executarBackup(), atraso).unref()
+  console.log(`Próximo backup diário agendado para ${proximoBackup.toISOString()} (03:00 em São Paulo).`)
+}
+
+async function iniciarServidor() {
+  await db.initialize()
+  server = app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${server.address().port}`)
+  })
+  if (db.kind === 'sqlite') agendarBackupDiario()
+}
+
+iniciarServidor().catch((erro) => {
+  console.error('Falha ao inicializar o banco de dados:', erro)
+  process.exit(1)
 })
 
 let encerrando = false
@@ -912,6 +964,10 @@ function encerrarServidor(sinal) {
   if (encerrando) return
   encerrando = true
   console.log(`Recebido ${sinal}; encerrando servidor com seguranca.`)
+  if (!server) {
+    db.close().finally(() => process.exit(0))
+    return
+  }
 
   const limiteEncerramento = setTimeout(() => {
     console.error('Tempo limite de encerramento excedido.')
@@ -924,9 +980,13 @@ function encerrarServidor(sinal) {
       console.error('Erro ao encerrar servidor:', erro)
       process.exit(1)
     }
-    db.close()
-    console.log('Servidor e banco de dados encerrados.')
-    process.exit(0)
+    db.close().then(() => {
+      console.log('Servidor e banco de dados encerrados.')
+      process.exit(0)
+    }).catch((erroFechamento) => {
+      console.error('Erro ao fechar o banco de dados:', erroFechamento)
+      process.exit(1)
+    })
   })
 }
 
