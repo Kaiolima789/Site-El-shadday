@@ -951,6 +951,9 @@ async function iniciarServidor() {
   server = app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${server.address().port}`)
   })
+  server.on('close', () => {
+    console.log('Servidor foi fechado!')
+  })
   if (db.kind === 'sqlite') agendarBackupDiario()
 }
 
@@ -992,7 +995,3 @@ function encerrarServidor(sinal) {
 
 process.on('SIGTERM', () => encerrarServidor('SIGTERM'))
 process.on('SIGINT', () => encerrarServidor('SIGINT'))
-
-server.on('close', () => {
-  console.log('Servidor foi fechado!')
-})
