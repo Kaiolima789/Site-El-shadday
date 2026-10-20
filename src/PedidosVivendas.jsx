@@ -447,7 +447,10 @@ function PedidosVivendas({ voltar, authToken, logout }) {
 
   function imprimirPedido(pedido) {
     const janela = window.open('', '_blank', 'width=350,height=600')
-    if (!janela) return
+    if (!janela) {
+      alert('O navegador bloqueou a janela da comanda. Permita pop-ups para este site e tente novamente.')
+      return
+    }
 
     const carne = textoCarne(pedido)
     const bebida = textoBebida(pedido)
@@ -571,10 +574,16 @@ function PedidosVivendas({ voltar, authToken, logout }) {
     `)
 
     janela.document.close()
-    janela.focus()
     setTimeout(() => {
-      janela.print()
-    }, 350)
+      if (janela.closed) return
+      try {
+        janela.focus()
+        janela.print()
+      } catch (erro) {
+        console.error('Não foi possível abrir a impressão da comanda:', erro)
+        alert('Não foi possível abrir a impressão. Tente permitir pop-ups para este site.')
+      }
+    }, 700)
   }
 
   // Pedidos que exigem ação da cozinha (aguardando ou em preparo) NUNCA ficam ocultos por data
