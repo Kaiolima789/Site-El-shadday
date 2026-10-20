@@ -475,6 +475,9 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                 margin: 0 !important;
                 padding: 0 !important;
               }
+              .acao-imprimir {
+                display: none !important;
+              }
             }
             * {
               box-sizing: border-box;
@@ -539,6 +542,19 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               margin-top: 4px;
               padding-bottom: 2mm;
             }
+            .acao-imprimir {
+              display: block;
+              width: 100%;
+              margin: 12px 0;
+              padding: 10px;
+              border: 0;
+              border-radius: 6px;
+              background: #5b35c5;
+              color: #fff;
+              font-size: 14px;
+              font-weight: bold;
+              cursor: pointer;
+            }
           </style>
         </head>
         <body>
@@ -569,6 +585,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
 
           <div class="divisor"></div>
           <div class="rodape">${new Date().toLocaleString('pt-BR')}</div>
+          <button class="acao-imprimir" onclick="window.print()">Imprimir agora</button>
         </body>
       </html>
     `)
