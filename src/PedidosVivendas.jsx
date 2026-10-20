@@ -465,13 +465,13 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <title>Comanda #${pedido.id}</title>
           <style>
             @page {
-              size: 58mm auto;
+              size: 80mm auto;
               margin: 0;
             }
             @media print {
               html, body {
-                width: 58mm !important;
-                max-width: 58mm !important;
+                width: 80mm !important;
+                max-width: 80mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
               }
@@ -486,13 +486,15 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             body {
               font-family: Arial, sans-serif;
-              font-size: 12px;
-              font-weight: 400;
-              line-height: 1.35;
+              font-size: 14px;
+              font-weight: 900;
+              -webkit-text-stroke: 0.35px #000;
+              text-shadow: 0 0 0.5px #000;
+              line-height: 1.25;
               color: #000;
               background: #fff;
-              width: 58mm;
-              max-width: 58mm;
+              width: 80mm;
+              max-width: 80mm;
               margin: 0 auto;
               padding: 2mm;
             }
@@ -501,16 +503,16 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               margin-bottom: 2px;
             }
             .titulo {
-              font-size: 14px;
-              font-weight: 700;
+              font-size: 16px;
+              font-weight: 900;
             }
             .subtitulo {
-              font-size: 12px;
-              font-weight: 700;
+              font-size: 14px;
+              font-weight: 900;
             }
             .origem {
-              font-size: 12px;
-              font-weight: 700;
+              font-size: 14px;
+              font-weight: 900;
             }
             .divisor {
               width: 100%;
@@ -523,7 +525,9 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             .item-linha {
               margin: 1px 0;
               word-break: break-word;
-              font-weight: 400;
+              font-weight: 700;
+              -webkit-text-stroke: 0.25px #000;
+              text-shadow: 0 0 0.35px #000;
             }
             .total {
               font-weight: bold;
