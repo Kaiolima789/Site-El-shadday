@@ -465,15 +465,21 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <title>Comanda #${pedido.id}</title>
           <style>
             @page {
-              size: 80mm auto;
+              size: 58mm auto;
               margin: 0;
             }
             @media print {
-              html, body {
-                width: 80mm !important;
-                max-width: 80mm !important;
+              html {
+                width: 58mm !important;
+                max-width: 58mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
+              }
+              body {
+                width: 48mm !important;
+                max-width: 48mm !important;
+                margin: 0 auto !important;
+                padding: 1mm !important;
               }
               .acao-imprimir {
                 display: none !important;
@@ -486,32 +492,32 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             }
             body {
               font-family: Arial, sans-serif;
-              font-size: 14px;
-              font-weight: 900;
-              -webkit-text-stroke: 0.35px #000;
-              text-shadow: 0 0 0.5px #000;
+              font-size: 12px;
+              font-weight: 700;
+              -webkit-text-stroke: 0.15px #000;
+              text-shadow: 0 0 0.25px #000;
               line-height: 1.25;
               color: #000;
               background: #fff;
-              width: 80mm;
-              max-width: 80mm;
+              width: 48mm;
+              max-width: 48mm;
               margin: 0 auto;
-              padding: 2mm;
+              padding: 1mm;
             }
             .cabecalho {
               text-align: center;
               margin-bottom: 2px;
             }
             .titulo {
-              font-size: 16px;
+              font-size: 13px;
               font-weight: 900;
             }
             .subtitulo {
-              font-size: 14px;
+              font-size: 12px;
               font-weight: 900;
             }
             .origem {
-              font-size: 14px;
+              font-size: 12px;
               font-weight: 900;
             }
             .divisor {
@@ -526,19 +532,19 @@ function PedidosVivendas({ voltar, authToken, logout }) {
               margin: 1px 0;
               word-break: break-word;
               font-weight: 700;
-              -webkit-text-stroke: 0.25px #000;
-              text-shadow: 0 0 0.35px #000;
+              -webkit-text-stroke: 0.1px #000;
+              text-shadow: 0 0 0.2px #000;
             }
             .total {
               font-weight: bold;
-              font-size: 15px;
+              font-size: 13px;
               text-align: center;
               font-weight: 900;
               margin-top: 3px;
             }
             .rodape {
               text-align: center;
-              font-size: 11px;
+              font-size: 10px;
               margin-top: 4px;
               padding-bottom: 2mm;
             }
