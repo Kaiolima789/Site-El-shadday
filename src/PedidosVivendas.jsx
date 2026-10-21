@@ -487,9 +487,12 @@ function PedidosVivendas({ voltar, authToken, logout }) {
             body {
               font-family: 'Courier New', monospace;
               font-size: 12px;
-              font-weight: 400;
+              /* A impressora térmica estava deixando o texto regular muito claro. */
+              font-weight: 600;
               line-height: 1.35;
               color: #000;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
               background: #fff;
               width: 58mm;
               max-width: 58mm;
