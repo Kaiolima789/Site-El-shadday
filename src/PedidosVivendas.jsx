@@ -464,103 +464,79 @@ function PedidosVivendas({ voltar, authToken, logout }) {
           <meta charset="UTF-8" />
           <title>Comanda #${pedido.id}</title>
           <style>
-            @page {
-              size: 58mm auto;
-              margin: 0;
-            }
-            @media print {
-              html {
-                width: 58mm !important;
-                max-width: 58mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-              }
-              body {
-                width: 48mm !important;
-                max-width: 48mm !important;
-                margin: 0 auto !important;
-                padding: 1mm !important;
-              }
-              .acao-imprimir {
-                display: none !important;
-              }
-            }
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-            }
-            body {
-              font-family: Arial, sans-serif;
-              font-size: 12px;
-              font-weight: 700;
-              -webkit-text-stroke: 0.15px #000;
-              text-shadow: 0 0 0.25px #000;
-              line-height: 1.25;
-              color: #000;
-              background: #fff;
-              width: 48mm;
-              max-width: 48mm;
-              margin: 0 auto;
-              padding: 1mm;
-            }
-            .cabecalho {
-              text-align: center;
-              margin-bottom: 2px;
-            }
-            .titulo {
-              font-size: 13px;
-              font-weight: 900;
-            }
-            .subtitulo {
-              font-size: 12px;
-              font-weight: 900;
-            }
-            .origem {
-              font-size: 12px;
-              font-weight: 900;
-            }
-            .divisor {
-              width: 100%;
-              height: 0;
-              border-top: 1px dashed #000;
-              margin: 3px 0;
-              font-size: 0;
-              line-height: 0;
-            }
-            .item-linha {
-              margin: 1px 0;
-              word-break: break-word;
-              font-weight: 700;
-              -webkit-text-stroke: 0.1px #000;
-              text-shadow: 0 0 0.2px #000;
-            }
-            .total {
-              font-weight: bold;
-              font-size: 13px;
-              text-align: center;
-              font-weight: 900;
-              margin-top: 3px;
-            }
-            .rodape {
-              text-align: center;
-              font-size: 10px;
-              margin-top: 4px;
-              padding-bottom: 2mm;
-            }
-            .acao-imprimir {
-              display: block;
-              width: 100%;
-              margin: 12px 0;
-              padding: 10px;
-              border: 0;
-              border-radius: 6px;
-              background: #5b35c5;
-              color: #fff;
-              font-size: 14px;
-              font-weight: bold;
-              cursor: pointer;
-            }
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+  @media print {
+    html, body {
+      width: 72mm !important;
+      max-width: 72mm !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+    }
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #000;
+    background: #fff;
+    width: 72mm;
+    max-width: 72mm;
+    margin: 0 auto;
+    padding: 3mm 1mm;
+  }
+  .cabecalho {
+    text-align: center;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  .titulo {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .subtitulo {
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 2px;
+  }
+  .origem {
+    font-size: 12px;
+    font-weight: 900;
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  .divisor {
+    border-top: 1.5px dashed #000;
+    width: 100%;
+    margin: 6px 0;
+  }
+  .item-linha {
+    font-size: 13px;
+    margin: 3px 0;
+    word-break: break-word;
+    text-align: left;
+  }
+  .total {
+    font-weight: 900;
+    font-size: 15px;
+    text-align: right;
+    margin-top: 6px;
+  }
+  .rodape {
+    text-align: center;
+    font-size: 11px;
+    margin-top: 8px;
+    padding-bottom: 4mm;
+  }
           </style>
         </head>
         <body>
