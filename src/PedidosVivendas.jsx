@@ -475,6 +475,9 @@ function PedidosVivendas({ voltar, authToken, logout }) {
       margin: 0 auto !important;
       padding: 0 !important;
     }
+    .acao-imprimir {
+      display: none !important;
+    }
   }
   * {
     box-sizing: border-box;
@@ -528,7 +531,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
   .total {
     font-weight: 900;
     font-size: 15px;
-    text-align: right;
+    text-align: center;
     margin-top: 6px;
   }
   .rodape {
