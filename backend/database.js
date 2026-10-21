@@ -27,7 +27,7 @@ if (sqlite) {
       preco REAL NOT NULL, status TEXT DEFAULT 'aguardando', codigo_rastreio TEXT,
       chave_idempotencia TEXT, quantidade_marmitas INTEGER DEFAULT 1,
       marmitas_json TEXT DEFAULT '[]', cpf_vivendas TEXT DEFAULT '',
-      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+      criado_em DATETIME DEFAULT CURRENT_TIMESTAMP, pronto_em DATETIME
     );
   `)
 }
@@ -117,7 +117,7 @@ const colunasPedidos = [
   ['forma_pagamento', "TEXT DEFAULT ''"], ['troco_para', 'REAL'],
   ['quantidade_marmitas', 'INTEGER DEFAULT 1'], ['marmitas_json', "TEXT DEFAULT '[]'"],
   ['cpf_vivendas', "TEXT DEFAULT ''"], ['codigo_rastreio', 'TEXT'],
-  ['chave_idempotencia', 'TEXT']
+  ['chave_idempotencia', 'TEXT'], ['pronto_em', 'DATETIME']
 ]
 
 async function initialize() {
@@ -151,6 +151,7 @@ async function initialize() {
     for (const [nome, definicao] of colunasPedidos) {
       if (!existentes.has(nome)) sqlite.exec(`ALTER TABLE pedidos ADD COLUMN ${nome} ${definicao}`)
     }
+    sqlite.exec("UPDATE pedidos SET pronto_em = CURRENT_TIMESTAMP WHERE status = 'pronto' AND pronto_em IS NULL")
     const pedidosAntigos = sqlite.prepare(`
       SELECT id, codigo_vivendas FROM pedidos
       WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''
@@ -193,7 +194,7 @@ async function initialize() {
       origem TEXT DEFAULT 'vivendas', refrigerante_sabor TEXT DEFAULT '',
       refrigerante_tamanho TEXT DEFAULT '', agua_tipo TEXT DEFAULT '', bebida_quantidade INTEGER DEFAULT 0,
       preco_marmita DOUBLE PRECISION, preco_bebida DOUBLE PRECISION, valor_cobrar DOUBLE PRECISION,
-      forma_pagamento TEXT DEFAULT '', troco_para DOUBLE PRECISION
+      forma_pagamento TEXT DEFAULT '', troco_para DOUBLE PRECISION, pronto_em TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS admin_sessions (
       token TEXT PRIMARY KEY, expira_em BIGINT NOT NULL
@@ -204,6 +205,7 @@ async function initialize() {
     const defaultValue = definicao.match(/\s+DEFAULT\s+(.+)$/i)?.[1]
     await pool.query(`ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS ${nome} ${tipoDefault}${defaultValue ? ` DEFAULT ${defaultValue}` : ''}`)
   }
+  await pool.query("UPDATE pedidos SET pronto_em = CURRENT_TIMESTAMP WHERE status = 'pronto' AND pronto_em IS NULL")
   await pool.query(`
     UPDATE pedidos SET cpf_vivendas = regexp_replace(codigo_vivendas, '[^0-9]', '', 'g')
     WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''

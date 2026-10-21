@@ -748,7 +748,7 @@ app.get('/pedidos', exigirAdmin, async (req, res) => {
 app.get('/pedidos/rastreio/:codigo', async (req, res) => {
   try {
     const pedido = await db.get(`
-      SELECT id, status, criado_em
+      SELECT id, status, criado_em, pronto_em
       FROM pedidos
       WHERE codigo_rastreio = ?
     `, [req.params.codigo])
@@ -765,7 +765,7 @@ app.get('/pedidos/rastreio/:codigo', async (req, res) => {
 app.get('/pedidos/:id', async (req, res) => {
   try {
     const pedido = await db.get(`
-      SELECT id, status, criado_em
+      SELECT id, status, criado_em, pronto_em
       FROM pedidos
       WHERE id = ? AND codigo_rastreio IS NULL
     `, [req.params.id])
@@ -872,7 +872,7 @@ app.put('/pedidos/:id/pronto', exigirAdmin, async (req, res) => {
   try {
     const resultado = await db.run(`
       UPDATE pedidos
-      SET status = 'pronto'
+      SET status = 'pronto', pronto_em = CURRENT_TIMESTAMP
       WHERE id = ? AND status = 'em_preparo'
     `, [req.params.id])
 

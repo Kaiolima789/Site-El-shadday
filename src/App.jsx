@@ -10,7 +10,18 @@ import AcompanharPedido from './AcompanharPedido'
 import Home from './Home'
 import LoginAdmin from './LoginAdmin'
 import { API_URL } from './config'
-import { listarPedidosSalvos } from './pedidosCliente'
+import { atualizarPedidoSalvo, listarPedidosSalvos } from './pedidosCliente'
+
+const DUAS_HORAS_MS = 2 * 60 * 60 * 1000
+
+function pedidoAindaVisivelNaHome(pedido, agora) {
+  if (pedido.status !== 'pronto') return true
+  if (!pedido.pronto_em) return true
+  const valor = String(pedido.pronto_em)
+  const dataPronto = new Date(`${valor.replace(' ', 'T')}${/[zZ]|[+-]\d\d:\d\d$/.test(valor) ? '' : 'Z'}`)
+  if (Number.isNaN(dataPronto.getTime())) return true
+  return agora - dataPronto.getTime() < DUAS_HORAS_MS
+}
 
 function agregarMarmitasPedido(marmitas) {
   const itens = marmitas.filter(Boolean)
@@ -45,8 +56,47 @@ function App() {
   })
   const [pedido, setPedido] = useState(null)
   const [pedidosSalvos, setPedidosSalvos] = useState(listarPedidosSalvos)
+  const [agora, setAgora] = useState(Date.now)
   const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('elshadday_admin_token') || '')
   const isAdminLogado = Boolean(adminToken)
+
+  useEffect(() => {
+    let ativo = true
+
+    async function atualizarStatusPedidosSalvos() {
+      if (ativo) setAgora(Date.now())
+      const salvos = listarPedidosSalvos()
+      const atualizados = await Promise.all(salvos.map(async (pedidoSalvo) => {
+        const identificador = pedidoSalvo.codigo_rastreio || pedidoSalvo.id
+        if (!identificador) return pedidoSalvo
+        const codigo = encodeURIComponent(identificador)
+        const rota = /^[a-f0-9]{48}$/i.test(String(identificador))
+          ? `/pedidos/rastreio/${codigo}`
+          : `/pedidos/${codigo}`
+        try {
+          const resposta = await fetch(`${API_URL}${rota}`)
+          if (!resposta.ok) return pedidoSalvo
+          const dados = await resposta.json()
+          const atualizado = { ...pedidoSalvo, ...dados }
+          atualizarPedidoSalvo(atualizado)
+          return atualizado
+        } catch {
+          return pedidoSalvo
+        }
+      }))
+
+      if (ativo && JSON.stringify(atualizados) !== JSON.stringify(salvos)) {
+        setPedidosSalvos(atualizados)
+      }
+    }
+
+    atualizarStatusPedidosSalvos()
+    const intervalo = setInterval(atualizarStatusPedidosSalvos, 30000)
+    return () => {
+      ativo = false
+      clearInterval(intervalo)
+    }
+  }, [])
 
   function abrirAcompanhamento(pedidoParaAcompanhar) {
     const pedidoAlvo = pedidoParaAcompanhar || pedidosSalvos[0]
@@ -206,7 +256,7 @@ function App() {
         setPedido(null)
         setPagina('marmitas')
       }}
-      pedidosEmAndamento={pedidosSalvos.filter((pedidoSalvo) => !['recusado', 'entregue', 'cancelado', 'concluido'].includes(pedidoSalvo.status))}
+      pedidosEmAndamento={pedidosSalvos.filter((pedidoSalvo) => !['recusado', 'entregue', 'cancelado', 'concluido'].includes(pedidoSalvo.status) && pedidoAindaVisivelNaHome(pedidoSalvo, agora))}
       acompanharPedido={abrirAcompanhamento}
       irParaAdmin={() => setPagina('admin')}
       isAdminLogado={isAdminLogado}
