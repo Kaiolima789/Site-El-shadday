@@ -67,6 +67,7 @@ function IconeCheckCirculo({ size = 18 }) {
 function Vivendas({ voltar, pedido, enviarPedido }) {
   const chaveIdempotenciaRef = useRef(null)
   const [nome, setNome] = useState('')
+  const [telefone, setTelefone] = useState('')
   const [loja, setLoja] = useState('')
   const [codigo, setCodigo] = useState('')
   const [observacao, setObservacao] = useState('')
@@ -84,6 +85,12 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
     const partesNome = nome.trim().split(/\s+/)
     if (partesNome.length < 2) {
       alert('Por favor, digite seu nome e sobrenome.')
+      return
+    }
+
+    const telefoneNormalizado = telefone.replace(/\D/g, '')
+    if (telefoneNormalizado.length < 10 || telefoneNormalizado.length > 13) {
+      alert('Informe um telefone válido com DDD.')
       return
     }
 
@@ -114,6 +121,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
     const dadosPedido = {
       ...pedido,
       nome: nome.trim(),
+      telefone: telefone.trim(),
       loja: loja.trim(),
       codigo: codigo.trim(),
       codigo_vivendas: codigo.trim(),
@@ -220,9 +228,25 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
               <label>Nome e Sobrenome</label>
               <input
                 type="text"
+                maxLength={100}
                 placeholder="Digite seu nome e sobrenome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
+              />
+            </div>
+
+            <div className="vivendas-campo">
+              <label htmlFor="vivendas-telefone">Telefone / WhatsApp</label>
+              <input
+                id="vivendas-telefone"
+                type="tel"
+                inputMode="tel"
+                maxLength={20}
+                placeholder="(61) 99999-9999"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                autoComplete="tel"
+                required
               />
             </div>
 

@@ -7,6 +7,30 @@ const { criarBackup } = require('./backup')
 const app = express()
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
 app.set('trust proxy', 1)
+app.disable('x-powered-by')
+
+const producao = process.env.NODE_ENV === 'production'
+const apiConfigurada = process.env.PUBLIC_API_URL || 'https://site-el-shadday.onrender.com'
+const apiPublicaHttps = (apiConfigurada.startsWith('https://') ? apiConfigurada : 'https://site-el-shadday.onrender.com').replace(/\/+$/, '')
+
+app.use((req, res, next) => {
+  if (producao && !req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+    return res.redirect(308, `${apiPublicaHttps}${req.originalUrl}`)
+  }
+  next()
+})
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+  res.setHeader('Cache-Control', 'no-store')
+  if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
 
 const allowedOrigins = new Set([
   'https://site-el-shadday.vercel.app',
@@ -24,16 +48,10 @@ app.use(cors({
   }
 }))
 app.use(express.json({ limit: '32kb' }))
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff')
-  res.setHeader('X-Frame-Options', 'DENY')
-  res.setHeader('Referrer-Policy', 'no-referrer')
-  res.setHeader('Cache-Control', 'no-store')
-  next()
-})
 
 const tentativasLogin = new Map()
 const tentativasPedidos = new Map()
+const tentativasConsultas = new Map()
 const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000
 const MAX_ESTADOS_RATE_LIMIT = 10000
 const MAX_SESSOES_ADMIN = 1000
@@ -87,6 +105,19 @@ function limitarPedidos(req, res, next) {
   }
   estado.quantidade += 1
   tentativasPedidos.set(chave, estado)
+  next()
+}
+
+function limitarConsultasPublicas(req, res, next) {
+  const agora = Date.now()
+  const chave = req.ip || req.socket.remoteAddress || 'desconhecido'
+  const estado = obterEstadoRateLimit(tentativasConsultas, chave, agora, 60 * 1000)
+  if (estado.quantidade >= 60) {
+    res.setHeader('Retry-After', '60')
+    return res.status(429).json({ erro: 'Muitas consultas. Aguarde um minuto e tente novamente.' })
+  }
+  estado.quantidade += 1
+  tentativasConsultas.set(chave, estado)
   next()
 }
 
@@ -286,7 +317,7 @@ app.post('/cardapios', exigirAdmin, async (req, res) => {
   }
 })
 
-app.get('/cardapios/:data', async (req, res) => {
+app.get('/cardapios/:data', limitarConsultasPublicas, async (req, res) => {
   const { data } = req.params
 
   const cardapio = await db.get(`
@@ -483,6 +514,12 @@ app.post('/pedidos', limitarPedidos, async (req, res) => {
   } = req.body
 
   const ehClienteComum = origem === 'cliente_comum'
+  if (telefone) {
+    const telefoneNormalizado = telefone.replace(/\D/g, '')
+    if (telefoneNormalizado.length < 10 || telefoneNormalizado.length > 13) {
+      return res.status(400).json({ erro: 'Informe um telefone válido com DDD.' })
+    }
+  }
   let marmitasDetalhadas = []
   if (ehClienteComum) {
     const itensRecebidos = Array.isArray(req.body.marmitas) ? req.body.marmitas : null
@@ -495,6 +532,17 @@ app.post('/pedidos', limitarPedidos, async (req, res) => {
           if (item[campo] !== undefined && (typeof item[campo] !== 'string' || item[campo].length > 500)) {
             return res.status(400).json({ erro: `Os detalhes da marmita (${campo}) são inválidos.` })
           }
+        }
+        if (item.bebidas !== undefined && (!Array.isArray(item.bebidas) || item.bebidas.length > 8)) {
+          return res.status(400).json({ erro: 'A lista de bebidas de uma marmita está inválida.' })
+        }
+        for (const campo of ['bebida_quantidade', 'preco_marmita', 'preco_bebida']) {
+          if (item[campo] !== undefined && (!Number.isFinite(Number(item[campo])) || Number(item[campo]) < 0 || Number(item[campo]) > 1000)) {
+            return res.status(400).json({ erro: `O campo ${campo} de uma marmita está inválido.` })
+          }
+        }
+        if (item.bebida_quantidade !== undefined && (!Number.isInteger(Number(item.bebida_quantidade)) || Number(item.bebida_quantidade) > 100)) {
+          return res.status(400).json({ erro: 'A quantidade de bebidas de uma marmita está inválida.' })
         }
       }
       marmitasDetalhadas = itensRecebidos.map((item) => ({
@@ -588,7 +636,7 @@ app.post('/pedidos', limitarPedidos, async (req, res) => {
   const precoFinal = valorMarmita + valorBebida
 
   if (ehClienteComum) {
-    if (!nome || !telefone || preco === undefined || preco === null) {
+    if (!nome || nome.length < 2 || !telefone || preco === undefined || preco === null) {
       return res.status(400).json({
         erro: 'Nome, telefone e preço são obrigatórios.'
       })
@@ -600,9 +648,9 @@ app.post('/pedidos', limitarPedidos, async (req, res) => {
       })
     }
   } else {
-    if (!nome || !loja || !codigo || preco === undefined || preco === null) {
+    if (!nome || nome.length < 2 || !telefone || !loja || !identificadorVivendas || preco === undefined || preco === null) {
       return res.status(400).json({
-        erro: 'Nome, loja, código e preço são obrigatórios.'
+        erro: 'Nome, telefone, loja, código e preço são obrigatórios.'
       })
     }
   }
@@ -672,7 +720,7 @@ app.post('/pedidos', limitarPedidos, async (req, res) => {
       nome,
       ehClienteComum ? '' : loja,
       ehClienteComum ? '' : identificadorVivendas,
-      ehClienteComum ? telefone : '',
+      telefone || '',
       ehClienteComum ? (tipo_entrega || 'retirada') : '',
       ehClienteComum && tipo_entrega === 'entrega' ? endereco : '',
       ehClienteComum ? 'cliente_comum' : 'vivendas',
@@ -745,7 +793,7 @@ app.get('/pedidos', exigirAdmin, async (req, res) => {
   }
 })
 
-app.get('/pedidos/rastreio/:codigo', async (req, res) => {
+app.get('/pedidos/rastreio/:codigo', limitarConsultasPublicas, async (req, res) => {
   try {
     const pedido = await db.get(`
       SELECT id, status, criado_em, pronto_em
@@ -762,7 +810,7 @@ app.get('/pedidos/rastreio/:codigo', async (req, res) => {
 })
 
 // Mantém a consulta por ID apenas para pedidos antigos sem código secreto.
-app.get('/pedidos/:id', async (req, res) => {
+app.get('/pedidos/:id', limitarConsultasPublicas, async (req, res) => {
   try {
     const pedido = await db.get(`
       SELECT id, status, criado_em, pronto_em

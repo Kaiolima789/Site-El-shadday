@@ -89,6 +89,12 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
       return
     }
 
+    const telefoneNormalizado = telefone.replace(/\D/g, '')
+    if (telefoneNormalizado.length < 10 || telefoneNormalizado.length > 13) {
+      alert('Informe um telefone válido com DDD.')
+      return
+    }
+
     if (tipoEntrega === 'entrega' && !endereco.trim()) {
       alert('Informe o endereço para entrega.')
       return
@@ -232,6 +238,8 @@ function ClienteComum({ voltar, pedido, enviarPedido }) {
               <label>Telefone / WhatsApp</label>
               <input
                 type="tel"
+                inputMode="tel"
+                maxLength={20}
                 placeholder="(61) 99999-9999"
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
