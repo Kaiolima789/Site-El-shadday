@@ -237,7 +237,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
             </div>
 
             <div className="vivendas-campo">
-              <label>Código do Vivendas</label>
+              <label>Código de validação Vivendas</label>
               <input
                 type="text"
                 placeholder="Cole aqui o código validado"
@@ -245,7 +245,7 @@ function Vivendas({ voltar, pedido, enviarPedido }) {
                 onChange={(e) => setCodigo(e.target.value)}
               />
               <p className="vivendas-ajuda-codigo">
-                Valide seu benefício no site e copie o código gerado para este campo.{' '}
+                Clique em “Valide aqui”, gere seu código e copie-o neste campo.{' '}
                 <a
                   href="https://refeicao.supervs.com.br:8443/c/ad18451b110245618ab814ee84ba516d"
                   target="_blank"
