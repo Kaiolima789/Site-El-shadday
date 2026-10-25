@@ -5,7 +5,7 @@
 **El Shadday** é um sistema de pedidos de refeições em marmitas com suporte a entrega em diferentes vivendas (condomínios/áreas residenciais).
 
 - **Frontend:** React 19 + Vite
-- **Backend:** Express + SQLite (better-sqlite3)
+- **Backend:** Express + PostgreSQL (`pg`)
 - **Linguagem Principal:** JavaScript/JSX
 - **Linter:** Oxlint com regras React
 
@@ -21,7 +21,7 @@
 
 ### Backend Structure (`/backend`)
 - **server.js**: Servidor Express (porta 3000)
-- **database.js**: Configuração SQLite com inicialização de tabelas
+- **database.js**: Pool PostgreSQL, inicialização de tabelas e migrações aditivas
 
 ### Database Schema
 ```
@@ -68,8 +68,8 @@ node server.js   # Inicia servidor Express
 
 ### API Endpoints
 - `POST /cardapios`: Criar novo cardápio com opções
-- Banco: WAL mode ativado para concorrência
-- Prepared statements obrigatórios para segurança
+- Banco: PostgreSQL obrigatório via `DATABASE_URL`
+- Consultas parametrizadas obrigatórias para segurança
 
 ### Linting Rules
 - `react/rules-of-hooks`: error
@@ -88,8 +88,8 @@ node server.js   # Inicia servidor Express
 3. Adicionar rota (setPagina)
 
 ### Modificar banco de dados
-1. Editar schema em `backend/database.js` (db.exec)
-2. Usar prepared statements
+1. Editar schema/migrações PostgreSQL em `backend/database.js`
+2. Usar consultas parametrizadas
 3. Sempre usar FK constraints
 
 ## Development Pitfalls
@@ -97,7 +97,7 @@ node server.js   # Inicia servidor Express
 - **CORS**: Backend já tem `cors()` configurado
 - **Porta Backend**: Express roda em `3000` (verificar em `DestinoPedido.jsx`)
 - **Estado Compartilhado**: Props de página são passadas via `App.jsx` - sem global state
-- **Banco**: SQLite com WAL mode; resetar BD reinicia server
+- **Banco**: PostgreSQL; `DATABASE_URL` é obrigatória em desenvolvimento e produção
 
 ## Tools & Dependencies
 
@@ -107,7 +107,7 @@ node server.js   # Inicia servidor Express
 | react-dom | ^19.2.8 | DOM rendering |
 | vite | ^8.2.0 | Build/dev server |
 | express | ^5.2.1 | API backend |
-| better-sqlite3 | ^13.0.3 | SQLite sync driver |
+| pg | ^8.23.1 | Driver PostgreSQL |
 | oxlint | ^1.75.0 | Code linting |
 | cors | ^2.8.6 | CORS middleware |
 

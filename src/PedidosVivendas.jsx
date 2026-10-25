@@ -34,8 +34,8 @@ function tempoDecorrido(criadoEm) {
 
 function dataLocalDoPedido(criadoEm) {
   if (!criadoEm) return ''
-  // O SQLite grava CURRENT_TIMESTAMP em UTC sem sufixo. Converter esse instante
-  // para o fuso local antes de agrupar por dia evita esconder pedidos noturnos.
+  // A API normaliza timestamps do PostgreSQL em UTC sem sufixo. Converter
+  // antes de agrupar por dia evita esconder pedidos feitos perto da meia-noite.
   const valor = criadoEm.includes('T') ? criadoEm : `${criadoEm.replace(' ', 'T')}Z`
   const d = new Date(valor)
   if (Number.isNaN(d.getTime())) return ''

@@ -2,7 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const crypto = require('node:crypto')
 const db = require('./database')
-const { criarBackup } = require('./backup')
 
 const app = express()
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
@@ -165,62 +164,6 @@ app.post('/admin/logout', exigirAdmin, async (req, res) => {
 })
 
 // ===== MIGRAÇÃO: colunas do cliente comum (roda sozinha, só adiciona se faltar) =====
-if (db.kind === 'sqlite') {
-const colunasPedidos = db
-  .prepare('PRAGMA table_info(pedidos)')
-  .all()
-  .map((coluna) => coluna.name)
-
-const novasColunas = [
-  ['telefone', "TEXT DEFAULT ''"],
-  ['tipo_entrega', "TEXT DEFAULT ''"],
-  ['endereco', "TEXT DEFAULT ''"],
-  ['origem', "TEXT DEFAULT 'vivendas'"],
-  ['refrigerante_sabor', "TEXT DEFAULT ''"],
-  ['refrigerante_tamanho', "TEXT DEFAULT ''"],
-  ['agua_tipo', "TEXT DEFAULT ''"],
-  ['bebida_quantidade', 'INTEGER DEFAULT 0'],
-  ['preco_marmita', 'REAL'],
-  ['preco_bebida', 'REAL'],
-  ['valor_cobrar', 'REAL'],
-  ['forma_pagamento', "TEXT DEFAULT ''"],
-  ['troco_para', 'REAL'],
-  ['quantidade_marmitas', 'INTEGER DEFAULT 1'],
-  ['marmitas_json', "TEXT DEFAULT '[]'"],
-  ['cpf_vivendas', "TEXT DEFAULT ''"],
-  ['codigo_rastreio', 'TEXT'],
-  ['chave_idempotencia', 'TEXT']
-]
-
-for (const [nomeColuna, definicao] of novasColunas) {
-  if (!colunasPedidos.includes(nomeColuna)) {
-    db.prepare(`ALTER TABLE pedidos ADD COLUMN ${nomeColuna} ${definicao}`).run()
-    console.log(`Coluna "${nomeColuna}" adicionada na tabela pedidos.`)
-  }
-}
-
-// Reconhece CPFs usados anteriormente no campo único "código ou CPF".
-const pedidosVivendasAntigos = db.prepare(`
-  SELECT id, codigo_vivendas FROM pedidos
-  WHERE origem = 'vivendas' AND COALESCE(cpf_vivendas, '') = ''
-`).all()
-const salvarCpfAntigo = db.prepare('UPDATE pedidos SET cpf_vivendas = ? WHERE id = ?')
-for (const pedido of pedidosVivendasAntigos) {
-  const cpf = String(pedido.codigo_vivendas || '').replace(/\D/g, '')
-  if (cpf.length === 11) salvarCpfAntigo.run(cpf, pedido.id)
-}
-
-db.exec(`
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_codigo_rastreio
-  ON pedidos (codigo_rastreio)
-  WHERE codigo_rastreio IS NOT NULL
-`)
-db.exec(`
-  CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_chave_idempotencia
-  ON pedidos (chave_idempotencia)
-  WHERE chave_idempotencia IS NOT NULL
-`)
-}
 
 app.get('/', (req, res) => {
   res.json({
@@ -293,7 +236,7 @@ function operacoesAtualizarCardapio(id, preco, opcoes) {
 }
 
 function erroUnicidade(erro) {
-  return ['SQLITE_CONSTRAINT_UNIQUE', '23505'].includes(erro.code)
+  return erro.code === '23505'
 }
 
 app.post('/cardapios', exigirAdmin, async (req, res) => {
@@ -963,37 +906,6 @@ process.on('unhandledRejection', (razao) => {
 
 let server
 
-function agendarBackupDiario() {
-  const agora = new Date()
-  let dataBackup = dataLocalSaoPaulo()
-  let proximoBackup = new Date(`${dataBackup}T03:00:00-03:00`)
-  if (proximoBackup <= agora) {
-    const amanha = new Date(`${dataBackup}T12:00:00Z`)
-    amanha.setUTCDate(amanha.getUTCDate() + 1)
-    dataBackup = amanha.toISOString().slice(0, 10)
-    proximoBackup = new Date(`${dataBackup}T03:00:00-03:00`)
-  }
-
-  const atraso = proximoBackup.getTime() - agora.getTime()
-  async function executarBackup(tentativa = 1) {
-    try {
-      const caminho = await criarBackup({ db })
-      console.log(`Backup diário criado: ${caminho}`)
-    } catch (erro) {
-      console.error('Falha ao criar backup diário:', erro)
-      if (tentativa < 3) {
-        console.log(`Nova tentativa de backup em 15 minutos (${tentativa + 1}/3).`)
-        setTimeout(() => executarBackup(tentativa + 1), 15 * 60 * 1000).unref()
-        return
-      }
-    }
-    agendarBackupDiario()
-  }
-
-  setTimeout(() => executarBackup(), atraso).unref()
-  console.log(`Próximo backup diário agendado para ${proximoBackup.toISOString()} (03:00 em São Paulo).`)
-}
-
 async function iniciarServidor() {
   await db.initialize()
   server = app.listen(PORT, () => {
@@ -1002,7 +914,6 @@ async function iniciarServidor() {
   server.on('close', () => {
     console.log('Servidor foi fechado!')
   })
-  if (db.kind === 'sqlite') agendarBackupDiario()
 }
 
 iniciarServidor().catch((erro) => {
