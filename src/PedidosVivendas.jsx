@@ -775,7 +775,7 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                 <div className="pedido-cliente-caixa">
                   <div className="cliente-topo-linha">
                     <span className="cliente-dados-linha">
-                      Cliente: {pedido.nome} {telLimpo && `• ${formatarTelefone(pedido.telefone)}`}
+                      Cliente: {pedido.nome}
                     </span>
 
                     {telLimpo && (
@@ -790,6 +790,10 @@ function PedidosVivendas({ voltar, authToken, logout }) {
                         WhatsApp
                       </a>
                     )}
+                  </div>
+
+                  <div className="cliente-telefone-linha">
+                    Telefone: {telLimpo ? formatarTelefone(pedido.telefone) : 'Não informado'}
                   </div>
 
                   <div className="cliente-endereco-linha">

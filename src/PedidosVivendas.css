@@ -417,6 +417,12 @@
   color: #2E1E1E;
 }
 
+.cliente-telefone-linha {
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #5C4A42;
+}
+
 .btn-whatsapp-figma {
   background: #25D366;
   color: #FFFFFF;
